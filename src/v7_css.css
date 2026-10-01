@@ -1,6 +1,7 @@
+:root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
 /* ---------- écran unique : jeu ---------- */
 body{margin:0}
-#game{height:100%;overflow:hidden;display:flex;flex-direction:column;padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+#game{height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--sat);padding-bottom:calc(60px + var(--sab))}
 .gwrap{max-width:480px;width:100%;margin:0 auto;padding:0 16px 8px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
 .top .pill.me{padding:0 4px;min-width:44px;justify-content:center}
 .top .pill.me canvas{width:36px;height:36px}
@@ -74,7 +75,7 @@ body{margin:0}
   .nav button{min-height:52px}#game{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 }
 /* ---------- panneaux (atelier, quêtes, ligue, boutique, profil) ---------- */
-#panel{position:fixed;inset:0;z-index:4;background:var(--night);overflow:auto;padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+#panel{position:fixed;inset:0;z-index:4;background:var(--night);overflow:auto;padding-top:var(--sat);padding-bottom:calc(62px + var(--sab))}
 #panel::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 55% at 50% -14%,rgba(255,214,150,.20),transparent 62%)}
 #panel .wrap{position:relative}
 .phead{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;padding:12px 2px 6px}
@@ -103,3 +104,7 @@ body{margin:0}
 @keyframes giftbob{to{transform:translateY(-6px)}}
 .gwrap{position:relative}
 .pips.inf{background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));opacity:.55}
+
+.nav{padding-bottom:var(--sab)}
+.veil{padding:calc(16px + var(--sat)) 16px calc(16px + var(--sab))}
+#toast{top:calc(64px + var(--sat))}

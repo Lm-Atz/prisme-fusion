@@ -1,4 +1,4 @@
-const VERSION='8.1 · 4×4';
+const VERSION='8.2 · Android';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -499,4 +499,6 @@ requestAnimationFrame(frame);
 if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},400);
 async function netBoot(){const r=await netHello(localSeen);if(!r.ok)return;if(r.used==='server'){accrue();roll();const o=offlineGains();startRun();renderJok();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();toast(t('net_restored'));}else netSave(true);track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});}
 netBoot();
+/* ----- bouton Retour Android (Capacitor) ----- */
+try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){closeModal();return;}if(tab!=='home'){goTab('home');return;}save();netSave(true);if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}
 })();
