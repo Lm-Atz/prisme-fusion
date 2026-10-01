@@ -1,0 +1,32 @@
+<section id="game">
+  <div class="gwrap">
+    <header class="top">
+      <button class="pill me" id="meBtn" data-i18n-aria="profile_aria"><canvas id="meMini" width="72" height="72" aria-hidden="true"></canvas></button>
+      <div class="pill" role="img" data-i18n-aria="shards_aria"><svg class="i is"><use href="#i-shard"/></svg><span id="cS">0</span></div>
+      <button class="pill" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button>
+    </header>
+    <div class="arena">
+      <canvas id="bossCv" data-i18n-aria="enemy_aria"></canvas>
+      <div class="stg"><div><b id="stgN"></b><small id="stgW"></small><div class="tmr" id="tmr" hidden></div></div><div class="quick" id="acts" hidden></div></div>
+      <div class="hp" id="hpWrap" role="progressbar" data-i18n-aria="hp_aria"><i id="hpLag"></i><i id="hpBar"></i></div>
+      <div class="banner" id="banner" hidden></div>
+    </div>
+    <div class="hint" id="hint" hidden></div>
+    <button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button>
+    <div class="boardwrap" id="bw"><canvas id="board" data-i18n-aria="board_aria"></canvas></div>
+    <div class="jok" id="jok" hidden></div>
+    <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b></div>
+    <div class="tb" id="tb"></div>
+  </div>
+</section>
+<section id="panel" hidden><div class="wrap" id="tabPanel"></div></section>
+<nav class="nav"><div class="in" role="tablist">
+  <button data-tab="home" aria-selected="true"><svg class="i"><use href="#i-prism"/></svg><span data-i18n="nav_home">Jeu</span></button>
+  <button data-tab="atelier"><svg class="i"><use href="#i-anvil"/></svg><span data-i18n="nav_atelier">Atelier</span><span class="badge" id="bA" hidden></span></button>
+  <button data-tab="quests"><svg class="i"><use href="#i-scroll"/></svg><span data-i18n="nav_quests">Quêtes</span><span class="badge" id="bQ" hidden></span></button>
+  <button data-tab="league"><svg class="i"><use href="#i-shield"/></svg><span data-i18n="nav_league">Ligue</span></button>
+  <button data-tab="shop"><svg class="i"><use href="#i-bag"/></svg><span data-i18n="nav_shop">Boutique</span></button>
+</div></nav>
+<div id="veil" class="veil" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status" hidden></div>
+<div id="offline" class="veil" hidden><div class="modal"><div class="mart" style="color:var(--danger)"><svg class="i"><use href="#i-link"/></svg></div><h2 data-i18n="net_title">Connexion requise</h2><p id="netMsg" data-i18n="net_p">Prisme Fusion a besoin d'internet pour sauvegarder ta progression et la ligue. La partie est en pause.</p><div class="acts"><button class="b b-gold" id="retryNet" data-i18n="retry">Réessayer</button></div></div></div>
