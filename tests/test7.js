@@ -16,9 +16,13 @@ let r=await ev(()=>{const G=window.__G,R=G.R;R.paused=true;const S=G.S;const o={
   // boosters
   S.run.sparks=1000;const iv0=G.spawnInterval();o.buy=G.buyTB('cad');o.iv=G.spawnInterval()<iv0;o.pm0=G.powerMult();G.buyTB('power');o.pm=G.powerMult()>o.pm0;const sp1=S.run.sparks;o.poor=G.buyTB('birth')&&S.run.sparks===sp1-300;S.run.sparks=0;o.poor2=G.buyTB('cad');
   return o;});
-T('plateau 5x5',r.N===5);T('3 gemmes au départ',r.cells===3);T('fusion manuelle',r.mv==='merge'&&r.l2===2);T('la fusion ne frappe pas',r.noStrike);T('les gemmes tirent en continu',r.dmg>0);T('étincelles gagnées',r.sparks>0);T('compteur manuel',r.manual===1);
+T('plateau 4x4 au départ',r.N===4);T('3 gemmes au départ',r.cells===3);T('fusion manuelle',r.mv==='merge'&&r.l2===2);T('la fusion ne frappe pas',r.noStrike);T('les gemmes tirent en continu',r.dmg>0);T('étincelles gagnées',r.sparks>0);T('compteur manuel',r.manual===1);
 T('gemmes différentes : retour',r.back==='back');T('aimant vers gemme compatible',r.snap===6);T('aimant : pas vers gemme différente',r.snapNone===null);
 T('achat booster',r.buy===true&&r.iv);T('force augmente les dégâts',r.pm);T('achat Niveau à 300',r.poor===true);T('sans étincelles pas d\'achat',r.poor2===false);
+
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('board');S.bestStage=5;o.l5=G.upLocked?undefined:null;o.lock12=S.bestStage<12&&!!document;S.up.board=1;G.newRun();o.n5=G.R.N;S.up.board=2;G.newRun();o.n6=G.R.N;S.up.board=0;G.newRun();o.n4=G.R.N;
+  o.k1=G.CFG.sparks.kill(1),o.k16=G.CFG.sparks.kill(16);o.ref=0.8*Math.pow(1.18,16);return o;});
+T('recherche plateau → 5x5',r.n5===5);T('→ 6x6',r.n6===6);T('retour 4x4',r.n4===4);T('étincelles ×3 à l\'étage 1',Math.abs(r.k1-0.8*1.18*3)<1e-9);T('bonus fondu à l\'étage 16',Math.abs(r.k16-r.ref)<1e-9);
 // --- tick, spawn, auto, kill, étapes, boss
 r=await ev(()=>{const G=window.__G,R=G.R,S=G.S;const o={};R.paused=false;
   R.cells.fill(null);const n0=R.cells.filter(Boolean).length;for(let i=0;i<40;i++)G.runTick(0.1);o.spawned=R.cells.filter(Boolean).length>n0;

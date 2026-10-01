@@ -1,4 +1,4 @@
-const VERSION='8.0 · en ligne';
+const VERSION='8.1 · 4×4';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -266,7 +266,7 @@ function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now()
 function tileHtml(u,free){
   const k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id);
   let foot;
-  if(lock)foot=`<div class="tstate">${ic('lock')}${t('at_lock',{n:u.req})}</div>`;
+  if(lock)foot=`<div class="tstate">${ic('lock')}${t('at_lock',{n:upReq(u)})}</div>`;
   else if(b)foot=`<div class="tstate run">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></div>`;
   else if(max)foot=`<div class="tstate">${ic('check')}${t('at_maxed')}</div>`;
   else foot=`<button class="b b-shard sm" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('shard')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
@@ -275,7 +275,7 @@ function tileHtml(u,free){
 function upDetail(id){
   const u=upById(id),k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id),free=S.slots-S.build.length;
   let act='';
-  if(lock)act=`<p>${t('at_locked',{n:u.req})}</p>`;
+  if(lock)act=`<p>${t('at_locked',{n:upReq(u)})}</p>`;
   else if(b)act=`<p>${t('at_inprog',{t:`<b data-until="${b.until}">${dur((b.until-Date.now())/1000)}</b>`})}</p>`;
   else if(max)act=`<p>${t('at_ismax')}</p>`;
   else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-shard" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}>${ic('shard')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;

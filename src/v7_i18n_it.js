@@ -47,7 +47,7 @@ I18N.it={
   u_lucky:'Scintilla',u_lucky_d:'{n} % di probabilità di nascere un grado più in alto',
   u_chain:'Reazione a catena',u_chain_d:"{n} % di probabilità che una fusione ne scateni un'altra",
   u_gold:"Cacciatore d'oro",u_gold_d:'+{n} % di gemme dorate, che fruttano schegge',
-  u_board:'Grande tabellone',u_board_d0:'Tabellone 6 × 6 invece di 5 × 5',u_board_d1:'Tabellone 7 × 7',
+  u_board:'Grande tabellone',u_board_d0:'Tabellone 5 × 5 invece di 4 × 4',u_board_d1:'Tabellone 6 × 6',
   u_sursis:'Tregua',u_sursis_d:'Tabellone pieno: {n} gemme piccole si riciclano invece di una',
   u_spark:'Scintille',u_spark_d:'Scintille ×{n} (+10 % per grado)',
   u_loot:'Bottino',u_loot_d:'+{n} % di schegge alla rifrazione',

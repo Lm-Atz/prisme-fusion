@@ -47,7 +47,7 @@ I18N.pt={
   u_lucky:'Faísca',u_lucky_d:'{n} % de probabilidade de nascer um nível acima',
   u_chain:'Reação em cadeia',u_chain_d:'{n} % de probabilidade de uma fusão desencadear outra',
   u_gold:'Caçador de ouro',u_gold_d:'+{n} % de gemas douradas, que rendem estilhaços',
-  u_board:'Grande tabuleiro',u_board_d0:'Tabuleiro 6 × 6 em vez de 5 × 5',u_board_d1:'Tabuleiro 7 × 7',
+  u_board:'Grande tabuleiro',u_board_d0:'Tabuleiro 5 × 5 em vez de 4 × 4',u_board_d1:'Tabuleiro 6 × 6',
   u_sursis:'Adiamento',u_sursis_d:'Tabuleiro cheio: {n} gemas pequenas são recicladas em vez de uma',
   u_spark:'Faíscas',u_spark_d:'Faíscas ×{n} (+10 % por nível)',
   u_loot:'Saque',u_loot_d:'+{n} % de estilhaços na refração',

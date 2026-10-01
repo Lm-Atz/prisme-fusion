@@ -56,7 +56,7 @@ I18N.fr={
   u_lucky:'Étincelle',u_lucky_d:'{n} % de chance de naître un niveau au-dessus',
   u_chain:'Réaction en chaîne',u_chain_d:"{n} % de chance qu'une fusion en déclenche une autre",
   u_gold:"Chasseur d'or",u_gold_d:'+{n} % de gemmes dorées, qui rapportent des éclats',
-  u_board:'Grand plateau',u_board_d0:'Plateau 6 × 6 au lieu de 5 × 5',u_board_d1:'Plateau 7 × 7',
+  u_board:'Grand plateau',u_board_d0:'Plateau 5 × 5 au lieu de 4 × 4',u_board_d1:'Plateau 6 × 6',
   u_sursis:'Sursis',u_sursis_d:"Plateau plein : {n} petites gemmes se recyclent au lieu d'une",
   u_spark:'Étincelles',u_spark_d:'Étincelles ×{n} (+10 % par niveau)',
   u_loot:'Butin',u_loot_d:"+{n} % d'éclats à la réfraction",

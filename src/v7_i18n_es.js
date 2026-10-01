@@ -47,7 +47,7 @@ I18N.es={
   u_lucky:'Chispa',u_lucky_d:'{n} % de probabilidad de nacer un nivel más alto',
   u_chain:'Reacción en cadena',u_chain_d:'{n} % de probabilidad de que una fusión provoque otra',
   u_gold:'Cazador de oro',u_gold_d:'+{n} % de gemas doradas, que dan esquirlas',
-  u_board:'Gran tablero',u_board_d0:'Tablero 6 × 6 en vez de 5 × 5',u_board_d1:'Tablero 7 × 7',
+  u_board:'Gran tablero',u_board_d0:'Tablero 5 × 5 en vez de 4 × 4',u_board_d1:'Tablero 6 × 6',
   u_sursis:'Indulto',u_sursis_d:'Tablero lleno: {n} gemas pequeñas se reciclan en vez de una',
   u_spark:'Chispas',u_spark_d:'Chispas ×{n} (+10 % por nivel)',
   u_loot:'Botín',u_loot_d:'+{n} % de esquirlas en la refracción',

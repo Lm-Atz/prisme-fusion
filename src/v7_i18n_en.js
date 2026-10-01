@@ -47,7 +47,7 @@ I18N.en={
   u_lucky:'Spark',u_lucky_d:'{n}% chance to be born one level higher',
   u_chain:'Chain Reaction',u_chain_d:'{n}% chance a merge triggers another',
   u_gold:'Gold Hunter',u_gold_d:'+{n}% golden gems, which earn shards',
-  u_board:'Big Board',u_board_d0:'6 × 6 board instead of 5 × 5',u_board_d1:'7 × 7 board',
+  u_board:'Big Board',u_board_d0:'5 × 5 board instead of 4 × 4',u_board_d1:'6 × 6 board',
   u_sursis:'Reprieve',u_sursis_d:'Full board: {n} small gems recycle instead of one',
   u_spark:'Sparks',u_spark_d:'Sparks ×{n} (+10% per level)',
   u_loot:'Loot',u_loot_d:'+{n}% shards at refraction',

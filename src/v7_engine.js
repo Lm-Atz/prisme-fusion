@@ -2,7 +2,7 @@
 const CFG={
   board:{spawn0:2.4,spawnMin:0.35,spawnDecay:0.9},
   dmg:{base:2.6,combo:0.12,manual:1.6},
-  sparks:{merge:l=>0.1*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)},
+  sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
@@ -61,7 +61,7 @@ const UPG=[
   {id:'lucky',g:'grid',get t(){return t('u_lucky')},d:k=>t('u_lucky_d',{n:3*(k+1)}),c:k=>200*Math.pow(1.45,k),time:T(60,1.25),max:25},
   {id:'chain',g:'grid',get t(){return t('u_chain')},d:k=>t('u_chain_d',{n:3*(k+1)}),c:k=>350*Math.pow(1.5,k),time:T(90,1.3),max:25,req:8},
   {id:'gold',g:'grid',get t(){return t('u_gold')},d:k=>t('u_gold_d',{n:k+1}),c:k=>600*Math.pow(1.55,k),time:T(240,1.3),max:20,req:12},
-  {id:'board',g:'grid',get t(){return t('u_board')},d:k=>k?t('u_board_d1'):t('u_board_d0'),c:k=>[8000,120000][k],time:k=>[7200,86400][k],max:2,req:15},
+  {id:'board',g:'grid',get t(){return t('u_board')},d:k=>k?t('u_board_d1'):t('u_board_d0'),c:k=>[400,60000][k],time:k=>[7200,86400][k],max:2,req:k=>k?30:12},
   {id:'sursis',g:'grid',get t(){return t('u_sursis')},d:k=>t('u_sursis_d',{n:k+2}),c:k=>1200*Math.pow(1.7,k),time:T(600,1.3),max:6,req:10},
   // Économie
   {id:'spark',g:'eco',get t(){return t('u_spark')},d:k=>t('u_spark_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>100*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
@@ -139,7 +139,8 @@ const upById=id=>ALLUP.find(x=>x.id===id);
 const lvlOf=u=>u.joker?(S.jk[u.joker]||0):S.up[u.id];
 const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:u.c(lvlOf(u));
 const upTime=u=>u.time(lvlOf(u));
-const upLocked=u=>u.req&&S.bestStage<u.req;
+const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u.id)):u.req;
+const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
 const inBuild=id=>S.build.find(b=>b.id===id);
 function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;}
 function tickBuild(now=Date.now()){const done=[];S.build=S.build.filter(b=>{if(now>=b.until){applyUp(b.id);done.push(b.id);return false;}return true;});return done;}
@@ -173,7 +174,7 @@ const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.
 const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1);
 const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1);
 const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
-const boardN=()=>5+S.up.board;
+const boardN=()=>4+S.up.board;
 
 /* ================= moteur de partie ================= */
 let R=null;

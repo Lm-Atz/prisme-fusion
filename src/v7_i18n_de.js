@@ -47,7 +47,7 @@ I18N.de={
   u_lucky:'Funke',u_lucky_d:'{n} % Chance, ein Level höher zu entstehen',
   u_chain:'Kettenreaktion',u_chain_d:'{n} % Chance, dass eine Fusion eine weitere auslöst',
   u_gold:'Goldjäger',u_gold_d:'+{n} % goldene Edelsteine, die Splitter bringen',
-  u_board:'Großes Brett',u_board_d0:'6 × 6 statt 5 × 5',u_board_d1:'Brett 7 × 7',
+  u_board:'Großes Brett',u_board_d0:'5 × 5 statt 4 × 4',u_board_d1:'Brett 6 × 6',
   u_sursis:'Aufschub',u_sursis_d:'Volles Brett: {n} kleine Edelsteine werden recycelt statt einer',
   u_spark:'Funken',u_spark_d:'Funken ×{n} (+10 % pro Level)',
   u_loot:'Beute',u_loot_d:'+{n} % Splitter bei der Brechung',
