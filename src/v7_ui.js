@@ -1,4 +1,4 @@
-const VERSION='8.2 · Android';
+const VERSION='8.3 · shards';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -136,7 +136,7 @@ function shotLanded(s){
 hooks.attack=(kind,hit)=>{hit.forEach(i=>fx.beams.push({i,t:0}));kick('medium');sfx.low();bfx.nums.push({txt:t('he',{a:THEMES[R.E.th].atkT}),t:0,x:BW/2,y:BH*0.92,col:'hsl(352 100% 76%)'});};
 hooks.windup=()=>{sfx.tick();};
 hooks.phase=p=>{bfx.phaseT=1;if(p==='shield'){banner(t('shield'),t('shield_p',{n:R.E.shieldL}),'boss',2600);sfx.chord();kick('large');}};
-hooks.kill=(E,sp)=>{enemyBurst(E.type==='mob'?18:40,null,E.type==='mob'?200:320);if(E.type!=='mob'){fx.flash=1;fx.flashCol='255,200,87';kick(E.type==='boss'?'huge':'large');sfx.win();}else{kick('small');sfx.tick();}bfx.popT=0;bfx.nums=[];
+hooks.kill=(E,sp,sh)=>{if(sh>=1){bfx.nums.push({txt:'+'+fmt(Math.round(sh))+' ◆',t:0,x:BW/2,y:BH*0.78,col:'hsl(196 100% 78%)',big:E.type==='boss'});}enemyBurst(E.type==='mob'?18:40,null,E.type==='mob'?200:320);if(E.type!=='mob'){fx.flash=1;fx.flashCol='255,200,87';kick(E.type==='boss'?'huge':'large');sfx.win();}else{kick('small');sfx.tick();}bfx.popT=0;bfx.nums=[];
   bfx.nums.push({txt:'+'+fmt(sp),t:0,x:BW/2,y:BH*0.5,col:'hsl(44 100% 66%)',big:true});
   if(S.run.stage%10===1&&S.run.stage>1&&!S.run.fled)banner(worldInfo(worldOf(S.run.stage)).name,t('new_world'),'gold',2200);};
 hooks.bossStart=E=>{banner(E.name,t('boss_banner',{n:CFG.enemy.bossTime}),'boss',2600);sfx.chord();kick('medium');Music.target=0.9;};

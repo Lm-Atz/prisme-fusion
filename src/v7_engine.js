@@ -2,6 +2,7 @@
 const CFG={
   board:{spawn0:2.4,spawnMin:0.35,spawnDecay:0.9},
   dmg:{base:2.6,combo:0.12,manual:1.6},
+  shards:{kill:(n,type)=>type==='boss'?4*n:type==='mini'?n:n/25}, // éclats hors Réfraction : surtout les boss
   sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
@@ -304,7 +305,8 @@ function onKill(){
   const E=R.E,n=E.stage;S.st.kills++;S.day.kills++;S.week.kills++;
   const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushWin(R.killWin,R.t,1);
   if(E.type!=='mob'){const k=String(n);if(!S.bestiary[k]||R.bossT>S.bestiary[k])S.bestiary[k]=Math.round(E.type==='boss'?CFG.enemy.bossTime-R.bossT:0);if(E.type==='boss'){S.st.bosses++;S.day.bosses++;}}
-  hooks.kill(E,sp);
+  const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.shards+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
+  hooks.kill(E,sp,sh);
   if(R.mode==='boss'){R.mode='farm';S.run.fled=false;clearLocks();}
   if(S.run.fled){R.E=enemyFor(n);R.E.hp=R.E.max;return;} // ferme sur l'étape précédente
   S.run.stage=n+1;S.run.max=Math.max(S.run.max,S.run.stage);if(S.run.stage>S.maxStage)S.maxStage=S.run.stage;if(S.run.stage>S.bestStage){S.bestStage=S.run.stage;hooks.evolve();}

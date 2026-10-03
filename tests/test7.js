@@ -23,6 +23,10 @@ T('achat booster',r.buy===true&&r.iv);T('force augmente les dégâts',r.pm);T('a
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('board');S.bestStage=5;o.l5=G.upLocked?undefined:null;o.lock12=S.bestStage<12&&!!document;S.up.board=1;G.newRun();o.n5=G.R.N;S.up.board=2;G.newRun();o.n6=G.R.N;S.up.board=0;G.newRun();o.n4=G.R.N;
   o.k1=G.CFG.sparks.kill(1),o.k16=G.CFG.sparks.kill(16);o.ref=0.8*Math.pow(1.18,16);return o;});
 T('recherche plateau → 5x5',r.n5===5);T('→ 6x6',r.n6===6);T('retour 4x4',r.n4===4);T('étincelles ×3 à l\'étage 1',Math.abs(r.k1-0.8*1.18*3)<1e-9);T('bonus fondu à l\'étage 16',Math.abs(r.k16-r.ref)<1e-9);
+
+r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};R.paused=false;S.up.loot=0;S.lootX2=false;
+  const sh0=S.shards;S.run.stage=10;S.run.fled=false;G.startRun();G.R.E.hp=0.001;G.R.cells.fill(null);G.R.cells[0]={l:3};for(let i=0;i<30;i++)G.runTick(0.1);o.boss=G.R.E.type;o.gain=S.shards-sh0;o.k=G.CFG.shards.kill(10,'boss');return o;});
+T('le boss lâche des éclats (4 × étage)',r.gain>=40&&r.gain<41);
 // --- tick, spawn, auto, kill, étapes, boss
 r=await ev(()=>{const G=window.__G,R=G.R,S=G.S;const o={};R.paused=false;
   R.cells.fill(null);const n0=R.cells.filter(Boolean).length;for(let i=0;i<40;i++)G.runTick(0.1);o.spawned=R.cells.filter(Boolean).length>n0;
