@@ -1,4 +1,4 @@
-const VERSION='8.4 · une seule monnaie';
+const VERSION='8.5 · repli';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -141,7 +141,7 @@ hooks.kill=(E,sp,sh)=>{if(sh>=1){bfx.nums.push({txt:'+'+fmt(Math.round(sh))+' �
   bfx.nums.push({txt:'+'+fmt(sp),t:0,x:BW/2,y:BH*0.5,col:'hsl(44 100% 66%)',big:true});
   if(S.run.stage%10===1&&S.run.stage>1&&!S.run.fled)banner(worldInfo(worldOf(S.run.stage)).name,t('new_world'),'gold',2200);};
 hooks.bossStart=E=>{banner(E.name,t('boss_banner',{n:CFG.enemy.bossTime}),'boss',2600);sfx.chord();kick('medium');Music.target=0.9;};
-hooks.bossFled=()=>{banner(t('boss_fled'),t('boss_fled_p'),'',2600);sfx.low();Music.target=0.3;};
+hooks.bossFled=v=>{banner(t(v?'boss_back':'boss_fled'),t('boss_fled_p'),'',2600);sfx.low();Music.target=0.3;renderActs();};
 hooks.joker=id=>{const j=jokerById(id);sfx.chord();fx.glow=1;fx.flash=0.6;fx.flashCol='212,140,255';kick('medium');bfx.nums.push({txt:j.t,t:0,x:BW/2,y:BH*0.85,col:'hsl(282 100% 80%)',big:true});};
 hooks.harvest=(i,sp)=>{if(Math.random()<0.5)return;const [x,y]=fx.at(i);fx.floats.push({x,y:y-cell*.2,t:0,txt:'+'+(sp<10?dec(sp,1):fmt(sp)),h:150,small:true});};
 hooks.tb=k=>{sfx.buy();kick('small');fx.glow=Math.min(1,fx.glow+0.4);if(tutoStep===3)tutoNext();};
@@ -213,6 +213,7 @@ function updTB(){const sp=S.run.sparks;document.querySelectorAll('[data-tb]').fo
 function renderActs(){
   const a=$('acts');let h='';
   const g=prestigeGain(),canP=S.run.max>=CFG.prestige.minStage;
+  if(R.mode==='boss'&&R.E.type==='boss')h+=`<button class="qb" id="retreat" aria-label="${t('retreat_aria',{n:S.run.stage-1})}"><span>${ic('flag')}</span></button>`;
   if(S.run.fled)h+=`<button class="qb hot" id="chal" aria-label="${t('chal_aria',{n:S.run.stage})}"><span>${ic('crown')}</span></button>`;
   if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
   if(S.bestStage>=15&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
@@ -233,6 +234,7 @@ $('tb').addEventListener('click',e=>{const b=e.target.closest('[data-tb]');if(!b
 function tbDetail(k){const d=TBDEF[k],l=tbLvl(k),c=tbCost(k);modal(`<div class="mart" style="color:var(--${d.c})">${ic(d.i)}</div><h2>${d.t}</h2><p style="color:var(--light)">${d.d}.</p><p>${t('tb_lvl',{n:l,v:d.n(l)})}${isFinite(c)?'<br>'+t('tb_lvl',{n:l+1,v:d.n(l+1)}):''}</p><p style="color:var(--mist);font-size:13px">${t('tb_note',{t:d.t})}</p><div class="acts">${isFinite(c)?`<button class="b b-gold" data-buytb="${k}" ${S.run.sparks>=c?'':'disabled'}>${ic('spark')}${t('tb_buy',{c:fmt(c)})}</button>`:''}<button class="b" data-close>${t('close')}</button></div>`);}
 $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!R)return;audio();
   if(b.id==='chal'){if(challengeBoss()){renderStage();renderActs();}}
+  else if(b.id==='retreat'){if(retreat()){renderStage();renderActs();save();}}
   else if(b.id==='prest')prestigeModal();
   else if(b.id==='titan')titanModal();
 });
@@ -492,7 +494,7 @@ if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');con
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();netSave(true);}else{last=performance.now();const o=offlineGains();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
-window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet};
 setLang(pickLang());load();const localSeen=S.lastSeen||0;accrue();roll();applyStatic();
 {const o=offlineGains();startRun();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0))offlineModal(o);S.lastSeen=Date.now();}

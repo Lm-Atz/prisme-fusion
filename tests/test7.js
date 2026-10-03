@@ -35,6 +35,10 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};G.R.cells.fill(null);G.R.cel
   o.grown=G.R.N===5&&G.R.cells.length===25&&G.R.cells[0]&&G.R.cells[0].l===5&&G.R.cells[8]&&G.R.cells[8].k==='gold';o.r0=r0;
   return o;});
 T('plateau sauvegardé (niveaux, dorée, joker)',Array.isArray(r.saved)&&r.saved[0]===5&&r.saved[7]===-2&&r.saved[3]==='j');T('plateau restauré au relancement',r.l0===5&&r.gold&&r.jok&&r.empty);T('la grille grandit en direct sans perdre les gemmes',r.grown);
+
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.stage=20;S.run.fled=false;G.startRun();const R=G.R;document.getElementById('veil').hidden=true;o.boss=R.mode==='boss';G.renderActs();o.btn=!!document.getElementById('retreat');
+  o.ok=G.retreat();o.farm=R.mode==='farm'&&R.E.stage===19&&S.run.fled===true;G.renderActs();o.btnGone=!document.getElementById('retreat')&&!!document.getElementById('chal');o.again=G.retreat()===false;o.chal=G.challengeBoss()&&R.mode==='boss';return o;});
+T('bouton Repli visible pendant le boss',r.boss&&r.btn);T('repli → retour au monstre précédent',r.ok&&r.farm);T('après repli : bouton Redéfier',r.btnGone&&r.again);T('on peut redéfier',r.chal);
 // --- tick, spawn, auto, kill, étapes, boss
 r=await ev(()=>{const G=window.__G,R=G.R,S=G.S;const o={};R.paused=false;
   R.cells.fill(null);const n0=R.cells.filter(Boolean).length;for(let i=0;i<40;i++)G.runTick(0.1);o.spawned=R.cells.filter(Boolean).length>n0;

@@ -322,7 +322,8 @@ function onKill(){
   if(S.up.au_prestige)maybeAutoPrestige();
 }
 function clearLocks(){for(let i=0;i<R.cells.length;i++)if(R.cells[i]&&R.cells[i].k==='lock'){R.cells[i]=null;hooks.unlock(i);}}
-function bossFlee(){clearLocks();R.mode='farm';S.run.fled=true;S.run.fledAt=R.t;R.retryT=0;R.E=enemyFor(S.run.stage-1);hooks.bossFled();}
+function bossFlee(voluntary){clearLocks();R.mode='farm';S.run.fled=true;S.run.fledAt=R.t;R.retryT=0;R.E=enemyFor(S.run.stage-1);hooks.bossFled(voluntary);}
+function retreat(){if(!R||R.mode!=='boss')return false;bossFlee(true);return true;} // repli volontaire : on retourne farmer l'étape précédente
 function challengeBoss(){if(!R||R.mode!=='farm'||!S.run.fled)return false;S.run.fled=false;R.mode='boss';R.bossT=CFG.enemy.bossTime;R.E=enemyFor(S.run.stage);R.E.atkT=CFG.enemy.atkEvery;hooks.bossStart(R.E);return true;}
 /* ---------- Titan ---------- */
 const TITAN_DAYS={get 0(){return dayName(0)},get 1(){return dayName(1)},get 2(){return dayName(2)},get 3(){return dayName(3)},get 4(){return dayName(4)},get 5(){return dayName(5)},get 6(){return dayName(6)}};
