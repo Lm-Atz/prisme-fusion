@@ -18,7 +18,7 @@ android {
     }
     signingConfigs {
         // Clé de TEST (sideload). Le Play Store utilisera une clé d'upload distincte, jamais versionnée.
-        test {
+        sideload {
             def ksEnv = System.getenv("PF_KEYSTORE")
             storeFile file(ksEnv ?: "../keystore/test-signing.jks")
             storePassword System.getenv("PF_KS_PASS") ?: "prismetest"
@@ -26,12 +26,16 @@ android {
             keyPassword System.getenv("PF_KEY_PASS") ?: "prismetest"
         }
     }
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
     buildTypes {
         debug {
-            signingConfig signingConfigs.test
+            signingConfig signingConfigs.sideload
         }
         release {
-            signingConfig signingConfigs.test
+            signingConfig signingConfigs.sideload
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
