@@ -7,8 +7,8 @@ android {
         applicationId "com.prismefusion.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv("PF_VERSION_CODE") ?: "1").toInteger()
-        versionName (System.getenv("PF_VERSION_NAME") ?: "8.5")
+        versionCode Integer.parseInt(System.getenv("PF_VERSION_CODE") ?: "1")
+        versionName String.valueOf(System.getenv("PF_VERSION_NAME") ?: "8.6")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
