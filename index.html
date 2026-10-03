@@ -325,6 +325,8 @@ body{margin:0}
 .nav{padding-bottom:var(--sab)}
 .veil{padding:calc(16px + var(--sat)) 16px calc(16px + var(--sab))}
 #toast{top:calc(64px + var(--sat))}
+.b-spark{--f:#fff3b0;--f2:#ffc857;--e:var(--beam-edge);--t:#3a2a06}
+.bal{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;font-size:15px;color:var(--mist)}.bal b{font-size:20px;color:var(--light)}.bal .i{width:22px;height:22px}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -371,7 +373,6 @@ body{margin:0}
   <div class="gwrap">
     <header class="top">
       <button class="pill me" id="meBtn" data-i18n-aria="profile_aria"><canvas id="meMini" width="72" height="72" aria-hidden="true"></canvas></button>
-      <div class="pill" role="img" data-i18n-aria="shards_aria"><svg class="i is"><use href="#i-shard"/></svg><span id="cS">0</span></div>
       <button class="pill" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button>
     </header>
     <div class="arena">
@@ -436,7 +437,7 @@ I18N.fr={
   g_auto:'Auto',g_auto_d:'Retirer un geste à chaque palier.',
   g_atk:'Attaque',g_atk_d:'Frapper plus fort.',
   g_grid:'Plateau',g_grid_d:'Des gemmes plus fortes, plus souvent.',
-  g_eco:'Économie',g_eco_d:"Plus d'étincelles, plus d'éclats, plus longtemps.",
+  g_eco:'Économie',g_eco_d:"Plus d'étincelles, plus vite, plus longtemps.",
   g_jok:'Jokers',g_jok_d:'Débloquer, équiper et renforcer tes pouvoirs.',
   g_arm:'Armes',g_arm_d:'Chaque forme de gemme est une arme. Tes points de réfraction les renforcent.',
   // recherches (t = titre, d = description du niveau suivant)
@@ -450,7 +451,7 @@ I18N.fr={
   u_au_buy:'Achat automatique',u_au_buy_d:'Achète un booster toutes les {n} s',u_au_buy_d0:'Achète le booster le moins cher tout seul',
   u_au_joker:'Jokers automatiques',u_au_joker_d:"Déclenche tes jokers dès qu'ils sont chargés",
   u_au_boss:'Défi automatique',u_au_boss_d:'Redéfie un boss qui a fui après {n} s',
-  u_au_prestige:'Réfraction automatique',u_au_prestige_d:'Réfraction seule dès que le gain atteint {n} % de tes éclats',
+  u_au_prestige:'Réfraction automatique',u_au_prestige_d:"Réfraction seule dès que le trésor de départ atteint {n} % de tes étincelles",
   u_au_exped:'Expédition',u_au_exped_d:'Tes gemmes avancent les étapes hors-ligne pendant {n} h',
   u_au_titan:'Titan automatique',u_au_titan_d:'Le Titan est défié seul et tu as {n} ticket{n|s} gratuit{n|s} de plus',
   u_power:'Puissance',u_power_d:'Dégâts ×{n} (+10 % par niveau)',
@@ -460,12 +461,12 @@ I18N.fr={
   u_pierce:'Perce-bouclier',u_pierce_d:'Le bouclier des boss laisse passer {n} niveau{n|x} de gemme de plus',
   u_lucky:'Étincelle',u_lucky_d:'{n} % de chance de naître un niveau au-dessus',
   u_chain:'Réaction en chaîne',u_chain_d:"{n} % de chance qu'une fusion en déclenche une autre",
-  u_gold:"Chasseur d'or",u_gold_d:'+{n} % de gemmes dorées, qui rapportent des éclats',
+  u_gold:"Chasseur d'or",u_gold_d:"+{n} % de gemmes dorées, qui rapportent des étincelles",
   u_board:'Grand plateau',u_board_d0:'Plateau 5 × 5 au lieu de 4 × 4',u_board_d1:'Plateau 6 × 6',
   u_sursis:'Sursis',u_sursis_d:"Plateau plein : {n} petites gemmes se recyclent au lieu d'une",
   u_spark:'Étincelles',u_spark_d:'Étincelles ×{n} (+10 % par niveau)',
-  u_loot:'Butin',u_loot_d:"+{n} % d'éclats à la réfraction",
-  u_prod:'Forge passive',u_prod_d:'Production : {n} éclats / h',
+  u_loot:'Butin',u_loot_d:"+{n} % de trésor de départ à la réfraction",
+  u_prod:'Forge passive',u_prod_d:"Production : {n} étincelles / h",
   u_cap:'Réserve',u_cap_d:'La forge stocke {n} h de production',
   u_off:'Veille',u_off_d:"Les étincelles s'accumulent {n} h hors-ligne",
   u_killspark:'Trophées',u_killspark_d:"+{n} % d'étincelles par ennemi vaincu",
@@ -499,7 +500,7 @@ I18N.fr={
   quests_title:'Quêtes',quests_sub:'Touche une quête terminée pour récupérer sa récompense.',quests_onb:'Premiers pas',quests_of:'{a} sur {b}',quests_today:"Aujourd'hui",quests_new:'Nouvelles dans {t}',quests_week:'Cette semaine',quests_monday:'Renouvelées lundi',quests_cal:'Calendrier',quests_claim:'Récupérer',quests_got:'Reçu',quests_reward:'Récompense reçue',
   login_day:'Jour {n}',login_title:'Jour {n} sur 7',login_sub:'Reviens chaque jour : le septième offre un joker.',login_go:'Récupérer le jour {n}',login_done:'Récompense du jour reçue. Reviens demain pour le jour {n}.',login_got:'Récompense du jour reçue',login_joker:'Joker',boost_h:'×2 {n} h',
   // atelier
-  at_title:'Atelier',at_sub:'Des recherches définitives, payées en éclats. Les éclats tombent des boss et de chaque Réfraction.',at_free:'Emplacement libre : choisis une recherche',at_slots:'{n} emplacement{n|s} sur 3',at_slot:'Emplacement',at_to:'Vers le niveau {n}',at_rush:'Terminer maintenant avec des gemmes',at_ad:'−30 min',
+  at_title:'Atelier',at_bal:"étincelles disponibles",at_sub:"Des recherches définitives, payées en étincelles. Chaque Réfraction multiplie tes étincelles pour toujours.",at_free:'Emplacement libre : choisis une recherche',at_slots:'{n} emplacement{n|s} sur 3',at_slot:'Emplacement',at_to:'Vers le niveau {n}',at_rush:'Terminer maintenant avec des gemmes',at_ad:'−30 min',
   at_lock:'Étape {n}',at_maxed:'Maximum',at_k:'{k} sur {m}',at_detail:'{t} : détails',at_locked:"Se débloque à l'étape {n}.",at_inprog:'En recherche, prête dans {t}.',at_ismax:'Niveau maximum atteint.',at_dur:'Durée : {t}',at_buy:'Rechercher pour {c}',at_full:'Tous tes emplacements sont occupés.',at_next:'Prochain niveau : {d}',at_lvl:'Niveau {k} sur {m}',
   at_started:'{t} : recherche lancée',at_busy:'Tous les emplacements sont occupés',at_done:'{t} : recherche terminée',at_rushed:'Recherche accélérée de 30 minutes',at_newslot:'Nouvel emplacement de recherche',at_newjslot:'Nouvel emplacement de joker',no_gems:'Pas assez de gemmes',
   pp_n:'{n} point{n|s} de réfraction',pp_reset:'Redistribuer',pp_note:'Chaque réfraction donne des points (1 à l\'étape 30, puis +1 par tranche de 10). Un point par niveau, puis deux, puis trois. Niveau : effet +20 %, dégâts +8 %.',pp_up:'Améliorer {t}, {n} point{n|s}',pp_back:'Points de réfraction rendus',
@@ -507,12 +508,12 @@ I18N.fr={
   lg_title:'Ligue {d}',lg_sub:'Tes dégâts cumulés contre le Titan cette semaine ({days}), face à 29 joueurs simulés. Les 5 premiers montent en Argent.',lg_days:'mardi, jeudi, samedi',lg_today:"aujourd'hui !",lg_next:'prochain : {d}',lg_up:'Zone de montée au-dessus',lg_down:'Zone de descente en dessous',lg_report:'Signaler le pseudo {n}',lg_reported:'Signalement envoyé',div_bronze:'Bronze',
   // boutique
   sh_title:'Boutique',sh_demo:'Démo : achats et publicités simulés, aucun paiement réel.',sh_boost:'Gains doublés',sh_active:'Actif encore {t}',sh_inactive:'Inactif',sh_adboost:'Pub : ×2 pendant {n} h',sh_boost_d:'Dégâts et étincelles doublés. Se cumule.',sh_gemboost:'×2 pendant {n} h',sh_watch:'Regarder',sh_skin:'Couleur de ta gemme',sh_worn:'Portée',sh_wear:'Porter',sh_price:'{n} gemmes',sh_own:'Acquis',sh_confirm:"Confirmer l'achat",sh_sim:'Achat simulé : aucun paiement réel.',sh_bought:'Achat simulé effectué',sh_boosted:'Gains doublés pendant {n} h',
-  of_starter:'Pack de départ',of_starter_d:'150 gemmes et 6 h de gains doublés. Une seule fois.',of_loot:'Éclats ×2 à vie',of_loot_d:'Double les éclats de chaque réfraction.',of_noads:'Supprimer les pubs',of_noads_d:'Plus de pub imposée. Les pubs récompensées restent au choix.',of_gems:'{n} gemmes',of_small:'Petit paquet.',of_more:'+{n} % par rapport au petit paquet.',of_big:'Le plus gros coffre : +85 %.',
+  of_starter:'Pack de départ',of_starter_d:'150 gemmes et 6 h de gains doublés. Une seule fois.',of_loot:"Trésor ×2 à vie",of_loot_d:"Double le trésor de départ offert à chaque réfraction.",of_noads:'Supprimer les pubs',of_noads_d:'Plus de pub imposée. Les pubs récompensées restent au choix.',of_gems:'{n} gemmes',of_small:'Petit paquet.',of_more:'+{n} % par rapport au petit paquet.',of_big:'Le plus gros coffre : +85 %.',
   starter_p:'150 gemmes et 6 h de gains doublés pour {p}. Une seule fois.',starter_left:'Offre visible encore {t}',starter_btn:'{p} (achat simulé)',starter_no:'Non merci',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Or',skin_prisme:'Prisme',
   // profil
   pr_title:'Profil',pr_tier:'{t}, étape {n} au mieux',pr_worlds:', {n} monde{n|s} terminé{n|s}',pr_name:'Pseudo',pr_change:'Changer',pr_first:'Le premier changement est gratuit. ',pr_note:'Les pseudos passent un filtre automatique. Après 3 signalements, le pseudo redevient un nom aléatoire.',pr_newname:'Nouveau pseudo',
-  pr_forge:'Forge',pr_forge_sub:'{r} éclats / h, {h} h de réserve',pr_forge_n:'{n} éclats',pr_forge_d:'Produit même quand le jeu est fermé.',pr_collect:'Récolter',
+  pr_forge:'Forge',pr_forge_sub:"{r} étincelles / h, {h} h de réserve",pr_forge_n:"{n} étincelles",pr_forge_d:'Produit même quand le jeu est fermé.',pr_collect:'Récolter',
   pr_settings:'Réglages',pr_music:'Musique',pr_sound:'Effets sonores',pr_fx:'Secousses et vibrations',pr_lang:'Langue',
   pr_stats:'Statistiques',pr_best:'meilleure étape',pr_pres:'réfractions',pr_merges:'fusions, dont {n} à la main',pr_kills:'ennemis vaincus, {n} boss',pr_titan:'record contre le Titan',pr_res:'recherches terminées',
   pr_bestiary:'Bestiaire',pr_beaten:'{n} vaincu{n|s}',pr_bestiary_empty:"Bats ton premier gardien à l'étape 5 pour ouvrir le bestiaire.",pr_in:'en {n} s',pr_guard:'gardien',pr_stage:'{n}, étape {s}',
@@ -521,10 +522,10 @@ I18N.fr={
   name_short:'3 caractères minimum.',name_long:'16 caractères maximum.',name_chars:'Lettres, chiffres, espaces, - et _ uniquement.',name_banned:'Ce pseudo contient un mot interdit.',
   // jeu
   hint1:'Tes gemmes tirent toutes seules. Glisse-en une sur une gemme identique : la fusion tire plus fort.',hint2:'Chaque forme est une arme différente. Plus la gemme est grosse, plus ses tirs font mal.',hint3:'Tes étincelles achètent des boosters de partie : prends Vitesse.',hint4:"Les boosters durent jusqu'à la réfraction (étape {n}). Les recherches de l'Atelier, elles, sont définitives.",
-  board_aria:'Plateau : fais glisser une gemme sur une gemme identique',enemy_aria:'Ennemi',hp_aria:"Vie de l'ennemi",shards_aria:'Éclats',gems_aria:'Gemmes, ouvrir la boutique',profile_aria:'Profil',
+  board_aria:'Plateau : fais glisser une gemme sur une gemme identique',enemy_aria:'Ennemi',hp_aria:"Vie de l'ennemi",shards_aria:"Étincelles",gems_aria:'Gemmes, ouvrir la boutique',profile_aria:'Profil',
   boss_banner:'Boss : {n} s pour le vaincre',boss_fled:"Il s'est enfui",boss_fled_p:'Continue à grossir tes gemmes, puis redéfie-le',shield:'Bouclier',shield_p:'Seules les gemmes niveau {n} et plus lui font mal',blocked:'Bloqué',crit:'Critique ',he:'Il {a}',new_world:'Nouveau monde',
-  chal_aria:"Redéfier le boss de l'étape {n}",pre_aria:'Réfraction : +{n} éclats',pre_locked:"Réfraction dès l'étape {n}",titan_aria:'Titan : {n} ticket{n|s}',
-  pre_title:'Réfraction',pre_pp:'+{n} point{n|s} de réfraction pour tes armes',pre_p:"La lumière traverse le prisme : tu repars à l'étape 1 avec tes recherches et tes bonus de départ. Tes boosters de partie et tes étincelles sont remis à zéro.",pre_note:"Plus tu pousses loin avant de réfracter, plus ça rapporte d'éclats et de points.",pre_go:'Réfracter',pre_not:'Pas maintenant',pre_done:'+{n} éclats',pre_tip:"Regarde l'Atelier : tes éclats achètent des recherches définitives",
+  chal_aria:"Redéfier le boss de l'étape {n}",pre_aria:"Réfraction : étincelles ×{m}",pre_locked:"Réfraction dès l'étape {n}",titan_aria:'Titan : {n} ticket{n|s}',
+  pre_title:'Réfraction',pre_pot:"+{n} étincelles de trésor au départ",pre_mult:"Étincelles ×{a} → ×{b}, pour toujours",pre_pp:'+{n} point{n|s} de réfraction pour tes armes',pre_p:"La lumière traverse le prisme : tu repars à l'étape 1 avec tes recherches et un trésor de départ. Tes boosters de partie sont remis à zéro.",pre_note:"Plus tu pousses loin avant de réfracter, plus le trésor de départ et les points sont gros.",pre_go:'Réfracter',pre_not:'Pas maintenant',pre_done:"Étincelles ×{m} pour toujours, +{n} de trésor",pre_tip:"Regarde l'Atelier : tes étincelles achètent des recherches définitives",
   titan_p:'{n} secondes de dégâts libres, comptés pour la ligue. Les mardis, jeudis et samedis.',titan_tickets:'{n} ticket{n|s}',titan_ad:'+1 ticket',titan_gem:'{n} : +1',titan_got:'+1 ticket Titan',titan_go:'{n} s : fais le maximum de dégâts',titan_record:'Nouveau record : compté pour la ligue.',titan_prev:"Record : {n}. Ce score s'ajoute à ton total de la semaine.",continue:'Continuer',
   off_title:'Pendant ton absence',off_p:"{t} d'absence",off_counted:', {t} comptées',off_exped:'Tes gemmes ont avancé de {n} étape{n|s} en expédition.',off_x2:'Doubler les étincelles',off_more:'Encore +{n} étincelles',
   net_title:'Connexion requise',net_p:'Prisme Fusion a besoin d\'internet pour sauvegarder ta progression et la ligue. La partie est en pause.',net_server:'Le serveur de Prisme Fusion est injoignable pour le moment. La partie est en pause, réessaie dans un instant.',net_back:'Connexion rétablie',net_restored:'Progression récupérée depuis le serveur',lg_sub_live:'Tes dégâts cumulés contre le Titan cette semaine ({days}), face aux joueurs de ta division. Les 5 premiers montent en Argent.',
@@ -566,7 +567,7 @@ I18N.en={
   g_auto:'Auto',g_auto_d:'Remove one gesture at each tier.',
   g_atk:'Attack',g_atk_d:'Hit harder.',
   g_grid:'Board',g_grid_d:'Stronger gems, more often.',
-  g_eco:'Economy',g_eco_d:'More sparks, more shards, for longer.',
+  g_eco:'Economy',g_eco_d:"More sparks, faster, for longer.",
   g_jok:'Jokers',g_jok_d:'Unlock, equip and strengthen your powers.',
   g_arm:'Weapons',g_arm_d:'Every gem shape is a weapon. Your refraction points strengthen them.',
   u_st_cad:'Starting Speed',u_st_cad_d:'Speed level {n} from the start',
@@ -579,7 +580,7 @@ I18N.en={
   u_au_buy:'Auto-buy',u_au_buy_d:'Buys a booster every {n} s',u_au_buy_d0:'Buys the cheapest booster on its own',
   u_au_joker:'Auto Jokers',u_au_joker_d:'Fires your jokers as soon as they are charged',
   u_au_boss:'Auto Challenge',u_au_boss_d:'Re-challenges a fled boss after {n} s',
-  u_au_prestige:'Auto Refraction',u_au_prestige_d:'Refracts on its own once the gain reaches {n}% of your shards',
+  u_au_prestige:'Auto Refraction',u_au_prestige_d:"Refracts on its own once the starting treasure reaches {n}% of your sparks",
   u_au_exped:'Expedition',u_au_exped_d:'Your gems advance stages offline for {n} h',
   u_au_titan:'Auto Titan',u_au_titan_d:'The Titan is challenged on its own and you get {n} extra free ticket{n|s}',
   u_power:'Power',u_power_d:'Damage ×{n} (+10% per level)',
@@ -589,12 +590,12 @@ I18N.en={
   u_pierce:'Shield-piercer',u_pierce_d:'Boss shields let {n} more gem level{n|s} through',
   u_lucky:'Spark',u_lucky_d:'{n}% chance to be born one level higher',
   u_chain:'Chain Reaction',u_chain_d:'{n}% chance a merge triggers another',
-  u_gold:'Gold Hunter',u_gold_d:'+{n}% golden gems, which earn shards',
+  u_gold:'Gold Hunter',u_gold_d:"+{n}% golden gems, which earn sparks",
   u_board:'Big Board',u_board_d0:'5 × 5 board instead of 4 × 4',u_board_d1:'6 × 6 board',
   u_sursis:'Reprieve',u_sursis_d:'Full board: {n} small gems recycle instead of one',
   u_spark:'Sparks',u_spark_d:'Sparks ×{n} (+10% per level)',
-  u_loot:'Loot',u_loot_d:'+{n}% shards at refraction',
-  u_prod:'Passive Forge',u_prod_d:'Output: {n} shards / h',
+  u_loot:'Loot',u_loot_d:"+{n}% starting treasure at refraction",
+  u_prod:'Passive Forge',u_prod_d:"Output: {n} sparks / h",
   u_cap:'Reserve',u_cap_d:'The forge stores {n} h of output',
   u_off:'Standby',u_off_d:'Sparks accumulate {n} h offline',
   u_killspark:'Trophies',u_killspark_d:'+{n}% sparks per enemy defeated',
@@ -624,17 +625,17 @@ I18N.en={
   o1:'Merge 10 gems by hand',o2:'Defeat 3 enemies',o3:'Buy a run booster',o4:'Reach stage {n}',o5:'Start a research in the Workshop',o6:'Defeat the Prism Warden',o7:'Collect the forge',o9:'Defeat your first boss',o10:'Do your first refraction',o11:'Complete {n} researches',o12:'Buy the Auto booster',o13:'Face the Titan',o14:'Unlock your first joker',o15:'Pull off a ×10 manual combo',o17:'Refract {n} times',o18:'Raise Starting Power to level 5',o20:'Play on {n} different days',o23:'Unlock Auto-buy',o24:'Use 15 jokers',o26:'Defeat {n} bosses',o29:'Unlock {n} jokers',o30:'Deal {n} damage to the Titan in one go',o31:'Unlock Auto Jokers',o37:'Unlock Expedition',o38:'Raise a joker to level 3',o42:'Unlock Auto Refraction',
   quests_title:'Quests',quests_sub:'Tap a completed quest to collect its reward.',quests_onb:'First steps',quests_of:'{a} of {b}',quests_today:'Today',quests_new:'New in {t}',quests_week:'This week',quests_monday:'Renewed on Monday',quests_cal:'Calendar',quests_claim:'Collect',quests_got:'Collected',quests_reward:'Reward collected',
   login_day:'Day {n}',login_title:'Day {n} of 7',login_sub:'Come back every day: the seventh gives a joker.',login_go:'Collect day {n}',login_done:'Today\'s reward collected. Come back tomorrow for day {n}.',login_got:'Daily reward collected',login_joker:'Joker',boost_h:'×2 {n} h',
-  at_title:'Workshop',at_sub:'Permanent research, paid in shards. Shards drop from bosses and from every Refraction.',at_free:'Free slot: pick a research',at_slots:'{n} slot{n|s} of 3',at_slot:'Slot',at_to:'To level {n}',at_rush:'Finish now with gems',at_ad:'−30 min',
+  at_title:'Workshop',at_bal:"sparks available",at_sub:"Permanent research, paid in sparks. Every Refraction multiplies your sparks forever.",at_free:'Free slot: pick a research',at_slots:'{n} slot{n|s} of 3',at_slot:'Slot',at_to:'To level {n}',at_rush:'Finish now with gems',at_ad:'−30 min',
   at_lock:'Stage {n}',at_maxed:'Maxed',at_k:'{k} of {m}',at_detail:'{t}: details',at_locked:'Unlocks at stage {n}.',at_inprog:'Researching, ready in {t}.',at_ismax:'Max level reached.',at_dur:'Duration: {t}',at_buy:'Research for {c}',at_full:'All your slots are busy.',at_next:'Next level: {d}',at_lvl:'Level {k} of {m}',
   at_started:'{t}: research started',at_busy:'All slots are busy',at_done:'{t}: research complete',at_rushed:'Research sped up by 30 minutes',at_newslot:'New research slot',at_newjslot:'New joker slot',no_gems:'Not enough gems',
   pp_n:'{n} refraction point{n|s}',pp_reset:'Redistribute',pp_note:'Each refraction gives points (1 at stage 30, then +1 per 10 stages). One point per level, then two, then three. Level: effect +20%, damage +8%.',pp_up:'Upgrade {t}, {n} point{n|s}',pp_back:'Refraction points returned',
   lg_title:'{d} League',lg_sub:'Your total damage against the Titan this week ({days}), against 29 simulated players. The top 5 move up to Silver.',lg_days:'Tuesday, Thursday, Saturday',lg_today:'today!',lg_next:'next: {d}',lg_up:'Promotion zone above',lg_down:'Relegation zone below',lg_report:'Report the name {n}',lg_reported:'Report sent',div_bronze:'Bronze',
   sh_title:'Shop',sh_demo:'Demo: purchases and ads are simulated, no real payment.',sh_boost:'Doubled gains',sh_active:'Active for {t} more',sh_inactive:'Inactive',sh_adboost:'Ad: ×2 for {n} h',sh_boost_d:'Damage and sparks doubled. Stacks.',sh_gemboost:'×2 for {n} h',sh_watch:'Watch',sh_skin:'Your gem colour',sh_worn:'Worn',sh_wear:'Wear',sh_price:'{n} gems',sh_own:'Owned',sh_confirm:'Confirm purchase',sh_sim:'Simulated purchase: no real payment.',sh_bought:'Simulated purchase done',sh_boosted:'Gains doubled for {n} h',
-  of_starter:'Starter Pack',of_starter_d:'150 gems and 6 h of doubled gains. One time only.',of_loot:'Shards ×2 forever',of_loot_d:'Doubles the shards of every refraction.',of_noads:'Remove ads',of_noads_d:'No more forced ads. Rewarded ads stay optional.',of_gems:'{n} gems',of_small:'Small pack.',of_more:'+{n}% compared to the small pack.',of_big:'The biggest chest: +85%.',
+  of_starter:'Starter Pack',of_starter_d:'150 gems and 6 h of doubled gains. One time only.',of_loot:"Treasure ×2 forever",of_loot_d:"Doubles the starting treasure of every refraction.",of_noads:'Remove ads',of_noads_d:'No more forced ads. Rewarded ads stay optional.',of_gems:'{n} gems',of_small:'Small pack.',of_more:'+{n}% compared to the small pack.',of_big:'The biggest chest: +85%.',
   starter_p:'150 gems and 6 h of doubled gains for {p}. One time only.',starter_left:'Offer visible for {t} more',starter_btn:'{p} (simulated purchase)',starter_no:'No thanks',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Gold',skin_prisme:'Prism',
   pr_title:'Profile',pr_tier:'{t}, best stage {n}',pr_worlds:', {n} world{n|s} completed',pr_name:'Name',pr_change:'Change',pr_first:'The first change is free. ',pr_note:'Names go through an automatic filter. After 3 reports, the name becomes random again.',pr_newname:'New name',
-  pr_forge:'Forge',pr_forge_sub:'{r} shards / h, {h} h reserve',pr_forge_n:'{n} shards',pr_forge_d:'Produces even while the game is closed.',pr_collect:'Collect',
+  pr_forge:'Forge',pr_forge_sub:"{r} sparks / h, {h} h reserve",pr_forge_n:"{n} sparks",pr_forge_d:'Produces even while the game is closed.',pr_collect:'Collect',
   pr_settings:'Settings',pr_music:'Music',pr_sound:'Sound effects',pr_fx:'Shake and vibration',pr_lang:'Language',
   pr_stats:'Statistics',pr_best:'best stage',pr_pres:'refractions',pr_merges:'merges, {n} by hand',pr_kills:'enemies defeated, {n} bosses',pr_titan:'Titan record',pr_res:'researches completed',
   pr_bestiary:'Bestiary',pr_beaten:'{n} defeated',pr_bestiary_empty:'Defeat your first warden at stage 5 to open the bestiary.',pr_in:'in {n} s',pr_guard:'warden',pr_stage:'{n}, stage {s}',
@@ -642,10 +643,10 @@ I18N.en={
   name_updated:'Name updated',name_saved:'Name saved',name_keep:'Keep this name',name_first:'First warden defeated',name_first_p:'Choose the name other players will see in the league. This first change is free.',name_your:'Your name',name_cost:'You need {n} gems.',
   name_short:'3 characters minimum.',name_long:'16 characters maximum.',name_chars:'Letters, digits, spaces, - and _ only.',name_banned:'This name contains a banned word.',
   hint1:'Your gems fire on their own. Drag one onto an identical gem: the merge fires harder.',hint2:'Each shape is a different weapon. The bigger the gem, the harder its shots hit.',hint3:'Your sparks buy run boosters: get Speed.',hint4:'Boosters last until refraction (stage {n}). Workshop research is permanent.',
-  board_aria:'Board: drag a gem onto an identical gem',enemy_aria:'Enemy',hp_aria:'Enemy health',shards_aria:'Shards',gems_aria:'Gems, open the shop',profile_aria:'Profile',
+  board_aria:'Board: drag a gem onto an identical gem',enemy_aria:'Enemy',hp_aria:'Enemy health',shards_aria:"Sparks",gems_aria:'Gems, open the shop',profile_aria:'Profile',
   boss_banner:'Boss: {n} s to defeat it',boss_fled:'It fled',boss_fled_p:'Keep growing your gems, then challenge it again',shield:'Shield',shield_p:'Only gems level {n} and above hurt it',blocked:'Blocked',crit:'Critical ',he:'It {a}',new_world:'New world',
-  chal_aria:'Re-challenge the stage {n} boss',pre_aria:'Refraction: +{n} shards',pre_locked:'Refraction from stage {n}',titan_aria:'Titan: {n} ticket{n|s}',
-  pre_title:'Refraction',pre_pp:'+{n} refraction point{n|s} for your weapons',pre_p:'Light passes through the prism: you restart at stage 1 with your research and starting bonuses. Run boosters and sparks are reset.',pre_note:'The further you push before refracting, the more shards and points you get.',pre_go:'Refract',pre_not:'Not now',pre_done:'+{n} shards',pre_tip:'Check the Workshop: your shards buy permanent research',
+  chal_aria:'Re-challenge the stage {n} boss',pre_aria:"Refraction: sparks ×{m}",pre_locked:'Refraction from stage {n}',titan_aria:'Titan: {n} ticket{n|s}',
+  pre_title:'Refraction',pre_pot:"+{n} sparks of treasure to start",pre_mult:"Sparks ×{a} → ×{b}, forever",pre_pp:'+{n} refraction point{n|s} for your weapons',pre_p:"Light passes through the prism: you restart at stage 1 with your research and a starting treasure. Run boosters are reset.",pre_note:"The further you push before refracting, the bigger the starting treasure and the points.",pre_go:'Refract',pre_not:'Not now',pre_done:"Sparks ×{m} forever, +{n} treasure",pre_tip:"Check the Workshop: your sparks buy permanent research",
   titan_p:'{n} seconds of free damage, counted for the league. Tuesdays, Thursdays and Saturdays.',titan_tickets:'{n} ticket{n|s}',titan_ad:'+1 ticket',titan_gem:'{n}: +1',titan_got:'+1 Titan ticket',titan_go:'{n} s: deal as much damage as you can',titan_record:'New record: counted for the league.',titan_prev:'Record: {n}. This score adds to your weekly total.',continue:'Continue',
   off_title:'While you were away',off_p:'{t} away',off_counted:', {t} counted',off_exped:'Your gems advanced {n} stage{n|s} on expedition.',off_x2:'Double the sparks',off_more:'Another +{n} sparks',
   net_title:'Connection required',net_p:'Prisme Fusion needs the internet to save your progress and the league. The game is paused.',net_restored:'Progress restored from the server',lg_sub_live:'Your total damage against the Titan this week ({days}), against the players in your division. The top 5 move up to Silver.',net_server:'The Prisme Fusion server cannot be reached right now. The game is paused, try again in a moment.',net_back:'Connection restored',
@@ -677,7 +678,7 @@ I18N.es={
   g_auto:'Auto',g_auto_d:'Quitar un gesto en cada escalón.',
   g_atk:'Ataque',g_atk_d:'Golpear más fuerte.',
   g_grid:'Tablero',g_grid_d:'Gemas más fuertes, más a menudo.',
-  g_eco:'Economía',g_eco_d:'Más chispas, más esquirlas, durante más tiempo.',
+  g_eco:'Economía',g_eco_d:"Más chispas, más rápido, durante más tiempo.",
   g_jok:'Comodines',g_jok_d:'Desbloquear, equipar y reforzar tus poderes.',
   g_arm:'Armas',g_arm_d:'Cada forma de gema es un arma. Tus puntos de refracción las refuerzan.',
   u_st_cad:'Velocidad inicial',u_st_cad_d:'Velocidad nivel {n} desde el principio',
@@ -690,7 +691,7 @@ I18N.es={
   u_au_buy:'Compra automática',u_au_buy_d:'Compra un potenciador cada {n} s',u_au_buy_d0:'Compra solo el potenciador más barato',
   u_au_joker:'Comodines automáticos',u_au_joker_d:'Activa tus comodines en cuanto están cargados',
   u_au_boss:'Desafío automático',u_au_boss_d:'Vuelve a desafiar a un jefe huido tras {n} s',
-  u_au_prestige:'Refracción automática',u_au_prestige_d:'Refracta sola cuando la ganancia alcanza el {n} % de tus esquirlas',
+  u_au_prestige:'Refracción automática',u_au_prestige_d:"Refracta sola cuando el tesoro inicial alcanza el {n} % de tus chispas",
   u_au_exped:'Expedición',u_au_exped_d:'Tus gemas avanzan etapas sin conexión durante {n} h',
   u_au_titan:'Titán automático',u_au_titan_d:'El Titán se desafía solo y tienes {n} entrada{n|s} gratis más',
   u_power:'Potencia',u_power_d:'Daño ×{n} (+10 % por nivel)',
@@ -700,12 +701,12 @@ I18N.es={
   u_pierce:'Perfora-escudos',u_pierce_d:'El escudo de los jefes deja pasar {n} nivel{n|es} de gema más',
   u_lucky:'Chispa',u_lucky_d:'{n} % de probabilidad de nacer un nivel más alto',
   u_chain:'Reacción en cadena',u_chain_d:'{n} % de probabilidad de que una fusión provoque otra',
-  u_gold:'Cazador de oro',u_gold_d:'+{n} % de gemas doradas, que dan esquirlas',
+  u_gold:'Cazador de oro',u_gold_d:"+{n} % de gemas doradas, que dan chispas",
   u_board:'Gran tablero',u_board_d0:'Tablero 5 × 5 en vez de 4 × 4',u_board_d1:'Tablero 6 × 6',
   u_sursis:'Indulto',u_sursis_d:'Tablero lleno: {n} gemas pequeñas se reciclan en vez de una',
   u_spark:'Chispas',u_spark_d:'Chispas ×{n} (+10 % por nivel)',
-  u_loot:'Botín',u_loot_d:'+{n} % de esquirlas en la refracción',
-  u_prod:'Forja pasiva',u_prod_d:'Producción: {n} esquirlas / h',
+  u_loot:'Botín',u_loot_d:"+{n} % de tesoro inicial en la refracción",
+  u_prod:'Forja pasiva',u_prod_d:"Producción: {n} chispas / h",
   u_cap:'Reserva',u_cap_d:'La forja almacena {n} h de producción',
   u_off:'Reposo',u_off_d:'Las chispas se acumulan {n} h sin conexión',
   u_killspark:'Trofeos',u_killspark_d:'+{n} % de chispas por enemigo vencido',
@@ -735,17 +736,17 @@ I18N.es={
   o1:'Fusionar 10 gemas a mano',o2:'Vencer a 3 enemigos',o3:'Comprar un potenciador de partida',o4:'Llegar a la etapa {n}',o5:'Iniciar una investigación en el Taller',o6:'Vencer al Guardián del prisma',o7:'Recoger la forja',o9:'Vencer a tu primer jefe',o10:'Hacer tu primera refracción',o11:'Terminar {n} investigaciones',o12:'Comprar el potenciador Auto',o13:'Enfrentarse al Titán',o14:'Desbloquear tu primer comodín',o15:'Lograr un combo ×10 a mano',o17:'Hacer {n} refracciones',o18:'Subir Fuerza inicial al nivel 5',o20:'Jugar {n} días distintos',o23:'Desbloquear la compra automática',o24:'Usar 15 comodines',o26:'Vencer a {n} jefes',o29:'Desbloquear {n} comodines',o30:'Infligir {n} de daño al Titán de una vez',o31:'Desbloquear los comodines automáticos',o37:'Desbloquear la Expedición',o38:'Subir un comodín al nivel 3',o42:'Desbloquear la refracción automática',
   quests_title:'Misiones',quests_sub:'Toca una misión terminada para recoger su recompensa.',quests_onb:'Primeros pasos',quests_of:'{a} de {b}',quests_today:'Hoy',quests_new:'Nuevas en {t}',quests_week:'Esta semana',quests_monday:'Se renuevan el lunes',quests_cal:'Calendario',quests_claim:'Recoger',quests_got:'Recibida',quests_reward:'Recompensa recibida',
   login_day:'Día {n}',login_title:'Día {n} de 7',login_sub:'Vuelve cada día: el séptimo regala un comodín.',login_go:'Recoger el día {n}',login_done:'Recompensa del día recibida. Vuelve mañana para el día {n}.',login_got:'Recompensa del día recibida',login_joker:'Comodín',boost_h:'×2 {n} h',
-  at_title:'Taller',at_sub:'Investigaciones permanentes, pagadas en esquirlas. Las esquirlas caen de los jefes y de cada Refracción.',at_free:'Ranura libre: elige una investigación',at_slots:'{n} ranura{n|s} de 3',at_slot:'Ranura',at_to:'Hacia el nivel {n}',at_rush:'Terminar ahora con gemas',at_ad:'−30 min',
+  at_title:'Taller',at_bal:"chispas disponibles",at_sub:"Investigaciones permanentes, pagadas en chispas. Cada Refracción multiplica tus chispas para siempre.",at_free:'Ranura libre: elige una investigación',at_slots:'{n} ranura{n|s} de 3',at_slot:'Ranura',at_to:'Hacia el nivel {n}',at_rush:'Terminar ahora con gemas',at_ad:'−30 min',
   at_lock:'Etapa {n}',at_maxed:'Máximo',at_k:'{k} de {m}',at_detail:'{t}: detalles',at_locked:'Se desbloquea en la etapa {n}.',at_inprog:'En investigación, lista en {t}.',at_ismax:'Nivel máximo alcanzado.',at_dur:'Duración: {t}',at_buy:'Investigar por {c}',at_full:'Todas tus ranuras están ocupadas.',at_next:'Siguiente nivel: {d}',at_lvl:'Nivel {k} de {m}',
   at_started:'{t}: investigación iniciada',at_busy:'Todas las ranuras están ocupadas',at_done:'{t}: investigación terminada',at_rushed:'Investigación acelerada 30 minutos',at_newslot:'Nueva ranura de investigación',at_newjslot:'Nueva ranura de comodín',no_gems:'No tienes suficientes gemas',
   pp_n:'{n} punto{n|s} de refracción',pp_reset:'Redistribuir',pp_note:'Cada refracción da puntos (1 en la etapa 30, luego +1 por cada 10 etapas). Un punto por nivel, luego dos, luego tres. Nivel: efecto +20 %, daño +8 %.',pp_up:'Mejorar {t}, {n} punto{n|s}',pp_back:'Puntos de refracción devueltos',
   lg_title:'Liga {d}',lg_sub:'Tu daño acumulado contra el Titán esta semana ({days}), frente a 29 jugadores simulados. Los 5 primeros suben a Plata.',lg_days:'martes, jueves, sábado',lg_today:'¡hoy!',lg_next:'próximo: {d}',lg_up:'Zona de ascenso arriba',lg_down:'Zona de descenso abajo',lg_report:'Denunciar el nombre {n}',lg_reported:'Denuncia enviada',div_bronze:'Bronce',
   sh_title:'Tienda',sh_demo:'Demo: compras y anuncios simulados, sin pago real.',sh_boost:'Ganancias dobles',sh_active:'Activo {t} más',sh_inactive:'Inactivo',sh_adboost:'Anuncio: ×2 durante {n} h',sh_boost_d:'Daño y chispas dobles. Se acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Color de tu gema',sh_worn:'Puesta',sh_wear:'Poner',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sin pago real.',sh_bought:'Compra simulada realizada',sh_boosted:'Ganancias dobles durante {n} h',
-  of_starter:'Pack inicial',of_starter_d:'150 gemas y 6 h de ganancias dobles. Solo una vez.',of_loot:'Esquirlas ×2 para siempre',of_loot_d:'Duplica las esquirlas de cada refracción.',of_noads:'Quitar anuncios',of_noads_d:'Sin anuncios forzados. Los anuncios con recompensa siguen siendo opcionales.',of_gems:'{n} gemas',of_small:'Paquete pequeño.',of_more:'+{n} % respecto al paquete pequeño.',of_big:'El cofre más grande: +85 %.',
+  of_starter:'Pack inicial',of_starter_d:'150 gemas y 6 h de ganancias dobles. Solo una vez.',of_loot:"Tesoro ×2 para siempre",of_loot_d:"Duplica el tesoro inicial de cada refracción.",of_noads:'Quitar anuncios',of_noads_d:'Sin anuncios forzados. Los anuncios con recompensa siguen siendo opcionales.',of_gems:'{n} gemas',of_small:'Paquete pequeño.',of_more:'+{n} % respecto al paquete pequeño.',of_big:'El cofre más grande: +85 %.',
   starter_p:'150 gemas y 6 h de ganancias dobles por {p}. Solo una vez.',starter_left:'Oferta visible {t} más',starter_btn:'{p} (compra simulada)',starter_no:'No, gracias',
   skin_cyan:'Cian',skin_rose:'Magenta',skin_or:'Oro',skin_prisme:'Prisma',
   pr_title:'Perfil',pr_tier:'{t}, mejor etapa {n}',pr_worlds:', {n} mundo{n|s} terminado{n|s}',pr_name:'Nombre',pr_change:'Cambiar',pr_first:'El primer cambio es gratis. ',pr_note:'Los nombres pasan un filtro automático. Tras 3 denuncias, el nombre vuelve a ser aleatorio.',pr_newname:'Nuevo nombre',
-  pr_forge:'Forja',pr_forge_sub:'{r} esquirlas / h, {h} h de reserva',pr_forge_n:'{n} esquirlas',pr_forge_d:'Produce incluso con el juego cerrado.',pr_collect:'Recoger',
+  pr_forge:'Forja',pr_forge_sub:"{r} chispas / h, {h} h de reserva",pr_forge_n:"{n} chispas",pr_forge_d:'Produce incluso con el juego cerrado.',pr_collect:'Recoger',
   pr_settings:'Ajustes',pr_music:'Música',pr_sound:'Efectos de sonido',pr_fx:'Temblores y vibraciones',pr_lang:'Idioma',
   pr_stats:'Estadísticas',pr_best:'mejor etapa',pr_pres:'refracciones',pr_merges:'fusiones, {n} a mano',pr_kills:'enemigos vencidos, {n} jefes',pr_titan:'récord contra el Titán',pr_res:'investigaciones terminadas',
   pr_bestiary:'Bestiario',pr_beaten:'{n} vencido{n|s}',pr_bestiary_empty:'Vence a tu primer guardián en la etapa 5 para abrir el bestiario.',pr_in:'en {n} s',pr_guard:'guardián',pr_stage:'{n}, etapa {s}',
@@ -753,10 +754,10 @@ I18N.es={
   name_updated:'Nombre actualizado',name_saved:'Nombre guardado',name_keep:'Conservar este nombre',name_first:'Primer guardián vencido',name_first_p:'Elige el nombre que verán los demás jugadores en la liga. Este primer cambio es gratis.',name_your:'Tu nombre',name_cost:'Necesitas {n} gemas.',
   name_short:'3 caracteres como mínimo.',name_long:'16 caracteres como máximo.',name_chars:'Solo letras, cifras, espacios, - y _.',name_banned:'Este nombre contiene una palabra prohibida.',
   hint1:'Tus gemas disparan solas. Arrastra una sobre otra idéntica: la fusión dispara más fuerte.',hint2:'Cada forma es un arma distinta. Cuanto más grande la gema, más daño hacen sus disparos.',hint3:'Tus chispas compran potenciadores de partida: coge Velocidad.',hint4:'Los potenciadores duran hasta la refracción (etapa {n}). Las investigaciones del Taller son permanentes.',
-  board_aria:'Tablero: arrastra una gema sobre otra idéntica',enemy_aria:'Enemigo',hp_aria:'Vida del enemigo',shards_aria:'Esquirlas',gems_aria:'Gemas, abrir la tienda',profile_aria:'Perfil',
+  board_aria:'Tablero: arrastra una gema sobre otra idéntica',enemy_aria:'Enemigo',hp_aria:'Vida del enemigo',shards_aria:"Chispas",gems_aria:'Gemas, abrir la tienda',profile_aria:'Perfil',
   boss_banner:'Jefe: {n} s para vencerlo',boss_fled:'Ha huido',boss_fled_p:'Sigue haciendo crecer tus gemas y vuelve a desafiarlo',shield:'Escudo',shield_p:'Solo las gemas de nivel {n} o más le hacen daño',blocked:'Bloqueado',crit:'Crítico ',he:'{a}',new_world:'Nuevo mundo',
-  chal_aria:'Volver a desafiar al jefe de la etapa {n}',pre_aria:'Refracción: +{n} esquirlas',pre_locked:'Refracción desde la etapa {n}',titan_aria:'Titán: {n} entrada{n|s}',
-  pre_title:'Refracción',pre_pp:'+{n} punto{n|s} de refracción para tus armas',pre_p:'La luz atraviesa el prisma: vuelves a la etapa 1 con tus investigaciones y tus bonus iniciales. Los potenciadores de partida y las chispas vuelven a cero.',pre_note:'Cuanto más lejos llegues antes de refractar, más esquirlas y puntos ganas.',pre_go:'Refractar',pre_not:'Ahora no',pre_done:'+{n} esquirlas',pre_tip:'Mira el Taller: tus esquirlas compran investigaciones permanentes',
+  chal_aria:'Volver a desafiar al jefe de la etapa {n}',pre_aria:"Refracción: chispas ×{m}",pre_locked:'Refracción desde la etapa {n}',titan_aria:'Titán: {n} entrada{n|s}',
+  pre_title:'Refracción',pre_pot:"+{n} chispas de tesoro al empezar",pre_mult:"Chispas ×{a} → ×{b}, para siempre",pre_pp:'+{n} punto{n|s} de refracción para tus armas',pre_p:"La luz atraviesa el prisma: vuelves a la etapa 1 con tus investigaciones y un tesoro inicial. Los potenciadores de partida vuelven a cero.",pre_note:"Cuanto más lejos llegues antes de refractar, mayores son el tesoro inicial y los puntos.",pre_go:'Refractar',pre_not:'Ahora no',pre_done:"Chispas ×{m} para siempre, +{n} de tesoro",pre_tip:"Mira el Taller: tus chispas compran investigaciones permanentes",
   titan_p:'{n} segundos de daño libre, contados para la liga. Los martes, jueves y sábados.',titan_tickets:'{n} entrada{n|s}',titan_ad:'+1 entrada',titan_gem:'{n}: +1',titan_got:'+1 entrada de Titán',titan_go:'{n} s: haz todo el daño que puedas',titan_record:'Nuevo récord: contado para la liga.',titan_prev:'Récord: {n}. Esta puntuación se suma a tu total semanal.',continue:'Continuar',
   off_title:'Durante tu ausencia',off_p:'{t} de ausencia',off_counted:', {t} contadas',off_exped:'Tus gemas han avanzado {n} etapa{n|s} en expedición.',off_x2:'Duplicar las chispas',off_more:'Otras +{n} chispas',
   net_title:'Conexión necesaria',net_p:'Prisme Fusion necesita internet para guardar tu progreso y la liga. La partida está en pausa.',net_restored:'Progreso recuperado desde el servidor',lg_sub_live:'Tu daño acumulado contra el Titán esta semana ({days}), frente a los jugadores de tu división. Los 5 primeros suben a Plata.',net_server:'No se puede contactar con el servidor de Prisme Fusion ahora mismo. La partida está en pausa, vuelve a intentarlo en un momento.',net_back:'Conexión restablecida',
@@ -788,7 +789,7 @@ I18N.de={
   g_auto:'Auto',g_auto_d:'Auf jeder Stufe einen Handgriff sparen.',
   g_atk:'Angriff',g_atk_d:'Härter zuschlagen.',
   g_grid:'Brett',g_grid_d:'Stärkere Edelsteine, öfter.',
-  g_eco:'Wirtschaft',g_eco_d:'Mehr Funken, mehr Splitter, länger.',
+  g_eco:'Wirtschaft',g_eco_d:"Mehr Funken, schneller, länger.",
   g_jok:'Joker',g_jok_d:'Kräfte freischalten, ausrüsten und verstärken.',
   g_arm:'Waffen',g_arm_d:'Jede Edelsteinform ist eine Waffe. Deine Brechungspunkte verstärken sie.',
   u_st_cad:'Start-Tempo',u_st_cad_d:'Tempo Level {n} von Anfang an',
@@ -801,7 +802,7 @@ I18N.de={
   u_au_buy:'Auto-Kauf',u_au_buy_d:'Kauft alle {n} s einen Booster',u_au_buy_d0:'Kauft von selbst den günstigsten Booster',
   u_au_joker:'Auto-Joker',u_au_joker_d:'Löst deine Joker aus, sobald sie geladen sind',
   u_au_boss:'Auto-Herausforderung',u_au_boss_d:'Fordert einen geflohenen Boss nach {n} s erneut heraus',
-  u_au_prestige:'Auto-Brechung',u_au_prestige_d:'Bricht von selbst, sobald der Gewinn {n} % deiner Splitter erreicht',
+  u_au_prestige:'Auto-Brechung',u_au_prestige_d:"Bricht von selbst, sobald der Start-Schatz {n} % deiner Funken erreicht",
   u_au_exped:'Expedition',u_au_exped_d:'Deine Edelsteine schaffen offline {n} h lang Stufen',
   u_au_titan:'Auto-Titan',u_au_titan_d:'Der Titan wird von selbst herausgefordert und du hast {n} Gratis-Ticket{n|s} mehr',
   u_power:'Stärke',u_power_d:'Schaden ×{n} (+10 % pro Level)',
@@ -811,12 +812,12 @@ I18N.de={
   u_pierce:'Schildbrecher',u_pierce_d:'Boss-Schilde lassen {n} Edelstein-Level mehr durch',
   u_lucky:'Funke',u_lucky_d:'{n} % Chance, ein Level höher zu entstehen',
   u_chain:'Kettenreaktion',u_chain_d:'{n} % Chance, dass eine Fusion eine weitere auslöst',
-  u_gold:'Goldjäger',u_gold_d:'+{n} % goldene Edelsteine, die Splitter bringen',
+  u_gold:'Goldjäger',u_gold_d:"+{n} % goldene Edelsteine, die Funken bringen",
   u_board:'Großes Brett',u_board_d0:'5 × 5 statt 4 × 4',u_board_d1:'Brett 6 × 6',
   u_sursis:'Aufschub',u_sursis_d:'Volles Brett: {n} kleine Edelsteine werden recycelt statt einer',
   u_spark:'Funken',u_spark_d:'Funken ×{n} (+10 % pro Level)',
-  u_loot:'Beute',u_loot_d:'+{n} % Splitter bei der Brechung',
-  u_prod:'Passive Schmiede',u_prod_d:'Ausstoß: {n} Splitter / Std.',
+  u_loot:'Beute',u_loot_d:"+{n} % Start-Schatz bei der Brechung",
+  u_prod:'Passive Schmiede',u_prod_d:"Ausstoß: {n} Funken / Std.",
   u_cap:'Vorrat',u_cap_d:'Die Schmiede speichert {n} Std. Ausstoß',
   u_off:'Bereitschaft',u_off_d:'Funken sammeln sich {n} Std. lang offline',
   u_killspark:'Trophäen',u_killspark_d:'+{n} % Funken pro besiegtem Gegner',
@@ -846,17 +847,17 @@ I18N.de={
   o1:'10 Edelsteine von Hand fusionieren',o2:'3 Gegner besiegen',o3:'Einen Runden-Booster kaufen',o4:'Stufe {n} erreichen',o5:'Eine Forschung in der Werkstatt starten',o6:'Den Prismenwächter besiegen',o7:'Die Schmiede leeren',o9:'Deinen ersten Boss besiegen',o10:'Deine erste Brechung machen',o11:'{n} Forschungen abschließen',o12:'Den Auto-Booster kaufen',o13:'Dem Titan gegenübertreten',o14:'Deinen ersten Joker freischalten',o15:'Eine ×10-Kombo von Hand schaffen',o17:'{n} Brechungen machen',o18:'Start-Kraft auf Level 5 bringen',o20:'An {n} verschiedenen Tagen spielen',o23:'Auto-Kauf freischalten',o24:'15 Joker einsetzen',o26:'{n} Bosse besiegen',o29:'{n} Joker freischalten',o30:'Dem Titan {n} Schaden auf einmal zufügen',o31:'Auto-Joker freischalten',o37:'Expedition freischalten',o38:'Einen Joker auf Level 3 bringen',o42:'Auto-Brechung freischalten',
   quests_title:'Aufgaben',quests_sub:'Tippe auf eine erledigte Aufgabe, um die Belohnung einzusammeln.',quests_onb:'Erste Schritte',quests_of:'{a} von {b}',quests_today:'Heute',quests_new:'Neue in {t}',quests_week:'Diese Woche',quests_monday:'Montags erneuert',quests_cal:'Kalender',quests_claim:'Einsammeln',quests_got:'Erhalten',quests_reward:'Belohnung erhalten',
   login_day:'Tag {n}',login_title:'Tag {n} von 7',login_sub:'Komm jeden Tag wieder: der siebte schenkt einen Joker.',login_go:'Tag {n} einsammeln',login_done:'Tagesbelohnung erhalten. Komm morgen für Tag {n} wieder.',login_got:'Tagesbelohnung erhalten',login_joker:'Joker',boost_h:'×2 {n} Std.',
-  at_title:'Werkstatt',at_sub:'Dauerhafte Forschung, bezahlt in Splittern. Splitter gibt es von Bossen und bei jeder Refraktion.',at_free:'Freier Platz: wähle eine Forschung',at_slots:'{n} von 3 Plätzen',at_slot:'Platz',at_to:'Auf Level {n}',at_rush:'Jetzt mit Edelsteinen abschließen',at_ad:'−30 Min.',
+  at_title:'Werkstatt',at_bal:"Funken verfügbar",at_sub:"Dauerhafte Forschung, bezahlt in Funken. Jede Brechung vervielfacht deine Funken für immer.",at_free:'Freier Platz: wähle eine Forschung',at_slots:'{n} von 3 Plätzen',at_slot:'Platz',at_to:'Auf Level {n}',at_rush:'Jetzt mit Edelsteinen abschließen',at_ad:'−30 Min.',
   at_lock:'Stufe {n}',at_maxed:'Maximum',at_k:'{k} von {m}',at_detail:'{t}: Details',at_locked:'Wird auf Stufe {n} freigeschaltet.',at_inprog:'In Arbeit, fertig in {t}.',at_ismax:'Maximales Level erreicht.',at_dur:'Dauer: {t}',at_buy:'Forschen für {c}',at_full:'Alle deine Plätze sind belegt.',at_next:'Nächstes Level: {d}',at_lvl:'Level {k} von {m}',
   at_started:'{t}: Forschung gestartet',at_busy:'Alle Plätze sind belegt',at_done:'{t}: Forschung abgeschlossen',at_rushed:'Forschung um 30 Minuten beschleunigt',at_newslot:'Neuer Forschungsplatz',at_newjslot:'Neuer Joker-Platz',no_gems:'Nicht genug Edelsteine',
   pp_n:'{n} Brechungspunkt{n|e}',pp_reset:'Neu verteilen',pp_note:'Jede Brechung gibt Punkte (1 auf Stufe 30, dann +1 je 10 Stufen). Ein Punkt pro Level, dann zwei, dann drei. Level: Effekt +20 %, Schaden +8 %.',pp_up:'{t} verbessern, {n} Punkt{n|e}',pp_back:'Brechungspunkte zurückgegeben',
   lg_title:'{d}-Liga',lg_sub:'Dein Gesamtschaden gegen den Titan diese Woche ({days}), gegen 29 simulierte Spieler. Die besten 5 steigen in Silber auf.',lg_days:'Dienstag, Donnerstag, Samstag',lg_today:'heute!',lg_next:'nächster: {d}',lg_up:'Aufstiegszone darüber',lg_down:'Abstiegszone darunter',lg_report:'Den Namen {n} melden',lg_reported:'Meldung gesendet',div_bronze:'Bronze',
   sh_title:'Shop',sh_demo:'Demo: Käufe und Werbung sind simuliert, keine echte Zahlung.',sh_boost:'Doppelte Erträge',sh_active:'Noch {t} aktiv',sh_inactive:'Inaktiv',sh_adboost:'Werbung: ×2 für {n} Std.',sh_boost_d:'Schaden und Funken verdoppelt. Stapelbar.',sh_gemboost:'×2 für {n} Std.',sh_watch:'Ansehen',sh_skin:'Farbe deines Edelsteins',sh_worn:'Getragen',sh_wear:'Tragen',sh_price:'{n} Edelsteine',sh_own:'Gekauft',sh_confirm:'Kauf bestätigen',sh_sim:'Simulierter Kauf: keine echte Zahlung.',sh_bought:'Simulierter Kauf ausgeführt',sh_boosted:'Erträge für {n} Std. verdoppelt',
-  of_starter:'Starterpaket',of_starter_d:'150 Edelsteine und 6 Std. doppelte Erträge. Nur einmal.',of_loot:'Splitter ×2 für immer',of_loot_d:'Verdoppelt die Splitter jeder Brechung.',of_noads:'Werbung entfernen',of_noads_d:'Keine erzwungene Werbung mehr. Belohnungswerbung bleibt freiwillig.',of_gems:'{n} Edelsteine',of_small:'Kleines Paket.',of_more:'+{n} % gegenüber dem kleinen Paket.',of_big:'Die größte Truhe: +85 %.',
+  of_starter:'Starterpaket',of_starter_d:'150 Edelsteine und 6 Std. doppelte Erträge. Nur einmal.',of_loot:"Schatz ×2 für immer",of_loot_d:"Verdoppelt den Start-Schatz jeder Brechung.",of_noads:'Werbung entfernen',of_noads_d:'Keine erzwungene Werbung mehr. Belohnungswerbung bleibt freiwillig.',of_gems:'{n} Edelsteine',of_small:'Kleines Paket.',of_more:'+{n} % gegenüber dem kleinen Paket.',of_big:'Die größte Truhe: +85 %.',
   starter_p:'150 Edelsteine und 6 Std. doppelte Erträge für {p}. Nur einmal.',starter_left:'Angebot noch {t} sichtbar',starter_btn:'{p} (simulierter Kauf)',starter_no:'Nein danke',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Gold',skin_prisme:'Prisma',
   pr_title:'Profil',pr_tier:'{t}, beste Stufe {n}',pr_worlds:', {n} Welt{n|en} abgeschlossen',pr_name:'Name',pr_change:'Ändern',pr_first:'Die erste Änderung ist gratis. ',pr_note:'Namen durchlaufen einen automatischen Filter. Nach 3 Meldungen wird der Name wieder zufällig.',pr_newname:'Neuer Name',
-  pr_forge:'Schmiede',pr_forge_sub:'{r} Splitter / Std., {h} Std. Vorrat',pr_forge_n:'{n} Splitter',pr_forge_d:'Produziert auch bei geschlossenem Spiel.',pr_collect:'Einsammeln',
+  pr_forge:'Schmiede',pr_forge_sub:"{r} Funken / Std., {h} Std. Vorrat",pr_forge_n:"{n} Funken",pr_forge_d:'Produziert auch bei geschlossenem Spiel.',pr_collect:'Einsammeln',
   pr_settings:'Einstellungen',pr_music:'Musik',pr_sound:'Soundeffekte',pr_fx:'Wackeln und Vibration',pr_lang:'Sprache',
   pr_stats:'Statistik',pr_best:'beste Stufe',pr_pres:'Brechungen',pr_merges:'Fusionen, davon {n} von Hand',pr_kills:'besiegte Gegner, {n} Bosse',pr_titan:'Rekord gegen den Titan',pr_res:'abgeschlossene Forschungen',
   pr_bestiary:'Bestiarium',pr_beaten:'{n} besiegt',pr_bestiary_empty:'Besiege deinen ersten Wächter auf Stufe 5, um das Bestiarium zu öffnen.',pr_in:'in {n} s',pr_guard:'Wächter',pr_stage:'{n}, Stufe {s}',
@@ -864,10 +865,10 @@ I18N.de={
   name_updated:'Name aktualisiert',name_saved:'Name gespeichert',name_keep:'Diesen Namen behalten',name_first:'Erster Wächter besiegt',name_first_p:'Wähle den Namen, den andere Spieler in der Liga sehen. Diese erste Änderung ist gratis.',name_your:'Dein Name',name_cost:'Du brauchst {n} Edelsteine.',
   name_short:'Mindestens 3 Zeichen.',name_long:'Höchstens 16 Zeichen.',name_chars:'Nur Buchstaben, Ziffern, Leerzeichen, - und _.',name_banned:'Dieser Name enthält ein verbotenes Wort.',
   hint1:'Deine Edelsteine schießen von selbst. Zieh einen auf einen gleichen: die Fusion schießt stärker.',hint2:'Jede Form ist eine andere Waffe. Je größer der Edelstein, desto mehr Schaden machen seine Schüsse.',hint3:'Deine Funken kaufen Runden-Booster: nimm Tempo.',hint4:'Booster halten bis zur Brechung (Stufe {n}). Die Forschung der Werkstatt ist dauerhaft.',
-  board_aria:'Brett: zieh einen Edelstein auf einen gleichen',enemy_aria:'Gegner',hp_aria:'Leben des Gegners',shards_aria:'Splitter',gems_aria:'Edelsteine, Shop öffnen',profile_aria:'Profil',
+  board_aria:'Brett: zieh einen Edelstein auf einen gleichen',enemy_aria:'Gegner',hp_aria:'Leben des Gegners',shards_aria:"Funken",gems_aria:'Edelsteine, Shop öffnen',profile_aria:'Profil',
   boss_banner:'Boss: {n} s, um ihn zu besiegen',boss_fled:'Er ist geflohen',boss_fled_p:'Lass deine Edelsteine weiter wachsen und fordere ihn erneut heraus',shield:'Schild',shield_p:'Nur Edelsteine ab Level {n} verletzen ihn',blocked:'Geblockt',crit:'Kritisch ',he:'Er {a}',new_world:'Neue Welt',
-  chal_aria:'Den Boss von Stufe {n} erneut herausfordern',pre_aria:'Brechung: +{n} Splitter',pre_locked:'Brechung ab Stufe {n}',titan_aria:'Titan: {n} Ticket{n|s}',
-  pre_title:'Brechung',pre_pp:'+{n} Brechungspunkt{n|e} für deine Waffen',pre_p:'Das Licht durchquert das Prisma: du beginnst wieder auf Stufe 1 mit deiner Forschung und deinen Start-Boni. Runden-Booster und Funken werden zurückgesetzt.',pre_note:'Je weiter du vor der Brechung kommst, desto mehr Splitter und Punkte gibt es.',pre_go:'Brechen',pre_not:'Jetzt nicht',pre_done:'+{n} Splitter',pre_tip:'Schau in die Werkstatt: deine Splitter kaufen dauerhafte Forschung',
+  chal_aria:'Den Boss von Stufe {n} erneut herausfordern',pre_aria:"Brechung: Funken ×{m}",pre_locked:'Brechung ab Stufe {n}',titan_aria:'Titan: {n} Ticket{n|s}',
+  pre_title:'Brechung',pre_pot:"+{n} Funken Schatz zum Start",pre_mult:"Funken ×{a} → ×{b}, für immer",pre_pp:'+{n} Brechungspunkt{n|e} für deine Waffen',pre_p:"Das Licht durchquert das Prisma: du beginnst wieder auf Stufe 1 mit deiner Forschung und einem Start-Schatz. Runden-Booster werden zurückgesetzt.",pre_note:"Je weiter du vor der Brechung kommst, desto größer sind Start-Schatz und Punkte.",pre_go:'Brechen',pre_not:'Jetzt nicht',pre_done:"Funken ×{m} für immer, +{n} Schatz",pre_tip:"Schau in die Werkstatt: deine Funken kaufen dauerhafte Forschung",
   titan_p:'{n} Sekunden freier Schaden, gezählt für die Liga. Dienstags, donnerstags und samstags.',titan_tickets:'{n} Ticket{n|s}',titan_ad:'+1 Ticket',titan_gem:'{n}: +1',titan_got:'+1 Titan-Ticket',titan_go:'{n} s: mach so viel Schaden wie möglich',titan_record:'Neuer Rekord: für die Liga gezählt.',titan_prev:'Rekord: {n}. Diese Punkte zählen zu deiner Wochensumme.',continue:'Weiter',
   off_title:'Während deiner Abwesenheit',off_p:'{t} abwesend',off_counted:', {t} gezählt',off_exped:'Deine Edelsteine sind auf Expedition {n} Stufe{n|n} vorangekommen.',off_x2:'Funken verdoppeln',off_more:'Noch +{n} Funken',
   net_title:'Verbindung erforderlich',net_p:'Prisme Fusion braucht Internet, um deinen Fortschritt und die Liga zu speichern. Das Spiel ist pausiert.',net_restored:'Fortschritt vom Server wiederhergestellt',lg_sub_live:'Dein Gesamtschaden gegen den Titan diese Woche ({days}), gegen die Spieler deiner Liga. Die besten 5 steigen in Silber auf.',net_server:'Der Prisme-Fusion-Server ist gerade nicht erreichbar. Das Spiel ist pausiert, versuche es gleich noch einmal.',net_back:'Verbindung wiederhergestellt',
@@ -899,7 +900,7 @@ I18N.pt={
   g_auto:'Auto',g_auto_d:'Poupar um gesto em cada patamar.',
   g_atk:'Ataque',g_atk_d:'Bater mais forte.',
   g_grid:'Tabuleiro',g_grid_d:'Gemas mais fortes, mais vezes.',
-  g_eco:'Economia',g_eco_d:'Mais faíscas, mais estilhaços, durante mais tempo.',
+  g_eco:'Economia',g_eco_d:"Mais faíscas, mais depressa, durante mais tempo.",
   g_jok:'Curingas',g_jok_d:'Desbloquear, equipar e reforçar os teus poderes.',
   g_arm:'Armas',g_arm_d:'Cada forma de gema é uma arma. Os teus pontos de refração reforçam-nas.',
   u_st_cad:'Velocidade inicial',u_st_cad_d:'Velocidade nível {n} desde o início',
@@ -912,7 +913,7 @@ I18N.pt={
   u_au_buy:'Compra automática',u_au_buy_d:'Compra um impulso a cada {n} s',u_au_buy_d0:'Compra sozinho o impulso mais barato',
   u_au_joker:'Curingas automáticos',u_au_joker_d:'Ativa os teus curingas assim que estão carregados',
   u_au_boss:'Desafio automático',u_au_boss_d:'Volta a desafiar um chefe que fugiu após {n} s',
-  u_au_prestige:'Refração automática',u_au_prestige_d:'Refrata sozinha quando o ganho atinge {n} % dos teus estilhaços',
+  u_au_prestige:'Refração automática',u_au_prestige_d:"Refrata sozinha quando o tesouro inicial atinge {n} % das tuas faíscas",
   u_au_exped:'Expedição',u_au_exped_d:'As tuas gemas avançam etapas offline durante {n} h',
   u_au_titan:'Titã automático',u_au_titan_d:'O Titã é desafiado sozinho e tens {n} bilhete{n|s} grátis a mais',
   u_power:'Potência',u_power_d:'Dano ×{n} (+10 % por nível)',
@@ -922,12 +923,12 @@ I18N.pt={
   u_pierce:'Fura-escudos',u_pierce_d:'O escudo dos chefes deixa passar mais {n} nív{n|el/eis} de gema',
   u_lucky:'Faísca',u_lucky_d:'{n} % de probabilidade de nascer um nível acima',
   u_chain:'Reação em cadeia',u_chain_d:'{n} % de probabilidade de uma fusão desencadear outra',
-  u_gold:'Caçador de ouro',u_gold_d:'+{n} % de gemas douradas, que rendem estilhaços',
+  u_gold:'Caçador de ouro',u_gold_d:"+{n} % de gemas douradas, que rendem faíscas",
   u_board:'Grande tabuleiro',u_board_d0:'Tabuleiro 5 × 5 em vez de 4 × 4',u_board_d1:'Tabuleiro 6 × 6',
   u_sursis:'Adiamento',u_sursis_d:'Tabuleiro cheio: {n} gemas pequenas são recicladas em vez de uma',
   u_spark:'Faíscas',u_spark_d:'Faíscas ×{n} (+10 % por nível)',
-  u_loot:'Saque',u_loot_d:'+{n} % de estilhaços na refração',
-  u_prod:'Forja passiva',u_prod_d:'Produção: {n} estilhaços / h',
+  u_loot:'Saque',u_loot_d:"+{n} % de tesouro inicial na refração",
+  u_prod:'Forja passiva',u_prod_d:"Produção: {n} faíscas / h",
   u_cap:'Reserva',u_cap_d:'A forja guarda {n} h de produção',
   u_off:'Vigília',u_off_d:'As faíscas acumulam-se {n} h offline',
   u_killspark:'Troféus',u_killspark_d:'+{n} % de faíscas por inimigo vencido',
@@ -957,17 +958,17 @@ I18N.pt={
   o1:'Fundir 10 gemas à mão',o2:'Vencer 3 inimigos',o3:'Comprar um impulso de partida',o4:'Chegar à etapa {n}',o5:'Iniciar uma pesquisa na Oficina',o6:'Vencer o Guardião do prisma',o7:'Recolher a forja',o9:'Vencer o teu primeiro chefe',o10:'Fazer a tua primeira refração',o11:'Terminar {n} pesquisas',o12:'Comprar o impulso Auto',o13:'Enfrentar o Titã',o14:'Desbloquear o teu primeiro curinga',o15:'Conseguir um combo ×10 à mão',o17:'Fazer {n} refrações',o18:'Subir Força inicial ao nível 5',o20:'Jogar em {n} dias diferentes',o23:'Desbloquear a compra automática',o24:'Usar 15 curingas',o26:'Vencer {n} chefes',o29:'Desbloquear {n} curingas',o30:'Infligir {n} de dano ao Titã de uma vez',o31:'Desbloquear os curingas automáticos',o37:'Desbloquear a Expedição',o38:'Subir um curinga ao nível 3',o42:'Desbloquear a refração automática',
   quests_title:'Missões',quests_sub:'Toca numa missão terminada para recolher a recompensa.',quests_onb:'Primeiros passos',quests_of:'{a} de {b}',quests_today:'Hoje',quests_new:'Novas em {t}',quests_week:'Esta semana',quests_monday:'Renovadas à segunda',quests_cal:'Calendário',quests_claim:'Recolher',quests_got:'Recebida',quests_reward:'Recompensa recebida',
   login_day:'Dia {n}',login_title:'Dia {n} de 7',login_sub:'Volta todos os dias: o sétimo oferece um curinga.',login_go:'Recolher o dia {n}',login_done:'Recompensa do dia recebida. Volta amanhã para o dia {n}.',login_got:'Recompensa do dia recebida',login_joker:'Curinga',boost_h:'×2 {n} h',
-  at_title:'Oficina',at_sub:'Pesquisas permanentes, pagas em estilhaços. Os estilhaços caem dos chefes e de cada Refração.',at_free:'Lugar livre: escolhe uma pesquisa',at_slots:'{n} lugar{n|es} de 3',at_slot:'Lugar',at_to:'Para o nível {n}',at_rush:'Terminar agora com gemas',at_ad:'−30 min',
+  at_title:'Oficina',at_bal:"faíscas disponíveis",at_sub:"Pesquisas permanentes, pagas em faíscas. Cada Refração multiplica as tuas faíscas para sempre.",at_free:'Lugar livre: escolhe uma pesquisa',at_slots:'{n} lugar{n|es} de 3',at_slot:'Lugar',at_to:'Para o nível {n}',at_rush:'Terminar agora com gemas',at_ad:'−30 min',
   at_lock:'Etapa {n}',at_maxed:'Máximo',at_k:'{k} de {m}',at_detail:'{t}: detalhes',at_locked:'Desbloqueia-se na etapa {n}.',at_inprog:'Em pesquisa, pronta em {t}.',at_ismax:'Nível máximo atingido.',at_dur:'Duração: {t}',at_buy:'Pesquisar por {c}',at_full:'Todos os teus lugares estão ocupados.',at_next:'Próximo nível: {d}',at_lvl:'Nível {k} de {m}',
   at_started:'{t}: pesquisa iniciada',at_busy:'Todos os lugares estão ocupados',at_done:'{t}: pesquisa terminada',at_rushed:'Pesquisa acelerada em 30 minutos',at_newslot:'Novo lugar de pesquisa',at_newjslot:'Novo lugar de curinga',no_gems:'Gemas insuficientes',
   pp_n:'{n} ponto{n|s} de refração',pp_reset:'Redistribuir',pp_note:'Cada refração dá pontos (1 na etapa 30, depois +1 por cada 10 etapas). Um ponto por nível, depois dois, depois três. Nível: efeito +20 %, dano +8 %.',pp_up:'Melhorar {t}, {n} ponto{n|s}',pp_back:'Pontos de refração devolvidos',
   lg_title:'Liga {d}',lg_sub:'O teu dano acumulado contra o Titã esta semana ({days}), frente a 29 jogadores simulados. Os 5 primeiros sobem a Prata.',lg_days:'terça, quinta, sábado',lg_today:'hoje!',lg_next:'próximo: {d}',lg_up:'Zona de subida acima',lg_down:'Zona de descida abaixo',lg_report:'Denunciar o nome {n}',lg_reported:'Denúncia enviada',div_bronze:'Bronze',
   sh_title:'Loja',sh_demo:'Demo: compras e anúncios simulados, sem pagamento real.',sh_boost:'Ganhos a dobrar',sh_active:'Ativo por mais {t}',sh_inactive:'Inativo',sh_adboost:'Anúncio: ×2 durante {n} h',sh_boost_d:'Dano e faíscas a dobrar. Acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Cor da tua gema',sh_worn:'Em uso',sh_wear:'Usar',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sem pagamento real.',sh_bought:'Compra simulada efetuada',sh_boosted:'Ganhos a dobrar durante {n} h',
-  of_starter:'Pacote inicial',of_starter_d:'150 gemas e 6 h de ganhos a dobrar. Uma só vez.',of_loot:'Estilhaços ×2 para sempre',of_loot_d:'Duplica os estilhaços de cada refração.',of_noads:'Remover anúncios',of_noads_d:'Sem anúncios forçados. Os anúncios com recompensa continuam opcionais.',of_gems:'{n} gemas',of_small:'Pacote pequeno.',of_more:'+{n} % em relação ao pacote pequeno.',of_big:'O maior baú: +85 %.',
+  of_starter:'Pacote inicial',of_starter_d:'150 gemas e 6 h de ganhos a dobrar. Uma só vez.',of_loot:"Tesouro ×2 para sempre",of_loot_d:"Duplica o tesouro inicial de cada refração.",of_noads:'Remover anúncios',of_noads_d:'Sem anúncios forçados. Os anúncios com recompensa continuam opcionais.',of_gems:'{n} gemas',of_small:'Pacote pequeno.',of_more:'+{n} % em relação ao pacote pequeno.',of_big:'O maior baú: +85 %.',
   starter_p:'150 gemas e 6 h de ganhos a dobrar por {p}. Uma só vez.',starter_left:'Oferta visível por mais {t}',starter_btn:'{p} (compra simulada)',starter_no:'Não, obrigado',
   skin_cyan:'Ciano',skin_rose:'Magenta',skin_or:'Ouro',skin_prisme:'Prisma',
   pr_title:'Perfil',pr_tier:'{t}, melhor etapa {n}',pr_worlds:', {n} mundo{n|s} terminado{n|s}',pr_name:'Nome',pr_change:'Mudar',pr_first:'A primeira mudança é grátis. ',pr_note:'Os nomes passam por um filtro automático. Após 3 denúncias, o nome volta a ser aleatório.',pr_newname:'Novo nome',
-  pr_forge:'Forja',pr_forge_sub:'{r} estilhaços / h, {h} h de reserva',pr_forge_n:'{n} estilhaços',pr_forge_d:'Produz mesmo com o jogo fechado.',pr_collect:'Recolher',
+  pr_forge:'Forja',pr_forge_sub:"{r} faíscas / h, {h} h de reserva",pr_forge_n:"{n} faíscas",pr_forge_d:'Produz mesmo com o jogo fechado.',pr_collect:'Recolher',
   pr_settings:'Definições',pr_music:'Música',pr_sound:'Efeitos sonoros',pr_fx:'Abanões e vibrações',pr_lang:'Idioma',
   pr_stats:'Estatísticas',pr_best:'melhor etapa',pr_pres:'refrações',pr_merges:'fusões, {n} à mão',pr_kills:'inimigos vencidos, {n} chefes',pr_titan:'recorde contra o Titã',pr_res:'pesquisas terminadas',
   pr_bestiary:'Bestiário',pr_beaten:'{n} vencido{n|s}',pr_bestiary_empty:'Vence o teu primeiro guardião na etapa 5 para abrir o bestiário.',pr_in:'em {n} s',pr_guard:'guardião',pr_stage:'{n}, etapa {s}',
@@ -975,10 +976,10 @@ I18N.pt={
   name_updated:'Nome atualizado',name_saved:'Nome guardado',name_keep:'Manter este nome',name_first:'Primeiro guardião vencido',name_first_p:'Escolhe o nome que os outros jogadores verão na liga. Esta primeira mudança é grátis.',name_your:'O teu nome',name_cost:'Precisas de {n} gemas.',
   name_short:'Mínimo de 3 caracteres.',name_long:'Máximo de 16 caracteres.',name_chars:'Só letras, algarismos, espaços, - e _.',name_banned:'Este nome contém uma palavra proibida.',
   hint1:'As tuas gemas disparam sozinhas. Arrasta uma para cima de outra igual: a fusão dispara mais forte.',hint2:'Cada forma é uma arma diferente. Quanto maior a gema, mais dano fazem os seus tiros.',hint3:'As tuas faíscas compram impulsos de partida: escolhe Velocidade.',hint4:'Os impulsos duram até à refração (etapa {n}). As pesquisas da Oficina são permanentes.',
-  board_aria:'Tabuleiro: arrasta uma gema para cima de outra igual',enemy_aria:'Inimigo',hp_aria:'Vida do inimigo',shards_aria:'Estilhaços',gems_aria:'Gemas, abrir a loja',profile_aria:'Perfil',
+  board_aria:'Tabuleiro: arrasta uma gema para cima de outra igual',enemy_aria:'Inimigo',hp_aria:'Vida do inimigo',shards_aria:"Faíscas",gems_aria:'Gemas, abrir a loja',profile_aria:'Perfil',
   boss_banner:'Chefe: {n} s para o vencer',boss_fled:'Fugiu',boss_fled_p:'Continua a fazer crescer as tuas gemas e volta a desafiá-lo',shield:'Escudo',shield_p:'Só as gemas de nível {n} ou mais lhe fazem dano',blocked:'Bloqueado',crit:'Crítico ',he:'{a}',new_world:'Novo mundo',
-  chal_aria:'Voltar a desafiar o chefe da etapa {n}',pre_aria:'Refração: +{n} estilhaços',pre_locked:'Refração a partir da etapa {n}',titan_aria:'Titã: {n} bilhete{n|s}',
-  pre_title:'Refração',pre_pp:'+{n} ponto{n|s} de refração para as tuas armas',pre_p:'A luz atravessa o prisma: voltas à etapa 1 com as tuas pesquisas e bónus iniciais. Os impulsos de partida e as faíscas voltam a zero.',pre_note:'Quanto mais longe fores antes de refratar, mais estilhaços e pontos ganhas.',pre_go:'Refratar',pre_not:'Agora não',pre_done:'+{n} estilhaços',pre_tip:'Vê a Oficina: os teus estilhaços compram pesquisas permanentes',
+  chal_aria:'Voltar a desafiar o chefe da etapa {n}',pre_aria:"Refração: faíscas ×{m}",pre_locked:'Refração a partir da etapa {n}',titan_aria:'Titã: {n} bilhete{n|s}',
+  pre_title:'Refração',pre_pot:"+{n} faíscas de tesouro ao começar",pre_mult:"Faíscas ×{a} → ×{b}, para sempre",pre_pp:'+{n} ponto{n|s} de refração para as tuas armas',pre_p:"A luz atravessa o prisma: voltas à etapa 1 com as tuas pesquisas e um tesouro inicial. Os impulsos de partida voltam a zero.",pre_note:"Quanto mais longe fores antes de refratar, maiores são o tesouro inicial e os pontos.",pre_go:'Refratar',pre_not:'Agora não',pre_done:"Faíscas ×{m} para sempre, +{n} de tesouro",pre_tip:"Vê a Oficina: as tuas faíscas compram pesquisas permanentes",
   titan_p:'{n} segundos de dano livre, contados para a liga. Às terças, quintas e sábados.',titan_tickets:'{n} bilhete{n|s}',titan_ad:'+1 bilhete',titan_gem:'{n}: +1',titan_got:'+1 bilhete de Titã',titan_go:'{n} s: faz o máximo de dano',titan_record:'Novo recorde: contado para a liga.',titan_prev:'Recorde: {n}. Esta pontuação soma-se ao teu total semanal.',continue:'Continuar',
   off_title:'Durante a tua ausência',off_p:'{t} de ausência',off_counted:', {t} contadas',off_exped:'As tuas gemas avançaram {n} etapa{n|s} em expedição.',off_x2:'Duplicar as faíscas',off_more:'Mais +{n} faíscas',
   net_title:'Ligação necessária',net_p:'O Prisme Fusion precisa de internet para guardar o teu progresso e a liga. O jogo está em pausa.',net_restored:'Progresso recuperado do servidor',lg_sub_live:'O teu dano acumulado contra o Titã esta semana ({days}), frente aos jogadores da tua divisão. Os 5 primeiros sobem a Prata.',net_server:'O servidor do Prisme Fusion está inacessível neste momento. O jogo está em pausa, tenta de novo daqui a pouco.',net_back:'Ligação restabelecida',
@@ -1010,7 +1011,7 @@ I18N.it={
   g_auto:'Auto',g_auto_d:'Togliere un gesto a ogni gradino.',
   g_atk:'Attacco',g_atk_d:'Colpire più forte.',
   g_grid:'Tabellone',g_grid_d:'Gemme più forti, più spesso.',
-  g_eco:'Economia',g_eco_d:'Più scintille, più schegge, più a lungo.',
+  g_eco:'Economia',g_eco_d:"Più scintille, più in fretta, più a lungo.",
   g_jok:'Jolly',g_jok_d:'Sbloccare, equipaggiare e rafforzare i tuoi poteri.',
   g_arm:'Armi',g_arm_d:"Ogni forma di gemma è un'arma. I tuoi punti rifrazione le rafforzano.",
   u_st_cad:'Velocità iniziale',u_st_cad_d:"Velocità grado {n} fin dall'inizio",
@@ -1023,7 +1024,7 @@ I18N.it={
   u_au_buy:'Acquisto automatico',u_au_buy_d:'Compra un potenziamento ogni {n} s',u_au_buy_d0:'Compra da solo il potenziamento più economico',
   u_au_joker:'Jolly automatici',u_au_joker_d:'Attiva i tuoi jolly non appena sono carichi',
   u_au_boss:'Sfida automatica',u_au_boss_d:'Risfida un boss fuggito dopo {n} s',
-  u_au_prestige:'Rifrazione automatica',u_au_prestige_d:'Rifrange da sola quando il guadagno raggiunge il {n} % delle tue schegge',
+  u_au_prestige:'Rifrazione automatica',u_au_prestige_d:"Rifrange da sola quando il tesoro iniziale raggiunge il {n} % delle tue scintille",
   u_au_exped:'Spedizione',u_au_exped_d:'Le tue gemme avanzano di livello offline per {n} h',
   u_au_titan:'Titano automatico',u_au_titan_d:'Il Titano viene sfidato da solo e hai {n} bigliett{n|o/i} gratis in più',
   u_power:'Potenza',u_power_d:'Danno ×{n} (+10 % per grado)',
@@ -1033,12 +1034,12 @@ I18N.it={
   u_pierce:'Perforascudi',u_pierce_d:'Lo scudo dei boss lascia passare {n} grad{n|o/i} di gemma in più',
   u_lucky:'Scintilla',u_lucky_d:'{n} % di probabilità di nascere un grado più in alto',
   u_chain:'Reazione a catena',u_chain_d:"{n} % di probabilità che una fusione ne scateni un'altra",
-  u_gold:"Cacciatore d'oro",u_gold_d:'+{n} % di gemme dorate, che fruttano schegge',
+  u_gold:"Cacciatore d'oro",u_gold_d:"+{n} % di gemme dorate, che fruttano scintille",
   u_board:'Grande tabellone',u_board_d0:'Tabellone 5 × 5 invece di 4 × 4',u_board_d1:'Tabellone 6 × 6',
   u_sursis:'Tregua',u_sursis_d:'Tabellone pieno: {n} gemme piccole si riciclano invece di una',
   u_spark:'Scintille',u_spark_d:'Scintille ×{n} (+10 % per grado)',
-  u_loot:'Bottino',u_loot_d:'+{n} % di schegge alla rifrazione',
-  u_prod:'Forgia passiva',u_prod_d:'Produzione: {n} schegge / h',
+  u_loot:'Bottino',u_loot_d:"+{n} % di tesoro iniziale alla rifrazione",
+  u_prod:'Forgia passiva',u_prod_d:"Produzione: {n} scintille / h",
   u_cap:'Riserva',u_cap_d:'La forgia conserva {n} h di produzione',
   u_off:'Veglia',u_off_d:'Le scintille si accumulano {n} h offline',
   u_killspark:'Trofei',u_killspark_d:'+{n} % di scintille per nemico sconfitto',
@@ -1068,17 +1069,17 @@ I18N.it={
   o1:'Fondi 10 gemme a mano',o2:'Sconfiggi 3 nemici',o3:'Compra un potenziamento di partita',o4:'Raggiungi il livello {n}',o5:"Avvia una ricerca nell'Officina",o6:'Sconfiggi il Guardiano del prisma',o7:'Raccogli la forgia',o9:'Sconfiggi il tuo primo boss',o10:'Fai la tua prima rifrazione',o11:'Completa {n} ricerche',o12:'Compra il potenziamento Auto',o13:'Affronta il Titano',o14:'Sblocca il tuo primo jolly',o15:'Fai una combo ×10 a mano',o17:'Fai {n} rifrazioni',o18:'Porta Forza iniziale al grado 5',o20:'Gioca in {n} giorni diversi',o23:"Sblocca l'acquisto automatico",o24:'Usa 15 jolly',o26:'Sconfiggi {n} boss',o29:'Sblocca {n} jolly',o30:'Infliggi {n} danni al Titano in una volta',o31:'Sblocca i jolly automatici',o37:'Sblocca la Spedizione',o38:'Porta un jolly al grado 3',o42:'Sblocca la rifrazione automatica',
   quests_title:'Missioni',quests_sub:'Tocca una missione completata per ritirare la ricompensa.',quests_onb:'Primi passi',quests_of:'{a} su {b}',quests_today:'Oggi',quests_new:'Nuove tra {t}',quests_week:'Questa settimana',quests_monday:'Rinnovate lunedì',quests_cal:'Calendario',quests_claim:'Ritira',quests_got:'Ricevuta',quests_reward:'Ricompensa ricevuta',
   login_day:'Giorno {n}',login_title:'Giorno {n} su 7',login_sub:'Torna ogni giorno: il settimo regala un jolly.',login_go:'Ritira il giorno {n}',login_done:'Ricompensa del giorno ricevuta. Torna domani per il giorno {n}.',login_got:'Ricompensa del giorno ricevuta',login_joker:'Jolly',boost_h:'×2 {n} h',
-  at_title:'Officina',at_sub:'Ricerche permanenti, pagate in schegge. Le schegge cadono dai boss e a ogni Rifrazione.',at_free:'Slot libero: scegli una ricerca',at_slots:'{n} slot su 3',at_slot:'Slot',at_to:'Verso il grado {n}',at_rush:'Termina ora con le gemme',at_ad:'−30 min',
+  at_title:'Officina',at_bal:"scintille disponibili",at_sub:"Ricerche permanenti, pagate in scintille. Ogni Rifrazione moltiplica le tue scintille per sempre.",at_free:'Slot libero: scegli una ricerca',at_slots:'{n} slot su 3',at_slot:'Slot',at_to:'Verso il grado {n}',at_rush:'Termina ora con le gemme',at_ad:'−30 min',
   at_lock:'Livello {n}',at_maxed:'Massimo',at_k:'{k} su {m}',at_detail:'{t}: dettagli',at_locked:'Si sblocca al livello {n}.',at_inprog:'In ricerca, pronta tra {t}.',at_ismax:'Grado massimo raggiunto.',at_dur:'Durata: {t}',at_buy:'Ricerca per {c}',at_full:'Tutti i tuoi slot sono occupati.',at_next:'Grado successivo: {d}',at_lvl:'Grado {k} su {m}',
   at_started:'{t}: ricerca avviata',at_busy:'Tutti gli slot sono occupati',at_done:'{t}: ricerca completata',at_rushed:'Ricerca accelerata di 30 minuti',at_newslot:'Nuovo slot di ricerca',at_newjslot:'Nuovo slot jolly',no_gems:'Gemme insufficienti',
   pp_n:'{n} punt{n|o/i} rifrazione',pp_reset:'Ridistribuisci',pp_note:'Ogni rifrazione dà punti (1 al livello 30, poi +1 ogni 10 livelli). Un punto per grado, poi due, poi tre. Grado: effetto +20 %, danno +8 %.',pp_up:'Migliora {t}, {n} punt{n|o/i}',pp_back:'Punti rifrazione restituiti',
   lg_title:'Lega {d}',lg_sub:'Il tuo danno cumulato contro il Titano questa settimana ({days}), contro 29 giocatori simulati. I primi 5 salgono in Argento.',lg_days:'martedì, giovedì, sabato',lg_today:'oggi!',lg_next:'prossimo: {d}',lg_up:'Zona promozione sopra',lg_down:'Zona retrocessione sotto',lg_report:'Segnala il nome {n}',lg_reported:'Segnalazione inviata',div_bronze:'Bronzo',
   sh_title:'Negozio',sh_demo:'Demo: acquisti e pubblicità simulati, nessun pagamento reale.',sh_boost:'Guadagni raddoppiati',sh_active:'Attivo ancora {t}',sh_inactive:'Inattivo',sh_adboost:'Pubblicità: ×2 per {n} h',sh_boost_d:'Danno e scintille raddoppiati. Si cumula.',sh_gemboost:'×2 per {n} h',sh_watch:'Guarda',sh_skin:'Colore della tua gemma',sh_worn:'Indossato',sh_wear:'Indossa',sh_price:'{n} gemme',sh_own:'Acquistato',sh_confirm:"Conferma l'acquisto",sh_sim:'Acquisto simulato: nessun pagamento reale.',sh_bought:'Acquisto simulato effettuato',sh_boosted:'Guadagni raddoppiati per {n} h',
-  of_starter:'Pacchetto iniziale',of_starter_d:'150 gemme e 6 h di guadagni raddoppiati. Una sola volta.',of_loot:'Schegge ×2 per sempre',of_loot_d:'Raddoppia le schegge di ogni rifrazione.',of_noads:'Rimuovi la pubblicità',of_noads_d:'Niente più pubblicità forzata. Quella premiata resta facoltativa.',of_gems:'{n} gemme',of_small:'Pacchetto piccolo.',of_more:'+{n} % rispetto al pacchetto piccolo.',of_big:'Il forziere più grande: +85 %.',
+  of_starter:'Pacchetto iniziale',of_starter_d:'150 gemme e 6 h di guadagni raddoppiati. Una sola volta.',of_loot:"Tesoro ×2 per sempre",of_loot_d:"Raddoppia il tesoro iniziale di ogni rifrazione.",of_noads:'Rimuovi la pubblicità',of_noads_d:'Niente più pubblicità forzata. Quella premiata resta facoltativa.',of_gems:'{n} gemme',of_small:'Pacchetto piccolo.',of_more:'+{n} % rispetto al pacchetto piccolo.',of_big:'Il forziere più grande: +85 %.',
   starter_p:'150 gemme e 6 h di guadagni raddoppiati per {p}. Una sola volta.',starter_left:'Offerta visibile ancora {t}',starter_btn:'{p} (acquisto simulato)',starter_no:'No grazie',
   skin_cyan:'Ciano',skin_rose:'Magenta',skin_or:'Oro',skin_prisme:'Prisma',
   pr_title:'Profilo',pr_tier:'{t}, miglior livello {n}',pr_worlds:', {n} mond{n|o/i} completat{n|o/i}',pr_name:'Nome',pr_change:'Cambia',pr_first:'Il primo cambio è gratis. ',pr_note:'I nomi passano un filtro automatico. Dopo 3 segnalazioni, il nome torna casuale.',pr_newname:'Nuovo nome',
-  pr_forge:'Forgia',pr_forge_sub:'{r} schegge / h, {h} h di riserva',pr_forge_n:'{n} schegge',pr_forge_d:'Produce anche a gioco chiuso.',pr_collect:'Raccogli',
+  pr_forge:'Forgia',pr_forge_sub:"{r} scintille / h, {h} h di riserva",pr_forge_n:"{n} scintille",pr_forge_d:'Produce anche a gioco chiuso.',pr_collect:'Raccogli',
   pr_settings:'Impostazioni',pr_music:'Musica',pr_sound:'Effetti sonori',pr_fx:'Scosse e vibrazioni',pr_lang:'Lingua',
   pr_stats:'Statistiche',pr_best:'miglior livello',pr_pres:'rifrazioni',pr_merges:'fusioni, di cui {n} a mano',pr_kills:'nemici sconfitti, {n} boss',pr_titan:'record contro il Titano',pr_res:'ricerche completate',
   pr_bestiary:'Bestiario',pr_beaten:'{n} sconfitt{n|o/i}',pr_bestiary_empty:'Sconfiggi il tuo primo guardiano al livello 5 per aprire il bestiario.',pr_in:'in {n} s',pr_guard:'guardiano',pr_stage:'{n}, livello {s}',
@@ -1086,10 +1087,10 @@ I18N.it={
   name_updated:'Nome aggiornato',name_saved:'Nome salvato',name_keep:'Tieni questo nome',name_first:'Primo guardiano sconfitto',name_first_p:'Scegli il nome che gli altri giocatori vedranno in lega. Questo primo cambio è gratis.',name_your:'Il tuo nome',name_cost:'Ti servono {n} gemme.',
   name_short:'Minimo 3 caratteri.',name_long:'Massimo 16 caratteri.',name_chars:'Solo lettere, cifre, spazi, - e _.',name_banned:'Questo nome contiene una parola vietata.',
   hint1:'Le tue gemme sparano da sole. Trascinane una su una uguale: la fusione spara più forte.',hint2:"Ogni forma è un'arma diversa. Più la gemma è grande, più i suoi colpi fanno male.",hint3:'Le tue scintille comprano potenziamenti di partita: prendi Velocità.',hint4:"I potenziamenti durano fino alla rifrazione (livello {n}). Le ricerche dell'Officina sono permanenti.",
-  board_aria:'Tabellone: trascina una gemma su una uguale',enemy_aria:'Nemico',hp_aria:'Vita del nemico',shards_aria:'Schegge',gems_aria:'Gemme, apri il negozio',profile_aria:'Profilo',
+  board_aria:'Tabellone: trascina una gemma su una uguale',enemy_aria:'Nemico',hp_aria:'Vita del nemico',shards_aria:"Scintille",gems_aria:'Gemme, apri il negozio',profile_aria:'Profilo',
   boss_banner:'Boss: {n} s per sconfiggerlo',boss_fled:'È fuggito',boss_fled_p:'Continua a far crescere le tue gemme, poi risfidalo',shield:'Scudo',shield_p:'Solo le gemme di grado {n} o più gli fanno male',blocked:'Bloccato',crit:'Critico ',he:'{a}',new_world:'Nuovo mondo',
-  chal_aria:'Risfida il boss del livello {n}',pre_aria:'Rifrazione: +{n} schegge',pre_locked:'Rifrazione dal livello {n}',titan_aria:'Titano: {n} bigliett{n|o/i}',
-  pre_title:'Rifrazione',pre_pp:'+{n} punt{n|o/i} rifrazione per le tue armi',pre_p:'La luce attraversa il prisma: riparti dal livello 1 con le tue ricerche e i bonus iniziali. Potenziamenti di partita e scintille vengono azzerati.',pre_note:'Più spingi lontano prima di rifrangere, più schegge e punti guadagni.',pre_go:'Rifrangi',pre_not:'Non ora',pre_done:'+{n} schegge',pre_tip:"Guarda l'Officina: le tue schegge comprano ricerche permanenti",
+  chal_aria:'Risfida il boss del livello {n}',pre_aria:"Rifrazione: scintille ×{m}",pre_locked:'Rifrazione dal livello {n}',titan_aria:'Titano: {n} bigliett{n|o/i}',
+  pre_title:'Rifrazione',pre_pot:"+{n} scintille di tesoro all'inizio",pre_mult:"Scintille ×{a} → ×{b}, per sempre",pre_pp:'+{n} punt{n|o/i} rifrazione per le tue armi',pre_p:"La luce attraversa il prisma: riparti dal livello 1 con le tue ricerche e un tesoro iniziale. I potenziamenti di partita vengono azzerati.",pre_note:"Più spingi lontano prima di rifrangere, più grandi sono il tesoro iniziale e i punti.",pre_go:'Rifrangi',pre_not:'Non ora',pre_done:"Scintille ×{m} per sempre, +{n} di tesoro",pre_tip:"Guarda l'Officina: le tue scintille comprano ricerche permanenti",
   titan_p:'{n} secondi di danno libero, contati per la lega. Martedì, giovedì e sabato.',titan_tickets:'{n} bigliett{n|o/i}',titan_ad:'+1 biglietto',titan_gem:'{n}: +1',titan_got:'+1 biglietto Titano',titan_go:'{n} s: fai più danni che puoi',titan_record:'Nuovo record: contato per la lega.',titan_prev:'Record: {n}. Questo punteggio si somma al tuo totale settimanale.',continue:'Continua',
   off_title:'Durante la tua assenza',off_p:'{t} di assenza',off_counted:', {t} contate',off_exped:'Le tue gemme sono avanzate di {n} livell{n|o/i} in spedizione.',off_x2:'Raddoppia le scintille',off_more:'Altre +{n} scintille',
   net_title:'Connessione necessaria',net_p:'Prisme Fusion ha bisogno di internet per salvare i tuoi progressi e la lega. Il gioco è in pausa.',net_restored:'Progressi recuperati dal server',lg_sub_live:'Il tuo danno cumulato contro il Titano questa settimana ({days}), contro i giocatori della tua divisione. I primi 5 salgono in Argento.',net_server:'Il server di Prisme Fusion non è raggiungibile al momento. Il gioco è in pausa, riprova tra un istante.',net_back:'Connessione ripristinata',
@@ -1144,7 +1145,7 @@ const CFG={
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
-  prestige:{minStage:30,shards:n=>Math.floor(10*Math.pow(1.15,n))},
+  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n))},
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
   build:{gemSec:300,adCut:1800,adPerDay:3,slotGems:[200,500],jslotGems:[150,350]},
@@ -1229,7 +1230,7 @@ for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k
 const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:40,c:'#ff3ec8'},{id:'or',price:80,c:'#ffd23e'},{id:'prisme',price:150,c:'rainbow'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
 function fresh(){
   const now=Date.now();
-  return {v:3,gems:20,shards:0,maxStage:1,bestStage:1,prestiges:0,
+  return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
     pp:0,wp:{},idle:{bank:0,t:now},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
@@ -1241,22 +1242,23 @@ function fresh(){
 }
 let S=fresh();
 const KEY='prisme-fusion-v7';
-function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});S=merged;}}}catch(e){}}
-function save(){S.lastSeen=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
+function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
+function migrate(m){if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
-function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.shards+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
-function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${I.s}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
+function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
+function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
 /* ---------- cadeaux : une bulle apparaît de temps en temps, une pub = un bonus ---------- */
 function giftRoll(){
   const r=Math.random(),st=Math.max(S.bestStage,1);
-  if(r<0.35)return {k:'s',v:Math.max(30,Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*0.25))};
-  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300))};
+  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300),Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*lootMult()*0.25))};
   if(r<0.85)return {k:'g',v:5+Math.floor(Math.random()*6)};
   return {k:'b',v:0.5};
 }
 function giftOK(){roll();return (S.day.gifts||0)<CFG.gift.perDay;}
-function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.shards+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
+function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
 
 /* ================= calendrier de connexion ================= */
 const LOGIN=[{g:10},{b:2},{s:300},{g:20},{b:4},{s:2000},{joker:true}];
@@ -1270,7 +1272,7 @@ function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.lo
 const idleRate=()=>10*Math.pow(1.45,S.up.prod);
 const idleCap=()=>idleRate()*(2+S.up.cap);
 function accrue(now=Date.now()){S.idle.bank=Math.min(idleCap(),S.idle.bank+(now-S.idle.t)/3600e3*idleRate());S.idle.t=now;}
-function collect(){accrue();const g=Math.floor(S.idle.bank);if(g<1)return 0;S.idle.bank-=g;S.shards+=g;S.st.collects++;roll();S.week.collects++;S.day.collects++;return g;}
+function collect(){accrue();const g=Math.floor(S.idle.bank);if(g<1)return 0;S.idle.bank-=g;S.run.sparks+=g;S.st.collects++;roll();S.week.collects++;S.day.collects++;return g;}
 
 /* ================= atelier : chantiers ================= */
 const upById=id=>ALLUP.find(x=>x.id===id);
@@ -1280,14 +1282,15 @@ const upTime=u=>u.time(lvlOf(u));
 const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u.id)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
 const inBuild=id=>S.build.find(b=>b.id===id);
-function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;}
+function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;if(u.id==='board')growBoard();}
+function growBoard(){if(!R)return;const N=boardN(),M=R.N;if(N<=M)return;const cells=Array(N*N).fill(null);R.cells.forEach((c,i)=>{if(c)cells[Math.floor(i/M)*N+(i%M)]=c;});R.N=N;R.cells=cells;snapBoard();hooks.grow&&hooks.grow(N);}
 function tickBuild(now=Date.now()){const done=[];S.build=S.build.filter(b=>{if(now>=b.until){applyUp(b.id);done.push(b.id);return false;}return true;});return done;}
 function startBuild(id,now=Date.now()){
   tickBuild(now);const u=upById(id);if(!u)return 'none';
   if(upLocked(u))return 'locked';if(inBuild(id))return 'busy';
   const c=upCost(u);if(!isFinite(c))return 'max';
-  if(S.build.length>=S.slots)return 'slots';if(S.shards<c)return 'poor';
-  S.shards-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
+  if(S.build.length>=S.slots)return 'slots';if(S.run.sparks<c)return 'poor';
+  S.run.sparks-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
@@ -1295,7 +1298,7 @@ function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b||S.day.buil
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
 const jokerAvail=j=>S.bestStage>=j.lvl;
-function unlockJoker(id,cur){const j=jokerById(id);if(!j||S.jk[id]||!jokerAvail(j))return false;if(cur==='g'){if(S.gems<j.gm)return false;S.gems-=j.gm;}else{if(S.shards<j.sh)return false;S.shards-=j.sh;}S.jk[id]=1;if(S.equip.length<S.jslots)S.equip.push(id);if(R)R.jk[id]=0;return true;}
+function unlockJoker(id,cur){const j=jokerById(id);if(!j||S.jk[id]||!jokerAvail(j))return false;if(cur==='g'){if(S.gems<j.gm)return false;S.gems-=j.gm;}else{if(S.run.sparks<j.sh)return false;S.run.sparks-=j.sh;}S.jk[id]=1;if(S.equip.length<S.jslots)S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function toggleEquip(id){if(!S.jk[id])return false;const i=S.equip.indexOf(id);if(i>=0){S.equip.splice(i,1);if(R)delete R.jk[id];return true;}if(S.equip.length>=S.jslots)return false;S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function buyJSlot(){const i=S.jslots-1;if(i>=CFG.build.jslotGems.length)return false;const g=CFG.build.jslotGems[i];if(S.gems<g)return false;S.gems-=g;S.jslots++;return true;}
 const jokerNeed=id=>{const j=jokerById(id),l=S.jk[id]||1;return Math.max(4,Math.ceil(j.base*(1-0.08*S.up.catal))-(l-1));};
@@ -1310,7 +1313,8 @@ const spawnLevel=()=>1+tbLvl('birth');
 const spawnInterval=()=>Math.max(CFG.board.spawnMin,CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,tbLvl('cad')));
 const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.up.au_merge);};
 const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1);
-const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1);
+const refMult=()=>1+CFG.prestige.mult*S.prestiges; // multiplicateur permanent d'étincelles gagné à chaque Réfraction
+const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1)*refMult();
 const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
 const boardN=()=>4+S.up.board;
 
@@ -1334,7 +1338,11 @@ function newRun(){
   R.E=S.run.fled?enemyFor(S.run.stage-1):enemyFor(S.run.stage);
   if(S.run.fled&&R.E.type==='boss')R.E=enemyFor(S.run.stage-1);
   if(S.run.stage%10===0&&!S.run.fled){R.mode='boss';R.bossT=CFG.enemy.bossTime;}
-  for(let i=0;i<3;i++)spawnOne();
+  const sv=S.run.cells;
+  const M=Array.isArray(sv)?Math.round(Math.sqrt(sv.length)):0;
+  if(M&&M*M===sv.length&&M<=N&&sv.some(Boolean)){ // plateau conservé d'une session à l'autre (recopié si la grille a grandi)
+    sv.forEach((v,i)=>{const j=M===N?i:(Math.floor(i/M))*N+(i%M);if(v==='j')R.cells[j]={k:'joker'};else if(typeof v==='number'&&v){R.cells[j]={l:Math.abs(v)};if(v<0)R.cells[j].k='gold';}});
+  }else for(let i=0;i<3;i++)spawnOne();
   return R;
 }
 const emptyCells=()=>R.cells.map((c,i)=>c?-1:i).filter(i=>i>=0);
@@ -1411,7 +1419,7 @@ function doMerge(into,l,gold,manual){
   R.cells[into]={l};if(gold)R.cells[into].k='gold';
   S.st.merges++;S.day.merges++;if(manual){S.st.manual++;R.combo=Math.min(R.combo+1,30);R.comboT=3;if(R.combo>S.st.maxCombo)S.st.maxCombo=R.combo;if(R.combo>(S.day.combo||0))S.day.combo=R.combo;}
   const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);
-  if(gold)S.shards+=Math.max(1,Math.round(l*lootMult()));
+  if(gold)S.run.sparks+=Math.max(1,Math.round(l*lootMult()));
   for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+1);
   for(const j of nb(into))if(R.cells[j]&&R.cells[j].k==='lock'){R.cells[j]=null;hooks.unlock(j);}
   hooks.merge(into,l,gold,manual);
@@ -1442,7 +1450,7 @@ function onKill(){
   const E=R.E,n=E.stage;S.st.kills++;S.day.kills++;S.week.kills++;
   const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushWin(R.killWin,R.t,1);
   if(E.type!=='mob'){const k=String(n);if(!S.bestiary[k]||R.bossT>S.bestiary[k])S.bestiary[k]=Math.round(E.type==='boss'?CFG.enemy.bossTime-R.bossT:0);if(E.type==='boss'){S.st.bosses++;S.day.bosses++;}}
-  const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.shards+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
+  const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.run.sparks+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
   hooks.kill(E,sp,sh);
   if(R.mode==='boss'){R.mode='farm';S.run.fled=false;clearLocks();}
   if(S.run.fled){R.E=enemyFor(n);R.E.hp=R.E.max;return;} // ferme sur l'étape précédente
@@ -1470,12 +1478,12 @@ function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.tita
 const prestigeGain=()=>S.run.max>=CFG.prestige.minStage?Math.floor(CFG.prestige.shards(S.run.max)*lootMult()):0;
 function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
-  S.shards+=g;S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
-  S.run={sparks:50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
-  if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
+  S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
+  S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
+  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
-function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.shards*thr))doPrestige();}
+function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}
 /* ---------- hors-ligne ---------- */
 function offlineGains(now=Date.now()){
   const el=(now-S.lastSeen)/1000;if(el<30)return null;
@@ -1678,10 +1686,10 @@ async function netHello(localSeen){
     return {ok:true,used};
   }catch(e){netReady=false;return {ok:false,err:e.message};}
 }
-function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return m;}
+function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return migrate(m);}
 async function netSave(force){
   if(!NET.on||!netReady||netBusy)return false;if(!force&&_dateNow()-lastSync<30000)return false;
-  netBusy=true;try{const res=await rpc('pf_save',Object.assign(auth(),{p_save:S,p_best:Math.max(1,S.bestStage|0),p_prestiges:S.prestiges|0}),8000,!!force);syncClock(res);lastSync=_dateNow();return true;}
+  netBusy=true;try{snapBoard();const res=await rpc('pf_save',Object.assign(auth(),{p_save:S,p_best:Math.max(1,S.bestStage|0),p_prestiges:S.prestiges|0}),8000,!!force);syncClock(res);lastSync=_dateNow();return true;}
   catch(e){return false;}finally{netBusy=false;}
 }
 async function netTime(){try{const r=await rpc('pf_time',{},6000);syncClock(r);return true;}catch(e){return false;}}
@@ -1806,7 +1814,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='8.3 · shards';
+const VERSION='8.4 · une seule monnaie';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -1848,6 +1856,7 @@ hooks.unlock=i=>{fx.burst(i,240,12,180);sfx.tick();};
 hooks.bomb=(i,hit)=>{hit.forEach(j=>fx.burst(j,352,8,200));};
 hooks.full=()=>{};
 hooks.evolve=()=>{fx.evolveT=1;};
+hooks.grow=N=>{fx.pop={};fx.sq={};requestAnimationFrame(resize);fx.glow=1;kick('medium');};
 let drag=null,tapStart=null;
 function drawTray(c,wh){
   const g=c.createLinearGradient(0,0,0,W);g.addColorStop(0,'#1f2e5e');g.addColorStop(1,'#152045');
@@ -2047,10 +2056,10 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 
 function refresh(){
   accrue();roll();
-  $('cS').textContent=fmt(S.shards);$('cG').textContent=grp(S.gems);
+  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);
   $('bQ').hidden=!claimable();
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
-  const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.shards>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.shards>=j.sh);
+  const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
   document.querySelectorAll('[data-ring]').forEach(el=>{const b=inBuild(el.dataset.ring);if(b)el.style.setProperty('--p',(100*Math.min(1,1-(b.until-Date.now())/1000/b.dur))+'%');});
@@ -2075,7 +2084,7 @@ function renderActs(){
   const a=$('acts');let h='';
   const g=prestigeGain(),canP=S.run.max>=CFG.prestige.minStage;
   if(S.run.fled)h+=`<button class="qb hot" id="chal" aria-label="${t('chal_aria',{n:S.run.stage})}"><span>${ic('crown')}</span></button>`;
-  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{n:fmt(g)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
+  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
   if(S.bestStage>=15&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
   a.hidden=!h;
@@ -2097,7 +2106,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='prest')prestigeModal();
   else if(b.id==='titan')titanModal();
 });
-function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('shard')}+${fmt(g)}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-shard" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('spark')}${t('pre_mult',{a:dec(m0,1),b:dec(m1,1)})}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp})}</p><p style="font-weight:700">${t('pre_pot',{n:fmt(g)})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(startTitan()){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -2106,10 +2115,10 @@ function giftTick(dt){
   giftT+=dt;
   if(gift){if(giftT-giftShown>CFG.gift.show){gift=null;$('gift').hidden=true;}return;}
   if(!giftNext)giftNext=giftT+rnd(CFG.gift.every[0],CFG.gift.every[1]);
-  if(giftT>=giftNext&&giftOK()&&$('veil').hidden&&tab==='home'){gift=giftRoll();giftShown=giftT;giftNext=0;const g=$('gift');g.innerHTML=ic(gift.k==='s'?'shard':gift.k==='sp'?'spark':gift.k==='g'?'gem':'bolt',gift.k==='s'?'is':gift.k==='g'?'ig':'ie');g.hidden=false;g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');sfx.tick();}
+  if(giftT>=giftNext&&giftOK()&&$('veil').hidden&&tab==='home'){gift=giftRoll();giftShown=giftT;giftNext=0;const g=$('gift');g.innerHTML=ic(gift.k==='sp'?'spark':gift.k==='g'?'gem':'bolt',gift.k==='g'?'ig':'ie');g.hidden=false;g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');sfx.tick();}
   else if(giftT>=giftNext&&!giftOK())giftNext=giftT+600;
 }
-function giftLabel(gf){return gf.k==='s'?'+'+fmt(gf.v)+' '+t('shards'):gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
+function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('later')}</button></div>`);});
 /* ----- tutoriel ----- */
 let tutoStep=0,hpLagV=1,hintT=null;
@@ -2122,7 +2131,7 @@ function tutoNext(){
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
 let atGroup='start';
-const grpReady=g=>S.build.length<S.slots&&ALLUP.some(u=>u.g===g&&!upLocked(u)&&!inBuild(u.id)&&S.shards>=upCost(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.shards>=j.sh));
+const grpReady=g=>S.build.length<S.slots&&ALLUP.some(u=>u.g===g&&!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh));
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
   return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${S.day.buildAds>=CFG.build.adPerDay?'disabled':''}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
@@ -2131,7 +2140,7 @@ function tileHtml(u,free){
   if(lock)foot=`<div class="tstate">${ic('lock')}${t('at_lock',{n:upReq(u)})}</div>`;
   else if(b)foot=`<div class="tstate run">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></div>`;
   else if(max)foot=`<div class="tstate">${ic('check')}${t('at_maxed')}</div>`;
-  else foot=`<button class="b b-shard sm" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('shard')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
+  else foot=`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
   return `<div class="tile slab ${lock?'locked':''}" data-g="${u.g}"><button class="tile-top" data-updetail="${u.id}" aria-label="${t('at_detail',{t:u.t})}"><span class="tico">${ic(upIcon(u))}</span><span class="tname">${u.t}</span><span class="tlvl">${isFinite(u.max)?t('at_k',{k,m:u.max}):t('lvl',{n:k})}</span></button>${isFinite(u.max)?`<div class="pips"><i style="width:${100*k/u.max}%"></i></div>`:'<div class="pips inf"></div>'}${foot}</div>`;
 }
 function upDetail(id){
@@ -2140,7 +2149,7 @@ function upDetail(id){
   if(lock)act=`<p>${t('at_locked',{n:upReq(u)})}</p>`;
   else if(b)act=`<p>${t('at_inprog',{t:`<b data-until="${b.until}">${dur((b.until-Date.now())/1000)}</b>`})}</p>`;
   else if(max)act=`<p>${t('at_ismax')}</p>`;
-  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-shard" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}>${ic('shard')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
+  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-spark" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${ic('spark')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
   modal(`<div class="mart" style="color:var(--beam)">${ic(upIcon(u))}</div><h2>${u.t}</h2><p>${isFinite(u.max)?t('at_lvl',{k,m:u.max}):t('lvl',{n:k})}</p><p style="color:var(--light)">${max?'':t('at_next',{d:u.d(k)})}</p>${act}<div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
 }
 function renderTab(){
@@ -2151,7 +2160,7 @@ function renderTab(){
   const head=(ttl,sub)=>`<header class="phead"><div><h1 class="ttl">${ttl}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
   if(tab==='atelier'){
     const free=S.slots-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
-    h+=head(t('at_title'),t('at_sub'))+`<div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
+    h+=head(t('at_title'),t('at_sub'))+`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
     h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
     h+=`<div class="grp" role="group" aria-label="${t('at_title')}">${GROUPS.map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpReady(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
     h+=`<p class="note">${GROUPS.find(g=>g.id===atGroup).d}</p>`;
@@ -2159,8 +2168,8 @@ function renderTab(){
       const nj=CFG.build.jslotGems[S.jslots-1];
       h+=`<div class="slotbuy"><span>${t('j_slots',{n:S.equip.length,m:S.jslots})}</span>${nj!=null?`<button class="b b-gem sm" id="buyJSlot" ${S.gems<nj?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nj}</button>`:''}</div><div class="list" style="margin-top:10px">`;
       JOKERS.forEach(j=>{const l=S.jk[j.id]||0,on=S.equip.includes(j.id),av=jokerAvail(j);let btns='';
-        if(!l&&av)btns=`<button class="b b-shard sm" data-unlock="${j.id}:s" ${S.shards<j.sh?'disabled':''}>${ic('shard')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}</button>`;
-        else if(l){const u=upById('j_'+j.id),b=inBuild(u.id),c=upCost(u);btns=`<button class="b sm ${on?'b-gem':''}" data-equip="${j.id}" ${!on&&S.equip.length>=S.jslots?'disabled':''}>${on?t('j_unequip'):t('j_equip')}</button>`+(l<5?(b?`<span class="d">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span>`:`<button class="b b-shard sm" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}>${t('j_lvlbtn',{n:l+1})} ${ic('shard')}${fmt(c)}</button>`):'<span class="d">'+t('j_max')+'</span>');}
+        if(!l&&av)btns=`<button class="b b-spark sm" data-unlock="${j.id}:s" ${S.run.sparks<j.sh?'disabled':''}>${ic('spark')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}</button>`;
+        else if(l){const u=upById('j_'+j.id),b=inBuild(u.id),c=upCost(u);btns=`<button class="b sm ${on?'b-gem':''}" data-equip="${j.id}" ${!on&&S.equip.length>=S.jslots?'disabled':''}>${on?t('j_unequip'):t('j_equip')}</button>`+(l<5?(b?`<span class="d">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span>`:`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${t('j_lvlbtn',{n:l+1})} ${ic('spark')}${fmt(c)}</button>`):'<span class="d">'+t('j_max')+'</span>');}
         h+=`<div class="jcard slab ${on?'on':''} ${!av&&!l?'locked':''}"><span class="jart">${ic(JICON[j.id])}</span><div style="min-width:0"><b>${j.t}</b>${l?`<span class="jl">${t('j_lvl',{n:l})}</span>`:''}<p>${av||l?j.d(Math.max(1,l)):t('j_lock',{n:j.lvl})}</p>${l?`<p class="jmeta">${t('j_charge',{n:jokerNeed(j.id)})}</p>`:''}${btns?`<div class="jbtns">${btns}</div>`:''}</div></div>`;});
       h+='</div>';
     }
@@ -2201,7 +2210,7 @@ function renderTab(){
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
     h+=`<h2 class="sec">${t('pr_name')}</h2><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('pr_newname')}"><button class="b b-gold sm" id="nameBtn">${S.nameChanges===0?t('pr_change'):t('pr_change')+' '+ic('gem')+RENAME}</button></div><p class="err" id="nameErr"></p>`;
     h+=`<p class="note">${S.nameChanges===0?t('pr_first'):''}${t('pr_note')}</p>`;
-    h+=`<h2 class="sec">${t('pr_forge')}<small>${t('pr_forge_sub',{r:fmt(idleRate()),h:2+S.up.cap})}</small></h2><div class="slot slab"><span class="ring" id="forgeRing" style="--p:${100*S.idle.bank/idleCap()}%">${ic('forge','ie')}</span><div><b id="forgeN">${t('pr_forge_n',{n:fmt(Math.floor(S.idle.bank))})}</b><div class="note" style="margin:2px 0 0">${t('pr_forge_d')}</div></div><button class="b b-shard sm" id="collectBtn" ${S.idle.bank<1?'disabled':''}>${t('pr_collect')}</button></div>`;
+    h+=`<h2 class="sec">${t('pr_forge')}<small>${t('pr_forge_sub',{r:fmt(idleRate()),h:2+S.up.cap})}</small></h2><div class="slot slab"><span class="ring" id="forgeRing" style="--p:${100*S.idle.bank/idleCap()}%">${ic('forge','ie')}</span><div><b id="forgeN">${t('pr_forge_n',{n:fmt(Math.floor(S.idle.bank))})}</b><div class="note" style="margin:2px 0 0">${t('pr_forge_d')}</div></div><button class="b b-spark sm" id="collectBtn" ${S.idle.bank<1?'disabled':''}>${t('pr_collect')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_settings')}</h2><div class="list">`;
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
     h+=`<label class="switch slab">${t('pr_music')}<input type="checkbox" id="setMusic" ${S.settings.music?'checked':''}></label>`;
@@ -2234,7 +2243,7 @@ function doBuild(id){const r=startBuild(id);if(r==='ok'){sfx.buy();toast(t('at_s
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
-  else if(el.id==='collectBtn'){const g=collect();if(g){sfx.chord();save();toast('+'+fmt(g)+' '+t('shards'));const cs=$('cS');flyShards($('forgeRing'),cs,Math.min(8,2+Math.floor(Math.log10(g+1))));refresh();renderTab();}}
+  else if(el.id==='collectBtn'){const g=collect();if(g){sfx.chord();save();toast('+'+fmt(g)+' '+t('sparks'));const cs=$('cSp');flyShards($('forgeRing'),cs,Math.min(8,2+Math.floor(Math.log10(g+1))));refresh();renderTab();}}
   else if(el.dataset.wp){if(buyWP(+el.dataset.wp)){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(resetWP()){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
   else if(el.dataset.build)doBuild(el.dataset.build);
@@ -2272,7 +2281,7 @@ $('modal').addEventListener('click',e=>{
   else if(el.hasAttribute('data-doreset')){S=fresh();closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}const r=rename(v);if(r.ok){closeModal();toast(t('name_saved'));netName(S.name);save();refresh();}else $('nameErr').textContent=r.msg;}
   else if(el.id==='loginGo'){const r=claimLogin();closeModal();if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
-  else if(el.id==='doPrest'){closeModal();S.adCount++;const g=doPrestige();renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!S.offerAt&&S.prestiges>=1){S.offerAt=Date.now();save();starterModal();}else if(S.prestiges===1)toast(t('pre_tip'));});}
+  else if(el.id==='doPrest'){closeModal();S.adCount++;const g=doPrestige();renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!S.offerAt&&S.prestiges>=1){S.offerAt=Date.now();save();starterModal();}else if(S.prestiges===1)toast(t('pre_tip'));});}
   else if(el.id==='titanGo'){closeModal();launchTitan();}
   else if(el.id==='giftGo'){const gf=gift;gift=null;$('gift').hidden=true;giftNext=0;closeModal();showAd(()=>{giftTake(gf);toast(giftLabel(gf));sfx.win();save();refresh();if(R)renderTB();},t('ad_sim'));}
   else if(el.id==='titanAd'){closeModal();rewarded(()=>{titanAdTicket();toast(t('titan_got'));titanModal();});}
@@ -2354,7 +2363,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();net
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet};
 setLang(pickLang());load();const localSeen=S.lastSeen||0;accrue();roll();applyStatic();
 {const o=offlineGains();startRun();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0))offlineModal(o);S.lastSeen=Date.now();}
 requestAnimationFrame(frame);

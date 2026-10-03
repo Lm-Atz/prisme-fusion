@@ -108,3 +108,5 @@ body{margin:0}
 .nav{padding-bottom:var(--sab)}
 .veil{padding:calc(16px + var(--sat)) 16px calc(16px + var(--sab))}
 #toast{top:calc(64px + var(--sat))}
+.b-spark{--f:#fff3b0;--f2:#ffc857;--e:var(--beam-edge);--t:#3a2a06}
+.bal{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;font-size:15px;color:var(--mist)}.bal b{font-size:20px;color:var(--light)}.bal .i{width:22px;height:22px}

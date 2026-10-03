@@ -38,8 +38,8 @@ async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.
   r=await ev(A,()=>{const G=window.__G;G.S.lastSeen=Date.now()-3600e3;return Date.now()-G.S.lastSeen;});T('Date.now décalé',r>=3600e3&&r<3605e3);
   // progression puis sauvegarde forcée
   const idA=await ev(A,()=>window.__G.DEV.id);
-  await ev(A,()=>{const G=window.__G;G.S.shards=777;G.S.bestStage=12;G.S.run.stage=12;G.S.st.kills=50;G.save();return G.netSave(true);});await A.waitForTimeout(300);
-  T('sauvegarde serveur à jour',DB.players[idA].save.shards===777&&DB.players[idA].best===12);
+  await ev(A,()=>{const G=window.__G;G.S.run.sparks=777;G.S.bestStage=12;G.S.run.stage=12;G.S.st.kills=50;G.save();return G.netSave(true);});await A.waitForTimeout(300);
+  T('sauvegarde serveur à jour',DB.players[idA].save.run.sparks===777&&DB.players[idA].best===12);
   // throttle 30 s
   const n0=calls.filter(c=>c==='pf_save').length;await ev(A,()=>window.__G.netSave(false));await A.waitForTimeout(200);T('netSave non forcé limité à 30 s',calls.filter(c=>c==='pf_save').length===n0);
   // masquage → save forcée
@@ -62,26 +62,26 @@ async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.
   r=await ev(A,()=>({off:!window.__G.netOK,veil:!document.getElementById('offline').hidden,msg:document.getElementById('netMsg').textContent}));
   T('serveur HS → partie en pause',r.off&&r.veil);T('message serveur injoignable',/injoignable/.test(r.msg));
   down=false;await A.click('#retryNet');await A.waitForTimeout(400);r=await ev(A,()=>window.__G.netOK&&document.getElementById('offline').hidden);T('retour en ligne',r);
-  await ev(A,()=>{window.__G.S.shards=4242;window.__G.S.st.kills=60;window.__G.save();return window.__G.netSave(true);});await A.waitForTimeout(300);
+  await ev(A,()=>{window.__G.S.run.sparks=4242;window.__G.S.st.kills=60;window.__G.save();return window.__G.netSave(true);});await A.waitForTimeout(300);
   const savedUpdated=DB.players[idA].updated;
   // --- appareil B : même identité, sauvegarde locale vide → récupère le serveur
   const cB=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cB);const B=await cB.newPage();B.on('pageerror',e=>errs.push(e.message));
   await B.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:await ev(A,()=>window.__G.DEV.s)}));
   await B.goto('http://localhost:8765/');await B.waitForTimeout(1200);
-  r=await ev(B,()=>({shards:window.__G.S.shards,name:window.__G.S.name,best:window.__G.S.bestStage,fire:window.__G.R.cells.some(c=>c&&c.ft!=null)||true}));
+  r=await ev(B,()=>({shards:window.__G.S.run.sparks,name:window.__G.S.name,best:window.__G.S.bestStage,fire:window.__G.R.cells.some(c=>c&&c.ft!=null)||true}));
   T('appareil B récupère la sauvegarde serveur',r.shards===4242&&r.best===12);T('pseudo serveur repris',r.name==='Lumen Vif');
   // --- appareil B avec une sauvegarde locale plus récente → la garde
   const cC=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cC);const C=await cC.newPage();C.on('pageerror',e=>errs.push(e.message));
-  await C.addInitScript(({d,s})=>{localStorage.setItem('prisme-dev',d);localStorage.setItem('prisme-fusion-v7',s);},{d:JSON.stringify({id:idA,s:await ev(A,()=>window.__G.DEV.s)}),s:await ev(A,()=>{const S=JSON.parse(JSON.stringify(window.__G.S));S.shards=9999;S.lastSeen=Date.now()+600e3;return JSON.stringify(S);})});
+  await C.addInitScript(({d,s})=>{localStorage.setItem('prisme-dev',d);localStorage.setItem('prisme-fusion-v7',s);},{d:JSON.stringify({id:idA,s:await ev(A,()=>window.__G.DEV.s)}),s:await ev(A,()=>{const S=JSON.parse(JSON.stringify(window.__G.S));S.run.sparks=9999;S.lastSeen=Date.now()+600e3;return JSON.stringify(S);})});
   await C.goto('http://localhost:8765/');await C.waitForTimeout(1200);
-  r=await ev(C,()=>window.__G.S.shards);T('sauvegarde locale plus récente conservée',r===9999);
-  T('…et poussée au serveur',DB.players[idA].save.shards===9999);
+  r=await ev(C,()=>window.__G.S.run.sparks);T('sauvegarde locale plus récente conservée',r===9999);
+  T('…et poussée au serveur',DB.players[idA].save.run.sparks===9999);
   // --- mauvais secret → pas de hello, pas d'écrasement
   const cD=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cD);const D=await cD.newPage();D.on('pageerror',e=>errs.push(e.message));
   await D.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:'mauvais'}));
   await D.goto('http://localhost:8765/');await D.waitForTimeout(1200);
   r=await ev(D,()=>({ready:window.__G.netReady,on:window.__G.netOK}));T('secret faux → hors session serveur',!r.ready);T('mais le jeu reste jouable en ligne',r.on);
-  T('sauvegarde serveur intacte',DB.players[idA].save.shards===9999);
+  T('sauvegarde serveur intacte',DB.players[idA].save.run.sparks===9999);
   // score implausible refusé côté client sans casser le jeu
   await ev(A,()=>{window.__G.R.titanDmg=1e40;window.__G.endTitan();});await A.waitForTimeout(300);T('score absurde rejeté, jeu intact',DB.league[0].score===12345);
   T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs);

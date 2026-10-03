@@ -25,8 +25,16 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('board');S.
 T('recherche plateau → 5x5',r.n5===5);T('→ 6x6',r.n6===6);T('retour 4x4',r.n4===4);T('étincelles ×3 à l\'étage 1',Math.abs(r.k1-0.8*1.18*3)<1e-9);T('bonus fondu à l\'étage 16',Math.abs(r.k16-r.ref)<1e-9);
 
 r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};R.paused=false;S.up.loot=0;S.lootX2=false;
-  const sh0=S.shards;S.run.stage=10;S.run.fled=false;G.startRun();G.R.E.hp=0.001;G.R.cells.fill(null);G.R.cells[0]={l:3};for(let i=0;i<30;i++)G.runTick(0.1);o.boss=G.R.E.type;o.gain=S.shards-sh0;o.k=G.CFG.shards.kill(10,'boss');return o;});
-T('le boss lâche des éclats (4 × étage)',r.gain>=40&&r.gain<41);
+  const sh0=S.run.sparks;S.run.stage=10;S.run.fled=false;G.startRun();G.R.E.hp=0.001;G.R.cells.fill(null);G.R.cells[0]={l:3};for(let i=0;i<30;i++)G.runTick(0.1);o.boss=G.R.E.type;o.gain=S.run.sparks-sh0;o.k=G.CFG.shards.kill(10,'boss');o.sp=G.CFG.sparks.kill(10)*5*G.sparkMult();return o;});
+T('le boss lâche un bonus d\'étincelles (4 × étage)',r.gain>=40+r.sp-0.01&&r.gain<41+r.sp+1);
+
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};G.R.cells.fill(null);G.R.cells[0]={l:5};G.R.cells[7]={l:2,k:'gold'};G.R.cells[3]={k:'joker'};G.save();const raw=localStorage.getItem('prisme-fusion-v7');o.saved=JSON.parse(raw).run.cells;
+  G.load();G.newRun();o.l0=G.R.cells[0]&&G.R.cells[0].l;o.gold=G.R.cells[7]&&G.R.cells[7].k==='gold'&&G.R.cells[7].l===2;o.jok=G.R.cells[3]&&G.R.cells[3].k==='joker';o.empty=G.R.cells.filter(Boolean).length===3;
+  // la grille grandit sans perdre les gemmes (après le load, le plateau restauré est en place)
+  const S2=G.S;G.R.cells.fill(null);G.R.cells[0]={l:5};G.R.cells[7]={l:2,k:'gold'};S2.run.sparks=1e9;S2.bestStage=40;S2.build=[];S2.up.board=0;const r0=G.startBuild('board',0);S2.build.forEach(b=>b.until=0);G.tickBuild(1);
+  o.grown=G.R.N===5&&G.R.cells.length===25&&G.R.cells[0]&&G.R.cells[0].l===5&&G.R.cells[8]&&G.R.cells[8].k==='gold';o.r0=r0;
+  return o;});
+T('plateau sauvegardé (niveaux, dorée, joker)',Array.isArray(r.saved)&&r.saved[0]===5&&r.saved[7]===-2&&r.saved[3]==='j');T('plateau restauré au relancement',r.l0===5&&r.gold&&r.jok&&r.empty);T('la grille grandit en direct sans perdre les gemmes',r.grown);
 // --- tick, spawn, auto, kill, étapes, boss
 r=await ev(()=>{const G=window.__G,R=G.R,S=G.S;const o={};R.paused=false;
   R.cells.fill(null);const n0=R.cells.filter(Boolean).length;for(let i=0;i<40;i++)G.runTick(0.1);o.spawned=R.cells.filter(Boolean).length>n0;
@@ -56,7 +64,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.stage=9;S.run.fled=fal
 T('boss à l\'étape 10 avec chrono',r.boss&&r.bossT>55&&r.bossT<=60);T('boss fuit, retour à l\'étape 9',r.fled);T('redéfier le boss',r.chal);T('bouclier phase 2',r.shield);T('petite gemme bloquée',r.blocked);T('grosse gemme passe',r.pass);T('le carré perce le bouclier',r.sqPass);T('verrous expirent',r.lockGone);T('boss vaincu → étape 11',r.after);
 // --- prestige, offline, titan, jokers
 r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};
-  S.run.max=25;o.noPrestige=G.prestigeGain()===0;S.run.max=30;o.gain=G.prestigeGain();const sh=S.shards;S.run.tb.cad=7;const pp0=S.pp||0;const g=G.doPrestige();o.ppAfter=S.pp===pp0+1;o.prest=g===o.gain&&S.shards===sh+g&&S.run.stage===1&&S.run.tb.cad===0&&S.prestiges===1&&R.E.stage===1;
+  S.run.max=25;o.noPrestige=G.prestigeGain()===0;S.run.max=30;o.gain=G.prestigeGain();const sh=S.run.sparks;S.run.tb.cad=7;const pp0=S.pp||0;const g=G.doPrestige();o.ppAfter=S.pp===pp0+1;o.prest=g===o.gain&&S.run.sparks===g+(S.up.st_bank?50*Math.pow(2.2,S.up.st_bank):0)&&S.run.stage===1&&G.refMult()===1.2&&S.run.tb.cad===0&&S.prestiges===1&&R.E.stage===1;
   S.up.st_cad=3;o.startLvl=G.tbLvl('cad')===3;
   // hors-ligne
   S.run.srate=10;S.run.krate=0;S.lastSeen=Date.now()-3600e3;const off=G.offlineGains();o.off=off&&off.sparks===Math.floor(10*3600*G.CFG.offline.factor);
@@ -70,7 +78,7 @@ r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};
   // auto-fusion consomme le joker
   S.run.tb.auto=10;for(let i=0;i<50;i++)G.runTick(0.1);o.jokerUsed=!R2.cells.some(c=>c&&c.k==='joker');
   return o;});
-T('pas de prestige avant l\'étape 30',r.noPrestige);T('prestige : éclats, remise à zéro',r.prest);T('prestige donne des points',r.ppAfter);T('niveau de départ par recherche',r.startLvl);T('gains hors-ligne',r.off);T('plafond 2 h',r.cap);T('Veille étend le plafond',r.cap2);T('expédition avance des étapes, pas au-delà du boss',r.exped);T('absence courte ignorée',r.short);
+T('pas de prestige avant l\'étape 30',r.noPrestige);T('réfraction : trésor de départ + ×1,2 étincelles',r.prest);T('prestige donne des points',r.ppAfter);T('niveau de départ par recherche',r.startLvl);T('gains hors-ligne',r.off);T('plafond 2 h',r.cap);T('Veille étend le plafond',r.cap2);T('expédition avance des étapes, pas au-delà du boss',r.exped);T('absence courte ignorée',r.short);
 T('titan prêt',r.tReady);T('titan démarre',r.tStart);T('dégâts titan comptés',r.tDmg);T('fin titan : ligue',r.tEnd);T('2 tickets gratuits',r.tk&&r.tk1);T('sans ticket : pas de Titan',r.tNone);T('ticket pub (1 par jour)',r.tAd);T('ticket gemmes (1 par jour)',r.tGem);T('hors jour Titan : indisponible',r.tDay);T('joker équipé',r.jk);T('joker chargé par les fusions',r.charged);T('caméléon posé',r.use);T('auto-fusion utilise le caméléon',r.jokerUsed);
 // --- armes
 r=await ev(()=>{const G=window.__G,S=G.S;G.startRun();const R=G.R;const o={};R.cells.fill(null);
@@ -90,7 +98,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;G.startRun();const R=G.R;const o={};R.c
   return o;});
 T('8 armes par forme, cycle de 8',r.w);T('rang',r.rank);T('points de prestige par étape',r.pp);T('dépenser un point dans une arme',r.buy);T('l\'arme améliorée est plus forte',r.pow);T('coût croissant',r.buy2&&r.poor);T('redistribuer en gemmes',r.reset);T('pentagone brûle',r.burn);T('octogone gèle le chrono',r.freeze);T('étoile rapporte des étincelles',r.star);T('hexagone charge les jokers',r.hex);T('losange : aura',r.aura);T('combo manuel accélère les tirs',r.combo);
 // --- atelier, quêtes, calendrier, boutique
-r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.shards=100000;S.gems=500;
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=500;
   o.start=G.startBuild('st_cad');o.busy=G.startBuild('st_power');S.slots=2;o.two=G.startBuild('power');o.locked=G.startBuild('au_prestige');
   const bld=S.build[0];o.rush=G.rushGems(bld)>=1;o.rushed=G.rushBuild('st_cad')&&S.up.st_cad>0;
   o.ad=G.adBuild('power');o.n=G.ALLUP.length;o.groups=G.GROUPS.length;o.max=Math.max(...G.UPG.map(u=>u.max));
@@ -132,9 +140,9 @@ const txt=await ev(()=>{const bad=[];document.querySelectorAll('#game *').forEac
 T('pas de débordement',await ev(()=>document.documentElement.scrollHeight<=innerHeight));
 // recherches infinies, cadeaux
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('power');S.up.power=200;o.inf=isFinite(G.upCost(u))&&G.upCost(u)>0&&G.upTime(u)<=2592000&&G.upTime(u)>86400;S.up.power=0;o.crit=G.upById('crit').max===25;o.board=G.upById('board').max===2;
-  S.bestStage=40;S.day.gifts=0;G.forceGift();o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.shards,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
+  S.bestStage=40;S.day.gifts=0;G.forceGift();o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.run.sparks,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
 T('recherches infinies, durée plafonnée à 30 j',r.inf);T('probabilités et plateau restent plafonnés',r.crit&&r.board);T('bulle cadeau affichée',r.shown);T('cadeau : modale',r.modal);
-await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S=window.__G.S;return S.day.gifts===1&&(S.shards>b.sh||S.gems>b.gm||S.run.sparks>b.sp||S.boostUntil>Date.now());},r.before));
+await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S=window.__G.S;return S.day.gifts===1&&(S.run.sparks>b.sh||S.gems>b.gm||S.run.sparks>b.sp||S.boostUntil>Date.now());},r.before));
 T('plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=G.CFG.gift.perDay;const ok=!G.giftOK();G.S.day.gifts=0;return ok;}));
 // secousses : pas de cumul
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));

@@ -35,10 +35,10 @@ async function netHello(localSeen){
     return {ok:true,used};
   }catch(e){netReady=false;return {ok:false,err:e.message};}
 }
-function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return m;}
+function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return migrate(m);}
 async function netSave(force){
   if(!NET.on||!netReady||netBusy)return false;if(!force&&_dateNow()-lastSync<30000)return false;
-  netBusy=true;try{const res=await rpc('pf_save',Object.assign(auth(),{p_save:S,p_best:Math.max(1,S.bestStage|0),p_prestiges:S.prestiges|0}),8000,!!force);syncClock(res);lastSync=_dateNow();return true;}
+  netBusy=true;try{snapBoard();const res=await rpc('pf_save',Object.assign(auth(),{p_save:S,p_best:Math.max(1,S.bestStage|0),p_prestiges:S.prestiges|0}),8000,!!force);syncClock(res);lastSync=_dateNow();return true;}
   catch(e){return false;}finally{netBusy=false;}
 }
 async function netTime(){try{const r=await rpc('pf_time',{},6000);syncClock(r);return true;}catch(e){return false;}}

@@ -1,4 +1,4 @@
-const VERSION='8.3 · shards';
+const VERSION='8.4 · une seule monnaie';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -40,6 +40,7 @@ hooks.unlock=i=>{fx.burst(i,240,12,180);sfx.tick();};
 hooks.bomb=(i,hit)=>{hit.forEach(j=>fx.burst(j,352,8,200));};
 hooks.full=()=>{};
 hooks.evolve=()=>{fx.evolveT=1;};
+hooks.grow=N=>{fx.pop={};fx.sq={};requestAnimationFrame(resize);fx.glow=1;kick('medium');};
 let drag=null,tapStart=null;
 function drawTray(c,wh){
   const g=c.createLinearGradient(0,0,0,W);g.addColorStop(0,'#1f2e5e');g.addColorStop(1,'#152045');
@@ -185,10 +186,10 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 
 function refresh(){
   accrue();roll();
-  $('cS').textContent=fmt(S.shards);$('cG').textContent=grp(S.gems);
+  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);
   $('bQ').hidden=!claimable();
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
-  const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.shards>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.shards>=j.sh);
+  const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
   document.querySelectorAll('[data-ring]').forEach(el=>{const b=inBuild(el.dataset.ring);if(b)el.style.setProperty('--p',(100*Math.min(1,1-(b.until-Date.now())/1000/b.dur))+'%');});
@@ -213,7 +214,7 @@ function renderActs(){
   const a=$('acts');let h='';
   const g=prestigeGain(),canP=S.run.max>=CFG.prestige.minStage;
   if(S.run.fled)h+=`<button class="qb hot" id="chal" aria-label="${t('chal_aria',{n:S.run.stage})}"><span>${ic('crown')}</span></button>`;
-  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{n:fmt(g)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
+  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
   if(S.bestStage>=15&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
   a.hidden=!h;
@@ -235,7 +236,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='prest')prestigeModal();
   else if(b.id==='titan')titanModal();
 });
-function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('shard')}+${fmt(g)}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-shard" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('spark')}${t('pre_mult',{a:dec(m0,1),b:dec(m1,1)})}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp})}</p><p style="font-weight:700">${t('pre_pot',{n:fmt(g)})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(startTitan()){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -244,10 +245,10 @@ function giftTick(dt){
   giftT+=dt;
   if(gift){if(giftT-giftShown>CFG.gift.show){gift=null;$('gift').hidden=true;}return;}
   if(!giftNext)giftNext=giftT+rnd(CFG.gift.every[0],CFG.gift.every[1]);
-  if(giftT>=giftNext&&giftOK()&&$('veil').hidden&&tab==='home'){gift=giftRoll();giftShown=giftT;giftNext=0;const g=$('gift');g.innerHTML=ic(gift.k==='s'?'shard':gift.k==='sp'?'spark':gift.k==='g'?'gem':'bolt',gift.k==='s'?'is':gift.k==='g'?'ig':'ie');g.hidden=false;g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');sfx.tick();}
+  if(giftT>=giftNext&&giftOK()&&$('veil').hidden&&tab==='home'){gift=giftRoll();giftShown=giftT;giftNext=0;const g=$('gift');g.innerHTML=ic(gift.k==='sp'?'spark':gift.k==='g'?'gem':'bolt',gift.k==='g'?'ig':'ie');g.hidden=false;g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');sfx.tick();}
   else if(giftT>=giftNext&&!giftOK())giftNext=giftT+600;
 }
-function giftLabel(gf){return gf.k==='s'?'+'+fmt(gf.v)+' '+t('shards'):gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
+function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('later')}</button></div>`);});
 /* ----- tutoriel ----- */
 let tutoStep=0,hpLagV=1,hintT=null;
@@ -260,7 +261,7 @@ function tutoNext(){
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
 let atGroup='start';
-const grpReady=g=>S.build.length<S.slots&&ALLUP.some(u=>u.g===g&&!upLocked(u)&&!inBuild(u.id)&&S.shards>=upCost(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.shards>=j.sh));
+const grpReady=g=>S.build.length<S.slots&&ALLUP.some(u=>u.g===g&&!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh));
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
   return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${S.day.buildAds>=CFG.build.adPerDay?'disabled':''}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
@@ -269,7 +270,7 @@ function tileHtml(u,free){
   if(lock)foot=`<div class="tstate">${ic('lock')}${t('at_lock',{n:upReq(u)})}</div>`;
   else if(b)foot=`<div class="tstate run">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></div>`;
   else if(max)foot=`<div class="tstate">${ic('check')}${t('at_maxed')}</div>`;
-  else foot=`<button class="b b-shard sm" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('shard')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
+  else foot=`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
   return `<div class="tile slab ${lock?'locked':''}" data-g="${u.g}"><button class="tile-top" data-updetail="${u.id}" aria-label="${t('at_detail',{t:u.t})}"><span class="tico">${ic(upIcon(u))}</span><span class="tname">${u.t}</span><span class="tlvl">${isFinite(u.max)?t('at_k',{k,m:u.max}):t('lvl',{n:k})}</span></button>${isFinite(u.max)?`<div class="pips"><i style="width:${100*k/u.max}%"></i></div>`:'<div class="pips inf"></div>'}${foot}</div>`;
 }
 function upDetail(id){
@@ -278,7 +279,7 @@ function upDetail(id){
   if(lock)act=`<p>${t('at_locked',{n:upReq(u)})}</p>`;
   else if(b)act=`<p>${t('at_inprog',{t:`<b data-until="${b.until}">${dur((b.until-Date.now())/1000)}</b>`})}</p>`;
   else if(max)act=`<p>${t('at_ismax')}</p>`;
-  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-shard" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}>${ic('shard')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
+  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-spark" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${ic('spark')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
   modal(`<div class="mart" style="color:var(--beam)">${ic(upIcon(u))}</div><h2>${u.t}</h2><p>${isFinite(u.max)?t('at_lvl',{k,m:u.max}):t('lvl',{n:k})}</p><p style="color:var(--light)">${max?'':t('at_next',{d:u.d(k)})}</p>${act}<div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
 }
 function renderTab(){
@@ -289,7 +290,7 @@ function renderTab(){
   const head=(ttl,sub)=>`<header class="phead"><div><h1 class="ttl">${ttl}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
   if(tab==='atelier'){
     const free=S.slots-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
-    h+=head(t('at_title'),t('at_sub'))+`<div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
+    h+=head(t('at_title'),t('at_sub'))+`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
     h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
     h+=`<div class="grp" role="group" aria-label="${t('at_title')}">${GROUPS.map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpReady(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
     h+=`<p class="note">${GROUPS.find(g=>g.id===atGroup).d}</p>`;
@@ -297,8 +298,8 @@ function renderTab(){
       const nj=CFG.build.jslotGems[S.jslots-1];
       h+=`<div class="slotbuy"><span>${t('j_slots',{n:S.equip.length,m:S.jslots})}</span>${nj!=null?`<button class="b b-gem sm" id="buyJSlot" ${S.gems<nj?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nj}</button>`:''}</div><div class="list" style="margin-top:10px">`;
       JOKERS.forEach(j=>{const l=S.jk[j.id]||0,on=S.equip.includes(j.id),av=jokerAvail(j);let btns='';
-        if(!l&&av)btns=`<button class="b b-shard sm" data-unlock="${j.id}:s" ${S.shards<j.sh?'disabled':''}>${ic('shard')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}</button>`;
-        else if(l){const u=upById('j_'+j.id),b=inBuild(u.id),c=upCost(u);btns=`<button class="b sm ${on?'b-gem':''}" data-equip="${j.id}" ${!on&&S.equip.length>=S.jslots?'disabled':''}>${on?t('j_unequip'):t('j_equip')}</button>`+(l<5?(b?`<span class="d">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span>`:`<button class="b b-shard sm" data-build="${u.id}" ${free<1||S.shards<c?'disabled':''}>${t('j_lvlbtn',{n:l+1})} ${ic('shard')}${fmt(c)}</button>`):'<span class="d">'+t('j_max')+'</span>');}
+        if(!l&&av)btns=`<button class="b b-spark sm" data-unlock="${j.id}:s" ${S.run.sparks<j.sh?'disabled':''}>${ic('spark')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}</button>`;
+        else if(l){const u=upById('j_'+j.id),b=inBuild(u.id),c=upCost(u);btns=`<button class="b sm ${on?'b-gem':''}" data-equip="${j.id}" ${!on&&S.equip.length>=S.jslots?'disabled':''}>${on?t('j_unequip'):t('j_equip')}</button>`+(l<5?(b?`<span class="d">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span>`:`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${t('j_lvlbtn',{n:l+1})} ${ic('spark')}${fmt(c)}</button>`):'<span class="d">'+t('j_max')+'</span>');}
         h+=`<div class="jcard slab ${on?'on':''} ${!av&&!l?'locked':''}"><span class="jart">${ic(JICON[j.id])}</span><div style="min-width:0"><b>${j.t}</b>${l?`<span class="jl">${t('j_lvl',{n:l})}</span>`:''}<p>${av||l?j.d(Math.max(1,l)):t('j_lock',{n:j.lvl})}</p>${l?`<p class="jmeta">${t('j_charge',{n:jokerNeed(j.id)})}</p>`:''}${btns?`<div class="jbtns">${btns}</div>`:''}</div></div>`;});
       h+='</div>';
     }
@@ -339,7 +340,7 @@ function renderTab(){
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
     h+=`<h2 class="sec">${t('pr_name')}</h2><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('pr_newname')}"><button class="b b-gold sm" id="nameBtn">${S.nameChanges===0?t('pr_change'):t('pr_change')+' '+ic('gem')+RENAME}</button></div><p class="err" id="nameErr"></p>`;
     h+=`<p class="note">${S.nameChanges===0?t('pr_first'):''}${t('pr_note')}</p>`;
-    h+=`<h2 class="sec">${t('pr_forge')}<small>${t('pr_forge_sub',{r:fmt(idleRate()),h:2+S.up.cap})}</small></h2><div class="slot slab"><span class="ring" id="forgeRing" style="--p:${100*S.idle.bank/idleCap()}%">${ic('forge','ie')}</span><div><b id="forgeN">${t('pr_forge_n',{n:fmt(Math.floor(S.idle.bank))})}</b><div class="note" style="margin:2px 0 0">${t('pr_forge_d')}</div></div><button class="b b-shard sm" id="collectBtn" ${S.idle.bank<1?'disabled':''}>${t('pr_collect')}</button></div>`;
+    h+=`<h2 class="sec">${t('pr_forge')}<small>${t('pr_forge_sub',{r:fmt(idleRate()),h:2+S.up.cap})}</small></h2><div class="slot slab"><span class="ring" id="forgeRing" style="--p:${100*S.idle.bank/idleCap()}%">${ic('forge','ie')}</span><div><b id="forgeN">${t('pr_forge_n',{n:fmt(Math.floor(S.idle.bank))})}</b><div class="note" style="margin:2px 0 0">${t('pr_forge_d')}</div></div><button class="b b-spark sm" id="collectBtn" ${S.idle.bank<1?'disabled':''}>${t('pr_collect')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_settings')}</h2><div class="list">`;
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
     h+=`<label class="switch slab">${t('pr_music')}<input type="checkbox" id="setMusic" ${S.settings.music?'checked':''}></label>`;
@@ -372,7 +373,7 @@ function doBuild(id){const r=startBuild(id);if(r==='ok'){sfx.buy();toast(t('at_s
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
-  else if(el.id==='collectBtn'){const g=collect();if(g){sfx.chord();save();toast('+'+fmt(g)+' '+t('shards'));const cs=$('cS');flyShards($('forgeRing'),cs,Math.min(8,2+Math.floor(Math.log10(g+1))));refresh();renderTab();}}
+  else if(el.id==='collectBtn'){const g=collect();if(g){sfx.chord();save();toast('+'+fmt(g)+' '+t('sparks'));const cs=$('cSp');flyShards($('forgeRing'),cs,Math.min(8,2+Math.floor(Math.log10(g+1))));refresh();renderTab();}}
   else if(el.dataset.wp){if(buyWP(+el.dataset.wp)){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(resetWP()){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
   else if(el.dataset.build)doBuild(el.dataset.build);
@@ -410,7 +411,7 @@ $('modal').addEventListener('click',e=>{
   else if(el.hasAttribute('data-doreset')){S=fresh();closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}const r=rename(v);if(r.ok){closeModal();toast(t('name_saved'));netName(S.name);save();refresh();}else $('nameErr').textContent=r.msg;}
   else if(el.id==='loginGo'){const r=claimLogin();closeModal();if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
-  else if(el.id==='doPrest'){closeModal();S.adCount++;const g=doPrestige();renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!S.offerAt&&S.prestiges>=1){S.offerAt=Date.now();save();starterModal();}else if(S.prestiges===1)toast(t('pre_tip'));});}
+  else if(el.id==='doPrest'){closeModal();S.adCount++;const g=doPrestige();renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!S.offerAt&&S.prestiges>=1){S.offerAt=Date.now();save();starterModal();}else if(S.prestiges===1)toast(t('pre_tip'));});}
   else if(el.id==='titanGo'){closeModal();launchTitan();}
   else if(el.id==='giftGo'){const gf=gift;gift=null;$('gift').hidden=true;giftNext=0;closeModal();showAd(()=>{giftTake(gf);toast(giftLabel(gf));sfx.win();save();refresh();if(R)renderTB();},t('ad_sim'));}
   else if(el.id==='titanAd'){closeModal();rewarded(()=>{titanAdTicket();toast(t('titan_got'));titanModal();});}
@@ -492,7 +493,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();net
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet};
 setLang(pickLang());load();const localSeen=S.lastSeen||0;accrue();roll();applyStatic();
 {const o=offlineGains();startRun();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0))offlineModal(o);S.lastSeen=Date.now();}
 requestAnimationFrame(frame);

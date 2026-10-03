@@ -7,7 +7,7 @@ const CFG={
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
-  prestige:{minStage:30,shards:n=>Math.floor(10*Math.pow(1.15,n))},
+  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n))},
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
   build:{gemSec:300,adCut:1800,adPerDay:3,slotGems:[200,500],jslotGems:[150,350]},
@@ -92,7 +92,7 @@ for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k
 const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:40,c:'#ff3ec8'},{id:'or',price:80,c:'#ffd23e'},{id:'prisme',price:150,c:'rainbow'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
 function fresh(){
   const now=Date.now();
-  return {v:3,gems:20,shards:0,maxStage:1,bestStage:1,prestiges:0,
+  return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
     pp:0,wp:{},idle:{bank:0,t:now},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
@@ -104,22 +104,23 @@ function fresh(){
 }
 let S=fresh();
 const KEY='prisme-fusion-v7';
-function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});S=merged;}}}catch(e){}}
-function save(){S.lastSeen=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
+function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
+function migrate(m){if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
-function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.shards+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
-function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${I.s}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
+function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
+function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
 /* ---------- cadeaux : une bulle apparaît de temps en temps, une pub = un bonus ---------- */
 function giftRoll(){
   const r=Math.random(),st=Math.max(S.bestStage,1);
-  if(r<0.35)return {k:'s',v:Math.max(30,Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*0.25))};
-  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300))};
+  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300),Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*lootMult()*0.25))};
   if(r<0.85)return {k:'g',v:5+Math.floor(Math.random()*6)};
   return {k:'b',v:0.5};
 }
 function giftOK(){roll();return (S.day.gifts||0)<CFG.gift.perDay;}
-function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.shards+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
+function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
 
 /* ================= calendrier de connexion ================= */
 const LOGIN=[{g:10},{b:2},{s:300},{g:20},{b:4},{s:2000},{joker:true}];
@@ -133,7 +134,7 @@ function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.lo
 const idleRate=()=>10*Math.pow(1.45,S.up.prod);
 const idleCap=()=>idleRate()*(2+S.up.cap);
 function accrue(now=Date.now()){S.idle.bank=Math.min(idleCap(),S.idle.bank+(now-S.idle.t)/3600e3*idleRate());S.idle.t=now;}
-function collect(){accrue();const g=Math.floor(S.idle.bank);if(g<1)return 0;S.idle.bank-=g;S.shards+=g;S.st.collects++;roll();S.week.collects++;S.day.collects++;return g;}
+function collect(){accrue();const g=Math.floor(S.idle.bank);if(g<1)return 0;S.idle.bank-=g;S.run.sparks+=g;S.st.collects++;roll();S.week.collects++;S.day.collects++;return g;}
 
 /* ================= atelier : chantiers ================= */
 const upById=id=>ALLUP.find(x=>x.id===id);
@@ -143,14 +144,15 @@ const upTime=u=>u.time(lvlOf(u));
 const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u.id)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
 const inBuild=id=>S.build.find(b=>b.id===id);
-function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;}
+function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;if(u.id==='board')growBoard();}
+function growBoard(){if(!R)return;const N=boardN(),M=R.N;if(N<=M)return;const cells=Array(N*N).fill(null);R.cells.forEach((c,i)=>{if(c)cells[Math.floor(i/M)*N+(i%M)]=c;});R.N=N;R.cells=cells;snapBoard();hooks.grow&&hooks.grow(N);}
 function tickBuild(now=Date.now()){const done=[];S.build=S.build.filter(b=>{if(now>=b.until){applyUp(b.id);done.push(b.id);return false;}return true;});return done;}
 function startBuild(id,now=Date.now()){
   tickBuild(now);const u=upById(id);if(!u)return 'none';
   if(upLocked(u))return 'locked';if(inBuild(id))return 'busy';
   const c=upCost(u);if(!isFinite(c))return 'max';
-  if(S.build.length>=S.slots)return 'slots';if(S.shards<c)return 'poor';
-  S.shards-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
+  if(S.build.length>=S.slots)return 'slots';if(S.run.sparks<c)return 'poor';
+  S.run.sparks-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
@@ -158,7 +160,7 @@ function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b||S.day.buil
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
 const jokerAvail=j=>S.bestStage>=j.lvl;
-function unlockJoker(id,cur){const j=jokerById(id);if(!j||S.jk[id]||!jokerAvail(j))return false;if(cur==='g'){if(S.gems<j.gm)return false;S.gems-=j.gm;}else{if(S.shards<j.sh)return false;S.shards-=j.sh;}S.jk[id]=1;if(S.equip.length<S.jslots)S.equip.push(id);if(R)R.jk[id]=0;return true;}
+function unlockJoker(id,cur){const j=jokerById(id);if(!j||S.jk[id]||!jokerAvail(j))return false;if(cur==='g'){if(S.gems<j.gm)return false;S.gems-=j.gm;}else{if(S.run.sparks<j.sh)return false;S.run.sparks-=j.sh;}S.jk[id]=1;if(S.equip.length<S.jslots)S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function toggleEquip(id){if(!S.jk[id])return false;const i=S.equip.indexOf(id);if(i>=0){S.equip.splice(i,1);if(R)delete R.jk[id];return true;}if(S.equip.length>=S.jslots)return false;S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function buyJSlot(){const i=S.jslots-1;if(i>=CFG.build.jslotGems.length)return false;const g=CFG.build.jslotGems[i];if(S.gems<g)return false;S.gems-=g;S.jslots++;return true;}
 const jokerNeed=id=>{const j=jokerById(id),l=S.jk[id]||1;return Math.max(4,Math.ceil(j.base*(1-0.08*S.up.catal))-(l-1));};
@@ -173,7 +175,8 @@ const spawnLevel=()=>1+tbLvl('birth');
 const spawnInterval=()=>Math.max(CFG.board.spawnMin,CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,tbLvl('cad')));
 const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.up.au_merge);};
 const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1);
-const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1);
+const refMult=()=>1+CFG.prestige.mult*S.prestiges; // multiplicateur permanent d'étincelles gagné à chaque Réfraction
+const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1)*refMult();
 const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
 const boardN=()=>4+S.up.board;
 
@@ -197,7 +200,11 @@ function newRun(){
   R.E=S.run.fled?enemyFor(S.run.stage-1):enemyFor(S.run.stage);
   if(S.run.fled&&R.E.type==='boss')R.E=enemyFor(S.run.stage-1);
   if(S.run.stage%10===0&&!S.run.fled){R.mode='boss';R.bossT=CFG.enemy.bossTime;}
-  for(let i=0;i<3;i++)spawnOne();
+  const sv=S.run.cells;
+  const M=Array.isArray(sv)?Math.round(Math.sqrt(sv.length)):0;
+  if(M&&M*M===sv.length&&M<=N&&sv.some(Boolean)){ // plateau conservé d'une session à l'autre (recopié si la grille a grandi)
+    sv.forEach((v,i)=>{const j=M===N?i:(Math.floor(i/M))*N+(i%M);if(v==='j')R.cells[j]={k:'joker'};else if(typeof v==='number'&&v){R.cells[j]={l:Math.abs(v)};if(v<0)R.cells[j].k='gold';}});
+  }else for(let i=0;i<3;i++)spawnOne();
   return R;
 }
 const emptyCells=()=>R.cells.map((c,i)=>c?-1:i).filter(i=>i>=0);
@@ -274,7 +281,7 @@ function doMerge(into,l,gold,manual){
   R.cells[into]={l};if(gold)R.cells[into].k='gold';
   S.st.merges++;S.day.merges++;if(manual){S.st.manual++;R.combo=Math.min(R.combo+1,30);R.comboT=3;if(R.combo>S.st.maxCombo)S.st.maxCombo=R.combo;if(R.combo>(S.day.combo||0))S.day.combo=R.combo;}
   const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);
-  if(gold)S.shards+=Math.max(1,Math.round(l*lootMult()));
+  if(gold)S.run.sparks+=Math.max(1,Math.round(l*lootMult()));
   for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+1);
   for(const j of nb(into))if(R.cells[j]&&R.cells[j].k==='lock'){R.cells[j]=null;hooks.unlock(j);}
   hooks.merge(into,l,gold,manual);
@@ -305,7 +312,7 @@ function onKill(){
   const E=R.E,n=E.stage;S.st.kills++;S.day.kills++;S.week.kills++;
   const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushWin(R.killWin,R.t,1);
   if(E.type!=='mob'){const k=String(n);if(!S.bestiary[k]||R.bossT>S.bestiary[k])S.bestiary[k]=Math.round(E.type==='boss'?CFG.enemy.bossTime-R.bossT:0);if(E.type==='boss'){S.st.bosses++;S.day.bosses++;}}
-  const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.shards+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
+  const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.run.sparks+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
   hooks.kill(E,sp,sh);
   if(R.mode==='boss'){R.mode='farm';S.run.fled=false;clearLocks();}
   if(S.run.fled){R.E=enemyFor(n);R.E.hp=R.E.max;return;} // ferme sur l'étape précédente
@@ -333,12 +340,12 @@ function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.tita
 const prestigeGain=()=>S.run.max>=CFG.prestige.minStage?Math.floor(CFG.prestige.shards(S.run.max)*lootMult()):0;
 function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
-  S.shards+=g;S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
-  S.run={sparks:50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
-  if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
+  S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
+  S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
+  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
-function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.shards*thr))doPrestige();}
+function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}
 /* ---------- hors-ligne ---------- */
 function offlineGains(now=Date.now()){
   const el=(now-S.lastSeen)/1000;if(el<30)return null;
