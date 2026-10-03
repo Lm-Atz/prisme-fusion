@@ -18,7 +18,18 @@ jobs:
       - run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
       - run: npm i --ignore-scripts --no-audit --no-fund
       - run: mkdir -p www && cp index.html www/index.html && npx cap sync android
-      - run: cd android && chmod +x gradlew && PF_VERSION_CODE=${{ github.run_number }} PF_VERSION_NAME=$(grep -o "VERSION='[^']*'" ../index.html | head -1 | cut -d"'" -f2 | cut -d' ' -f1) ./gradlew assembleRelease --no-daemon
+      - name: Build
+        shell: bash
+        run: |
+          cd android && chmod +x gradlew
+          export PF_VERSION_CODE=${{ github.run_number }}
+          export PF_VERSION_NAME=$(grep -o "VERSION='[^']*'" ../index.html | head -1 | cut -d"'" -f2 | cut -d' ' -f1)
+          set -o pipefail
+          if ! ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log; then
+            msg=$(grep -n -i "what went wrong\|error:\|exception\|FAILURE" -A6 build.log | head -80 | tr '\n' ' ' | cut -c1-3900)
+            echo "::error title=gradle::$msg"
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: prisme-fusion-apk
