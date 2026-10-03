@@ -82,6 +82,18 @@ async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.
   await D.goto('http://localhost:8765/');await D.waitForTimeout(1200);
   r=await ev(D,()=>({ready:window.__G.netReady,on:window.__G.netOK}));T('secret faux → hors session serveur',!r.ready);T('mais le jeu reste jouable en ligne',r.on);
   T('sauvegarde serveur intacte',DB.players[idA].save.run.sparks===9999);
+
+  // code de transfert : A → appareil E vierge récupère la partie
+  const code=await ev(A,()=>window.__G.xferCode());T('code PF1- lisible',/^PF1(-[A-Z2-9]{1,6})+$/.test(code));
+  r=await ev(A,c=>{const G=window.__G;const d=G.xferParse(c);return d&&d.id===G.DEV.id&&d.s===G.DEV.s;},code);T('code → même identité',r);
+  r=await ev(A,c=>window.__G.xferParse(c.slice(0,-3)+'AAA'),code);T('code altéré refusé',r===null);
+  r=await ev(A,c=>window.__G.xferParse(c.toLowerCase().replace(/-/g,' ')),code);T('code tolérant à la casse et aux séparateurs',r&&r.id===idA);
+  const cE=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cE);const E=await cE.newPage();E.on('pageerror',e=>errs.push(e.message));
+  await E.goto('http://localhost:8765/');await E.waitForTimeout(900);
+  await ev(E,()=>{document.getElementById('veil').hidden=true;window.__G.setTab('profile');});await E.waitForTimeout(200);
+  await E.click('#xferEnter');await E.fill('#xferIn',code);await E.click('#xferGo');await E.waitForTimeout(1500);
+  r=await ev(E,()=>({id:window.__G.DEV.id,sparks:window.__G.S.run.sparks,name:window.__G.S.name}));
+  T('appareil E adopte l\'identité du code',r.id===idA);T('…et récupère la partie serveur',r.sparks===DB.players[idA].save.run.sparks&&r.sparks>1000&&r.name==='Lumen Vif');
   // score implausible refusé côté client sans casser le jeu
   await ev(A,()=>{window.__G.R.titanDmg=1e40;window.__G.endTitan();});await A.waitForTimeout(300);T('score absurde rejeté, jeu intact',DB.league[0].score===12345);
   T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs);

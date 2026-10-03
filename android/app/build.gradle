@@ -7,8 +7,8 @@ android {
         applicationId "com.prismefusion.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode (System.getenv("PF_VERSION_CODE") ?: "1").toInteger()
+        versionName (System.getenv("PF_VERSION_NAME") ?: "8.5")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +16,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        // Clé de TEST (sideload). Le Play Store utilisera une clé d'upload distincte, jamais versionnée.
+        test {
+            def ksEnv = System.getenv("PF_KEYSTORE")
+            storeFile file(ksEnv ?: "../keystore/test-signing.jks")
+            storePassword System.getenv("PF_KS_PASS") ?: "prismetest"
+            keyAlias System.getenv("PF_KEY_ALIAS") ?: "prismetest"
+            keyPassword System.getenv("PF_KEY_PASS") ?: "prismetest"
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.test
+        }
         release {
+            signingConfig signingConfigs.test
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

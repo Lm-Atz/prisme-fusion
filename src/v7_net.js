@@ -48,3 +48,10 @@ async function netName(name){if(!NET.on||!netReady)return {ok:true};try{return a
 async function netReport(target){if(!NET.on||!netReady)return;try{await rpc('pf_report',Object.assign(auth(),{p_target:target}));}catch(e){}}
 function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
+/* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
+const B32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function b32enc(bytes){let bits=0,v=0,o='';for(const b of bytes){v=(v<<8)|b;bits+=8;while(bits>=5){o+=B32[(v>>>(bits-5))&31];bits-=5;}}if(bits>0)o+=B32[(v<<(5-bits))&31];return o;}
+function b32dec(s){let bits=0,v=0;const o=[];for(const ch of s){const i=B32.indexOf(ch);if(i<0)return null;v=(v<<5)|i;bits+=5;if(bits>=8){o.push((v>>>(bits-8))&255);bits-=8;}}return o;}
+const hex2b=h=>h.match(/.{2}/g).map(x=>parseInt(x,16));
+function xferCode(){const raw=hex2b(DEV.id.replace(/-/g,'')).concat(hex2b(DEV.s));let sum=0;for(const b of raw)sum=(sum+b)&255;const s=b32enc(raw.concat([sum]));return 'PF1-'+s.match(/.{1,6}/g).join('-');}
+function xferParse(txt){const s=String(txt||'').toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^PF1/,'').replace(/O/g,'0').replace(/I/g,'1');const b=b32dec(s);if(!b||b.length<41)return null;const raw=b.slice(0,40),sum=b[40];let c=0;for(const x of raw)c=(c+x)&255;if(c!==sum)return null;const hx=a=>a.map(x=>x.toString(16).padStart(2,'0')).join('');const h=hx(raw.slice(0,16));return {id:`${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`,s:hx(raw.slice(16,40))};}
