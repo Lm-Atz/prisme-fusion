@@ -1,4 +1,4 @@
-const VERSION='8.6 · transfert';
+const VERSION='8.7 · écran';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -397,7 +397,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.skin){if(!buySkin(el.dataset.skin))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
   else if(el.id==='nameBtn'){const r=rename($('nameIn').value);if(r.ok){toast(t('name_updated'));netName(S.name);save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
   else if(el.id==='xferShow'){const code=xferCode();modal(`<h2>${t('pr_xfer_show')}</h2><p>${t('pr_xfer_show_p')}</p><div class="code" id="xferCode">${code}</div><div class="acts"><button class="b b-gold" id="xferCopy">${t('copy')}</button><button class="b" data-close>${t('close')}</button></div>`);}
-  else if(el.id==='xferEnter'){modal(`<h2>${t('pr_xfer_enter')}</h2><p>${t('pr_xfer_enter_p')}</p><input id="xferIn" class="in" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="PF1-…"><p id="xferErr" style="color:var(--danger);min-height:1.2em"></p><div class="acts"><button class="b b-gold" id="xferGo">${t('pr_xfer_go')}</button><button class="b" data-close>${t('cancel')}</button></div>`);setTimeout(()=>$('xferIn').focus(),50);}
+  else if(el.id==='xferEnter'){modal(`<h2>${t('pr_xfer_enter')}</h2><p>${t('pr_xfer_enter_p')}</p><input id="xferIn" class="xin" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="PF1-…"><p id="xferErr" style="color:var(--danger);min-height:1.2em"></p><div class="acts"><button class="b b-gold" id="xferGo">${t('pr_xfer_go')}</button><button class="b" data-close>${t('cancel')}</button></div>`);setTimeout(()=>$('xferIn').focus(),50);}
   else if(el.id==='resetBtn'){modal(`<h2>${t('pr_reset_q')}</h2><p>${t('pr_reset_p')}</p><div class="acts"><button class="b b-red" data-doreset>${t('pr_reset_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
 });
 $('panel').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.claim)e.target.click();});
@@ -495,7 +495,7 @@ async function probeNet(){if(!navigator.onLine){setOnline(false);return;}if(!/^h
 window.addEventListener('online',probeNet);window.addEventListener('offline',()=>setOnline(false));
 $('retryNet').addEventListener('click',probeNet);
 probeNet();
-if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');const h=bw.clientHeight;if(h!==rsz){rsz=h;resize();}}).observe($('bw'));}
+if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');const h=bw.clientHeight;if(h!==rsz){rsz=h;resize();}}).observe($('bw'));const navH=()=>document.documentElement.style.setProperty('--navh',document.querySelector('.nav').offsetHeight+'px');new ResizeObserver(navH).observe(document.querySelector('.nav'),{box:'border-box'});window.addEventListener('resize',navH);navH();setTimeout(navH,300);setTimeout(navH,1500);}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();netSave(true);}else{last=performance.now();const o=offlineGains();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 

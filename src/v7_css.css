@@ -1,11 +1,8 @@
 :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
 /* ---------- écran unique : jeu ---------- */
 body{margin:0}
-#game{height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--sat);padding-bottom:calc(60px + var(--sab))}
-.gwrap{max-width:480px;width:100%;margin:0 auto;padding:0 16px 8px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
-.top .pill.me{padding:0 4px;min-width:44px;justify-content:center}
-.top .pill.me canvas{width:36px;height:36px}
-.top .pill.me span{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+#game{height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--sat);padding-bottom:var(--navh,calc(60px + var(--sab)))}
+.gwrap{max-width:480px;width:100%;margin:0 auto;padding:8px 16px 8px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
 .arena{position:relative;flex:none;display:flex;flex-direction:column;gap:4px}
 #bossCv{width:100%;height:clamp(96px,19vh,200px);display:block}
 .stg{position:absolute;left:0;top:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;padding:2px 0 2px 4px}
@@ -72,10 +69,10 @@ body{margin:0}
 /* actions */
 @media (max-height:740px){
   .top{padding-block:6px 0}#bossCv{height:clamp(80px,15vh,140px)}.tbt{min-height:70px;padding-top:6px}.tbt .ico{width:28px;height:28px}.tbt .ico .i{width:16px;height:16px}
-  .nav button{min-height:52px}#game{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+  .nav button{min-height:52px}
 }
 /* ---------- panneaux (atelier, quêtes, ligue, boutique, profil) ---------- */
-#panel{position:fixed;inset:0;z-index:4;background:var(--night);overflow:auto;padding-top:var(--sat);padding-bottom:calc(62px + var(--sab))}
+#panel{position:fixed;inset:0;z-index:4;background:var(--night);overflow:auto;padding-top:var(--sat);padding-bottom:calc(6px + var(--navh,calc(56px + var(--sab))))}
 #panel::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 55% at 50% -14%,rgba(255,214,150,.20),transparent 62%)}
 #panel .wrap{position:relative}
 .phead{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;padding:12px 2px 6px}
@@ -111,4 +108,7 @@ body{margin:0}
 .b-spark{--f:#fff3b0;--f2:#ffc857;--e:var(--beam-edge);--t:#3a2a06}
 .bal{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;font-size:15px;color:var(--mist)}.bal b{font-size:20px;color:var(--light)}.bal .i{width:22px;height:22px}
 .code{font:700 15px/1.5 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px;word-break:break-all;background:var(--night);border:2px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;user-select:all;text-align:center}
-.in{width:100%;box-sizing:border-box;font:700 16px/1.3 inherit;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--night);color:var(--light)}
+.xin{width:100%;box-sizing:border-box;font:700 16px/1.3 inherit;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--night);color:var(--light)}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:auto}
+.pill.sm{min-height:44px;padding:0 8px 0 4px;font-size:16px;gap:4px}.pill.sm .i{width:24px;height:24px}.pill.sm .plus{width:16px;height:16px}.pill.sm .plus .i{width:11px;height:11px}
+.qb.me{width:44px;height:44px}.qb.me canvas{border-radius:50%;background:var(--night-2);box-shadow:0 0 0 2px var(--line)}.qb.me canvas{width:32px;height:32px;display:block}
