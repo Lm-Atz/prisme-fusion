@@ -76,7 +76,8 @@ body{margin:0}
 #panel::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 55% at 50% -14%,rgba(255,214,150,.20),transparent 62%)}
 #panel .wrap{position:relative}
 .phead{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;padding:12px 2px 6px}
-.phead .quit{grid-column:2;grid-row:1}
+.phead .quit{grid-column:2;grid-row:1;width:44px;height:44px;border-radius:14px;border:0;display:grid;place-items:center;background:var(--night-2);box-shadow:inset 0 0 0 2px var(--line);color:var(--mist);cursor:pointer}
+.phead .quit .i{width:22px;height:22px}
 .stage{display:flex;flex-direction:column;align-items:center}
 #me{width:150px;height:150px;display:block}
 .tile[data-g="start"]{--gc:var(--s3)}.tile[data-g="auto"]{--gc:var(--s4)}.tile[data-g="arm"]{--gc:var(--s1)}
@@ -113,3 +114,21 @@ body{margin:0}
 .pill.sm{min-height:44px;padding:0 8px 0 4px;font-size:16px;gap:4px}.pill.sm .i{width:24px;height:24px}.pill.sm .plus{width:16px;height:16px}.pill.sm .plus .i{width:11px;height:11px}
 .qb.me{width:44px;height:44px}.qb.me canvas{border-radius:50%;background:var(--night-2);box-shadow:0 0 0 2px var(--line)}.qb.me canvas{width:32px;height:32px;display:block}
 .lg.lgr{grid-template-columns:56px 1fr 1fr;min-height:42px}.lg.lgr .rk{font-size:15px;white-space:nowrap}.lg.lgr .sc{display:inline-flex;align-items:center;gap:4px;font-size:15px}.lg.lgr .sc .i{width:18px;height:18px}
+
+/* ----- clan : volets, guilde ----- */
+.grp.seg{grid-template-columns:repeat(2,minmax(0,1fr));margin:6px 0 14px}
+.grp.seg button{flex-direction:row;min-height:48px;gap:8px;font-size:14px}
+.gform{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.gform .b{min-height:48px;white-space:nowrap}
+.gcard{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin-bottom:8px}
+.gcard .gname{font:20px var(--display);color:var(--light)}
+.gcard .b{font-variant-numeric:tabular-nums;letter-spacing:.08em}
+.gauge{position:relative;height:28px;border-radius:14px;background:var(--edge);overflow:hidden;margin:4px 2px 10px}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--s1),var(--s3),var(--beam));transition:width .4s}
+.gauge em{position:absolute;top:0;bottom:0;width:3px;margin-left:-2px;background:var(--night);opacity:.7}
+.gauge em.on{background:var(--light);opacity:.9}
+.gauge span{position:absolute;inset:0;display:grid;place-items:center;font:800 13px var(--body);color:var(--light);text-shadow:0 1px 2px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+.lg.lgt{grid-template-columns:56px 1fr 1.4fr auto;min-height:46px}
+.lg.lgt .b{min-height:40px}
+.lg.lgg{grid-template-columns:1fr auto auto auto;min-height:48px}
+.lg.lgm .nm .i{width:16px;height:16px;vertical-align:-2px;margin-right:4px}

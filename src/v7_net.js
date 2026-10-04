@@ -68,6 +68,16 @@ function applyServer(d,sent){
 }
 async function netTime(){try{const r=await rpc('pf_time',{},6000);syncClock(r);return true;}catch(e){return false;}}
 async function netBoard(){if(!NET.on||!netReady)return null;try{boardCache=await rpc('pf_board',auth());return boardCache;}catch(e){return null;}}
+/* guilde : lecture et gestion des membres par RPC (authentifiées par le secret) ; points, création et paliers passent par pf-act */
+let guildCache=null,guildAt=0;
+async function netGuild(force){if(!NET.on||!netReady)return null;if(!force&&guildCache&&_dateNow()-guildAt<15000)return guildCache;try{guildCache=await rpc('pf_guild',auth());guildAt=_dateNow();return guildCache;}catch(e){return guildCache;}}
+const guildErr=e=>(e&&e.body&&e.body.message)||(e&&e.message)||'server';
+async function netGuildCall(fn,args){try{const r=await rpc(fn,Object.assign(auth(),args||{}));guildCache=null;return {ok:true,data:r};}catch(e){return {ok:false,err:guildErr(e)};}}
+const netGuildList=()=>netGuildCall('pf_guild_list',{p_lang:LANG});
+const netGuildJoin=code=>netGuildCall('pf_guild_join',{p_code:code});
+const netGuildLeave=()=>netGuildCall('pf_guild_leave',{});
+const netGuildKick=id=>netGuildCall('pf_guild_kick',{p_target:id});
+const netGuildOpen=open=>netGuildCall('pf_guild_open',{p_open:!!open});
 function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */

@@ -46,15 +46,39 @@ Deno.serve(async (req: Request) => {
   const stateIn = row.data.state ?? (row.data.save && row.data.save.v === 3 ? row.data.save : null); // reprise des anciennes sauvegardes
   const now = Date.now();
 
-  // 3. application de l'action par le moteur partagé
-  let r = core.pfApply(ENGINE_SRC, stateIn, body, now, false);
+  // 3. guilde : création (50 gemmes) et réclamation d'un palier sont verrouillées en base AVANT que le moteur n'accorde quoi que ce soit
+  let trusted = false;
+  // deno-lint-ignore no-explicit-any
+  let guildRes: any = null;
+  const pl = (body.payload && typeof body.payload === "object") ? body.payload : {};
+  if (body.action === "guild_create") {
+    const price = 50;
+    if (((stateIn && stateIn.gems) | 0) < price) return json({ ok: false, err: "gems" });
+    const c = await sb.rpc("pf_guild_create", { p_id: id, p_secret: secret, p_name: String(pl.name || "").slice(0, 40), p_lang: String(body.lang || "fr").slice(0, 2) });
+    if (c.error) return json({ ok: false, err: c.error.message });
+    guildRes = c.data; body = { ...body, action: "guild_pay", payload: { gems: price } }; trusted = true;
+  } else if (body.action === "guild_claim") {
+    const tier = Number(pl.tier) | 0;
+    const c = await sb.rpc("pf_guild_claim", { p_id: id, p_tier: tier });
+    if (c.error) return json({ ok: false, err: c.error.message });
+    guildRes = c.data; body = { ...body, action: "guild_reward", payload: { tier } }; trusted = true;
+  } else if (body.action === "guild_pay" || body.action === "guild_reward") return json({ ok: false, err: "trusted" }, 403);
+
+  // 4. application de l'action par le moteur partagé
+  let r = core.pfApply(ENGINE_SRC, stateIn, body, now, trusted);
+  if (guildRes) r.result.guild = guildRes;
   const effects: unknown[] = [];
   for (const e of (r.result.effects || []) as Record<string, unknown>[]) {
+    if (typeof e.gpts === "number") { // quête de guilde validée par le moteur → points dans la jauge de la guilde
+      const a = await sb.rpc("pf_guild_add", { p_id: id, p_points: e.gpts });
+      if (a.error || !a.data || !a.data.ok) { r.state.day.gq = (r.state.day.gq || []).filter((x: number) => x !== e.i); r.result.ok = false; r.result.err = a.error ? "server" : "no_guild"; }
+      else effects.push({ guild: a.data.total });
+    }
     if (typeof e.titan === "number") { const t = await sb.rpc("pf_titan", { p_id: id, p_secret: secret, p_score: e.titan, p_best: e.best }); effects.push({ titan: t.error ? t.error.message : t.data }); }
     if (typeof e.name === "string") { const n = await sb.rpc("pf_set_name", { p_id: id, p_secret: secret, p_name: e.name }); effects.push({ name: n.error ? n.error.message : "ok" }); }
     if (typeof e.report === "string" && UUID.test(e.report)) { const n = await sb.rpc("pf_report", { p_id: id, p_secret: secret, p_target: e.report }); effects.push({ report: n.error ? n.error.message : n.data }); }
   }
-  // 4. au réveil : résultat de ligue de la semaine passée, accordé par le serveur
+  // 5. au réveil : résultat de ligue de la semaine passée, accordé par le serveur
   let league: unknown = null;
   if (body.action === "hello") {
     const lr = await sb.rpc("pf_league_result", { p_id: id, p_secret: secret });
@@ -64,7 +88,7 @@ Deno.serve(async (req: Request) => {
       r.state = r2.state; league = { ...lr.data, sparks: r2.result.sparks };
     }
   }
-  // 5. persistance avec verrou optimiste
+  // 6. persistance avec verrou optimiste
   const anomN = (row.data.anom || 0) + r.anomalies.length;
   const upd = await sb.from("players").update({ state: r.state, ver: row.data.ver + 1, last_act: new Date(now).toISOString(), anom: anomN, best_stage: r.state.bestStage, prestiges: r.state.prestiges })
     .eq("id", id).eq("ver", row.data.ver).select("ver");

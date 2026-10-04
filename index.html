@@ -293,7 +293,8 @@ body{margin:0}
 #panel::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 55% at 50% -14%,rgba(255,214,150,.20),transparent 62%)}
 #panel .wrap{position:relative}
 .phead{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;padding:12px 2px 6px}
-.phead .quit{grid-column:2;grid-row:1}
+.phead .quit{grid-column:2;grid-row:1;width:44px;height:44px;border-radius:14px;border:0;display:grid;place-items:center;background:var(--night-2);box-shadow:inset 0 0 0 2px var(--line);color:var(--mist);cursor:pointer}
+.phead .quit .i{width:22px;height:22px}
 .stage{display:flex;flex-direction:column;align-items:center}
 #me{width:150px;height:150px;display:block}
 .tile[data-g="start"]{--gc:var(--s3)}.tile[data-g="auto"]{--gc:var(--s4)}.tile[data-g="arm"]{--gc:var(--s1)}
@@ -330,6 +331,24 @@ body{margin:0}
 .pill.sm{min-height:44px;padding:0 8px 0 4px;font-size:16px;gap:4px}.pill.sm .i{width:24px;height:24px}.pill.sm .plus{width:16px;height:16px}.pill.sm .plus .i{width:11px;height:11px}
 .qb.me{width:44px;height:44px}.qb.me canvas{border-radius:50%;background:var(--night-2);box-shadow:0 0 0 2px var(--line)}.qb.me canvas{width:32px;height:32px;display:block}
 .lg.lgr{grid-template-columns:56px 1fr 1fr;min-height:42px}.lg.lgr .rk{font-size:15px;white-space:nowrap}.lg.lgr .sc{display:inline-flex;align-items:center;gap:4px;font-size:15px}.lg.lgr .sc .i{width:18px;height:18px}
+
+/* ----- clan : volets, guilde ----- */
+.grp.seg{grid-template-columns:repeat(2,minmax(0,1fr));margin:6px 0 14px}
+.grp.seg button{flex-direction:row;min-height:48px;gap:8px;font-size:14px}
+.gform{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.gform .b{min-height:48px;white-space:nowrap}
+.gcard{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin-bottom:8px}
+.gcard .gname{font:20px var(--display);color:var(--light)}
+.gcard .b{font-variant-numeric:tabular-nums;letter-spacing:.08em}
+.gauge{position:relative;height:28px;border-radius:14px;background:var(--edge);overflow:hidden;margin:4px 2px 10px}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--s1),var(--s3),var(--beam));transition:width .4s}
+.gauge em{position:absolute;top:0;bottom:0;width:3px;margin-left:-2px;background:var(--night);opacity:.7}
+.gauge em.on{background:var(--light);opacity:.9}
+.gauge span{position:absolute;inset:0;display:grid;place-items:center;font:800 13px var(--body);color:var(--light);text-shadow:0 1px 2px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+.lg.lgt{grid-template-columns:56px 1fr 1.4fr auto;min-height:46px}
+.lg.lgt .b{min-height:40px}
+.lg.lgg{grid-template-columns:1fr auto auto auto;min-height:48px}
+.lg.lgm .nm .i{width:16px;height:16px;vertical-align:-2px;margin-right:4px}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -393,7 +412,7 @@ body{margin:0}
   <button data-tab="home" aria-selected="true"><svg class="i"><use href="#i-prism"/></svg><span data-i18n="nav_home">Jeu</span></button>
   <button data-tab="atelier"><svg class="i"><use href="#i-anvil"/></svg><span data-i18n="nav_atelier">Atelier</span><span class="badge" id="bA" hidden></span></button>
   <button data-tab="quests"><svg class="i"><use href="#i-scroll"/></svg><span data-i18n="nav_quests">Quêtes</span><span class="badge" id="bQ" hidden></span></button>
-  <button data-tab="league"><svg class="i"><use href="#i-shield"/></svg><span data-i18n="nav_league">Ligue</span></button>
+  <button data-tab="clan"><svg class="i"><use href="#i-shield"/></svg><span data-i18n="nav_clan">Clan</span><span class="badge" id="bC" hidden></span></button>
   <button data-tab="shop"><svg class="i"><use href="#i-bag"/></svg><span data-i18n="nav_shop">Boutique</span></button>
 </div></nav>
 <div id="veil" class="veil" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
@@ -530,6 +549,7 @@ I18N.fr={
   net_title:'Connexion requise',net_p:'Prisme Fusion a besoin d\'internet pour sauvegarder ta progression et la ligue. La partie est en pause.',net_server:'Le serveur de Prisme Fusion est injoignable pour le moment. La partie est en pause, réessaie dans un instant.',net_back:'Connexion rétablie',srv_banned:"Ce compte a été suspendu pour triche.",srv_auth:"Identité non reconnue par le serveur : utilise ton code de transfert.",srv_refused:"Le serveur n'a pas validé cette action.",net_restored:'Progression récupérée depuis le serveur',lg_sub_live:'Tes dégâts cumulés contre le Titan cette semaine ({days}), face aux joueurs de ta division. Les 5 premiers montent en Argent.',
   ad_sim:'Publicité simulée',ad_real:'Dans le jeu réel : une vidéo de 15 à 30 secondes.',ad_between:'Publicité',
   toast_lock:'Tous les emplacements sont occupés',gift_title:'Cadeau',gift_p:'Regarde une courte publicité pour le récupérer.',gift_go:'Regarder et gagner',gift_boost:'Gains ×2 pendant {n} min',gift_aria:'Cadeau : touche pour voir',
+  nav_clan:'Clan',cl_title:'Clan',cl_sub:'Ta ligue de la semaine et ta guilde.',cl_league:'Ligue',cl_guild:'Guilde',loading:'Chargement…',gd_offline:'La guilde a besoin de la connexion au serveur.',gd_none_p:"Une guilde réunit jusqu'à {n} joueurs. Chaque quête de guilde validée remplit la jauge commune ; à chaque palier atteint, tous les membres reçoivent une récompense.",gd_create:'Créer une guilde',gd_name_ph:'Nom de la guilde (3 à 20 caractères)',gd_join:'Rejoindre avec un code',gd_code_ph:'Code à 6 caractères',gd_join_btn:'Rejoindre',gd_open_list:'Guildes ouvertes',gd_empty_list:'Aucune guilde ouverte pour le moment : crée la tienne !',gd_pts_short:'pts',gd_members:'{n} / {m} membres',gd_members_t:'Membres',gd_open:'ouverte',gd_closed:'sur invitation',gd_code:"Code d'invitation",gd_gauge:'Jauge hebdo',gd_week_reset:'Lundi, dans {t}',gd_per_member:'Récompenses par palier, pour chaque membre :',gd_locked_recent:'Les récompenses se débloquent 24 h après ton arrivée dans la guilde.',gd_quests:'Quêtes du jour',gd_quests_sub:'Chaque quête validée nourrit la jauge',gd_validate:'Valider',gd_kick:'Exclure {n}',gd_kick_q:'Exclure {n} de la guilde ?',gd_kick_ok:'Exclure',gd_kicked:'Membre exclu',gd_leave:'Quitter la guilde',gd_leave_q:'Quitter la guilde ?',gd_leave_p:'Tes points restent dans la jauge, mais tu perds les récompenses non récupérées.',gd_left:'Tu as quitté la guilde',gd_set_open:'Ouvrir aux nouveaux membres',gd_set_closed:'Passer sur invitation',gd_created:'Guilde créée !',gd_joined:'Bienvenue dans {n}',gd_reward_got:'+{g} gemmes · +{s} étincelles',gd_pts_added:'+{n} points pour la guilde',gq_research:'Lancer {n} recherches',gq_titan:'Affronter le Titan',gd_err_in_guild:'Tu es déjà dans une guilde',gd_err_bad_name:'Nom : 3 à 20 caractères',gd_err_name_taken:'Ce nom est déjà pris',gd_err_no_guild:'Code inconnu',gd_err_full:'Cette guilde est complète',gd_err_gems:'Il te faut 50 gemmes',gd_err_too_recent:'Disponible 24 h après ton arrivée',gd_err_not_reached:'Palier pas encore atteint',gd_err_claimed:'Déjà récupéré',gd_err_quest:'Quête non validée par le serveur',gd_err_server:'Serveur indisponible',gd_err_not_leader:'Réservé au chef de guilde'
 };
 let LANG='fr';
 const LANG_LIST=()=>Object.keys(I18N);
@@ -651,6 +671,7 @@ I18N.en={
   net_title:'Connection required',net_p:'Prisme Fusion needs the internet to save your progress and the league. The game is paused.',net_restored:'Progress restored from the server',lg_sub_live:'Your total damage against the Titan this week ({days}), against the players in your division. The top 5 move up to Silver.',net_server:'The Prisme Fusion server cannot be reached right now. The game is paused, try again in a moment.',net_back:'Connection restored',srv_banned:"This account was suspended for cheating.",srv_auth:"Identity not recognised by the server: use your transfer code.",srv_refused:"The server did not validate that action.",
   ad_sim:'Simulated ad',ad_real:'In the real game: a 15 to 30 second video.',ad_between:'Advertisement',
   toast_lock:'All slots are busy',gift_title:'Gift',gift_p:'Watch a short ad to collect it.',gift_go:'Watch and win',gift_boost:'Gains ×2 for {n} min',gift_aria:'Gift: tap to see',
+  nav_clan:'Clan',cl_title:'Clan',cl_sub:'Your league this week and your guild.',cl_league:'League',cl_guild:'Guild',loading:'Loading…',gd_offline:'The guild needs the server connection.',gd_none_p:'A guild gathers up to {n} players. Every completed guild quest fills the shared gauge; at each tier reached, all members get a reward.',gd_create:'Create a guild',gd_name_ph:'Guild name (3 to 20 characters)',gd_join:'Join with a code',gd_code_ph:'6-character code',gd_join_btn:'Join',gd_open_list:'Open guilds',gd_empty_list:'No open guild right now: create yours!',gd_pts_short:'pts',gd_members:'{n} / {m} members',gd_members_t:'Members',gd_open:'open',gd_closed:'invite only',gd_code:'Invite code',gd_gauge:'Weekly gauge',gd_week_reset:'Monday, in {t}',gd_per_member:'Rewards per tier, for every member:',gd_locked_recent:'Rewards unlock 24 h after you join the guild.',gd_quests:"Today's quests",gd_quests_sub:'Each completed quest feeds the gauge',gd_validate:'Complete',gd_kick:'Remove {n}',gd_kick_q:'Remove {n} from the guild?',gd_kick_ok:'Remove',gd_kicked:'Member removed',gd_leave:'Leave the guild',gd_leave_q:'Leave the guild?',gd_leave_p:'Your points stay in the gauge, but you lose unclaimed rewards.',gd_left:'You left the guild',gd_set_open:'Open to new members',gd_set_closed:'Switch to invite only',gd_created:'Guild created!',gd_joined:'Welcome to {n}',gd_reward_got:'+{g} gems · +{s} sparks',gd_pts_added:'+{n} points for the guild',gq_research:'Start {n} researches',gq_titan:'Fight the Titan',gd_err_in_guild:'You are already in a guild',gd_err_bad_name:'Name: 3 to 20 characters',gd_err_name_taken:'This name is already taken',gd_err_no_guild:'Unknown code',gd_err_full:'This guild is full',gd_err_gems:'You need 50 gems',gd_err_too_recent:'Available 24 h after joining',gd_err_not_reached:'Tier not reached yet',gd_err_claimed:'Already claimed',gd_err_quest:'Quest not validated by the server',gd_err_server:'Server unavailable',gd_err_not_leader:'Guild leader only'
 };
 I18N.es={
   _name:'Español',_units:['k','M','MM','B'],_days:['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardiente','Lunar','Eléctrico','Sombrío','Radiante','Cuántico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vector','Nova','Púlsar','Octógono','Fotón','Órbita','Fractal'],
@@ -762,6 +783,7 @@ I18N.es={
   net_title:'Conexión necesaria',net_p:'Prisme Fusion necesita internet para guardar tu progreso y la liga. La partida está en pausa.',net_restored:'Progreso recuperado desde el servidor',lg_sub_live:'Tu daño acumulado contra el Titán esta semana ({days}), frente a los jugadores de tu división. Los 5 primeros suben a Plata.',net_server:'No se puede contactar con el servidor de Prisme Fusion ahora mismo. La partida está en pausa, vuelve a intentarlo en un momento.',net_back:'Conexión restablecida',srv_banned:"Esta cuenta fue suspendida por hacer trampas.",srv_auth:"El servidor no reconoce esta identidad: usa tu código de transferencia.",srv_refused:"El servidor no validó esa acción.",
   ad_sim:'Anuncio simulado',ad_real:'En el juego real: un vídeo de 15 a 30 segundos.',ad_between:'Publicidad',
   toast_lock:'Todas las ranuras están ocupadas',gift_title:'Regalo',gift_p:'Mira un anuncio corto para recogerlo.',gift_go:'Ver y ganar',gift_boost:'Ganancias ×2 durante {n} min',gift_aria:'Regalo: toca para ver',
+  nav_clan:'Clan',cl_title:'Clan',cl_sub:'Tu liga de la semana y tu gremio.',cl_league:'Liga',cl_guild:'Gremio',loading:'Cargando…',gd_offline:'El gremio necesita la conexión con el servidor.',gd_none_p:'Un gremio reúne hasta {n} jugadores. Cada misión de gremio completada llena el medidor común; en cada nivel alcanzado, todos los miembros reciben una recompensa.',gd_create:'Crear un gremio',gd_name_ph:'Nombre del gremio (3 a 20 caracteres)',gd_join:'Unirse con un código',gd_code_ph:'Código de 6 caracteres',gd_join_btn:'Unirse',gd_open_list:'Gremios abiertos',gd_empty_list:'Ningún gremio abierto por ahora: ¡crea el tuyo!',gd_pts_short:'pts',gd_members:'{n} / {m} miembros',gd_members_t:'Miembros',gd_open:'abierto',gd_closed:'solo con invitación',gd_code:'Código de invitación',gd_gauge:'Medidor semanal',gd_week_reset:'Lunes, en {t}',gd_per_member:'Recompensas por nivel, para cada miembro:',gd_locked_recent:'Las recompensas se desbloquean 24 h después de entrar en el gremio.',gd_quests:'Misiones de hoy',gd_quests_sub:'Cada misión completada llena el medidor',gd_validate:'Validar',gd_kick:'Expulsar a {n}',gd_kick_q:'¿Expulsar a {n} del gremio?',gd_kick_ok:'Expulsar',gd_kicked:'Miembro expulsado',gd_leave:'Salir del gremio',gd_leave_q:'¿Salir del gremio?',gd_leave_p:'Tus puntos se quedan en el medidor, pero pierdes las recompensas no recogidas.',gd_left:'Has salido del gremio',gd_set_open:'Abrir a nuevos miembros',gd_set_closed:'Pasar a solo invitación',gd_created:'¡Gremio creado!',gd_joined:'Bienvenido a {n}',gd_reward_got:'+{g} gemas · +{s} chispas',gd_pts_added:'+{n} puntos para el gremio',gq_research:'Iniciar {n} investigaciones',gq_titan:'Enfrentarse al Titán',gd_err_in_guild:'Ya estás en un gremio',gd_err_bad_name:'Nombre: 3 a 20 caracteres',gd_err_name_taken:'Ese nombre ya está en uso',gd_err_no_guild:'Código desconocido',gd_err_full:'Este gremio está completo',gd_err_gems:'Necesitas 50 gemas',gd_err_too_recent:'Disponible 24 h después de entrar',gd_err_not_reached:'Nivel aún no alcanzado',gd_err_claimed:'Ya recogido',gd_err_quest:'Misión no validada por el servidor',gd_err_server:'Servidor no disponible',gd_err_not_leader:'Solo para el líder del gremio'
 };
 I18N.de={
   _name:'Deutsch',_units:['Tsd.','Mio.','Mrd.','Bio.'],_days:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],_dur:['s','Min.','Std.','T.'],_adj:['Kobalt','Blitzend','Purpur','Stellar','Flink','Polar','Glühend','Lunar','Elektrisch','Dunkel','Strahlend','Quanten'],_noun:['Sechseck','Prisma','Fünfeck','Komet','Spirale','Vektor','Nova','Pulsar','Achteck','Photon','Orbit','Fraktal'],
@@ -873,6 +895,7 @@ I18N.de={
   net_title:'Verbindung erforderlich',net_p:'Prisme Fusion braucht Internet, um deinen Fortschritt und die Liga zu speichern. Das Spiel ist pausiert.',net_restored:'Fortschritt vom Server wiederhergestellt',lg_sub_live:'Dein Gesamtschaden gegen den Titan diese Woche ({days}), gegen die Spieler deiner Liga. Die besten 5 steigen in Silber auf.',net_server:'Der Prisme-Fusion-Server ist gerade nicht erreichbar. Das Spiel ist pausiert, versuche es gleich noch einmal.',net_back:'Verbindung wiederhergestellt',srv_banned:"Dieses Konto wurde wegen Betrugs gesperrt.",srv_auth:"Identität vom Server nicht erkannt: nutze deinen Transfercode.",srv_refused:"Der Server hat diese Aktion nicht bestätigt.",
   ad_sim:'Simulierte Werbung',ad_real:'Im echten Spiel: ein 15- bis 30-Sekunden-Video.',ad_between:'Werbung',
   toast_lock:'Alle Plätze sind belegt',gift_title:'Geschenk',gift_p:'Sieh dir eine kurze Werbung an, um es zu bekommen.',gift_go:'Ansehen und gewinnen',gift_boost:'Erträge ×2 für {n} Min.',gift_aria:'Geschenk: antippen zum Ansehen',
+  nav_clan:'Clan',cl_title:'Clan',cl_sub:'Deine Liga der Woche und deine Gilde.',cl_league:'Liga',cl_guild:'Gilde',loading:'Wird geladen…',gd_offline:'Die Gilde braucht die Verbindung zum Server.',gd_none_p:'Eine Gilde vereint bis zu {n} Spieler. Jede erfüllte Gildenquest füllt die gemeinsame Anzeige; bei jeder erreichten Stufe erhalten alle Mitglieder eine Belohnung.',gd_create:'Gilde gründen',gd_name_ph:'Gildenname (3 bis 20 Zeichen)',gd_join:'Mit Code beitreten',gd_code_ph:'6-stelliger Code',gd_join_btn:'Beitreten',gd_open_list:'Offene Gilden',gd_empty_list:'Gerade keine offene Gilde: gründe deine eigene!',gd_pts_short:'Pkt.',gd_members:'{n} / {m} Mitglieder',gd_members_t:'Mitglieder',gd_open:'offen',gd_closed:'nur mit Einladung',gd_code:'Einladungscode',gd_gauge:'Wochenanzeige',gd_week_reset:'Montag, in {t}',gd_per_member:'Belohnungen pro Stufe, für jedes Mitglied:',gd_locked_recent:'Belohnungen werden 24 h nach deinem Beitritt freigeschaltet.',gd_quests:'Quests des Tages',gd_quests_sub:'Jede erfüllte Quest füllt die Anzeige',gd_validate:'Bestätigen',gd_kick:'{n} entfernen',gd_kick_q:'{n} aus der Gilde entfernen?',gd_kick_ok:'Entfernen',gd_kicked:'Mitglied entfernt',gd_leave:'Gilde verlassen',gd_leave_q:'Gilde verlassen?',gd_leave_p:'Deine Punkte bleiben in der Anzeige, aber nicht abgeholte Belohnungen verfallen.',gd_left:'Du hast die Gilde verlassen',gd_set_open:'Für neue Mitglieder öffnen',gd_set_closed:'Auf Einladung umstellen',gd_created:'Gilde gegründet!',gd_joined:'Willkommen bei {n}',gd_reward_got:'+{g} Edelsteine · +{s} Funken',gd_pts_added:'+{n} Punkte für die Gilde',gq_research:'{n} Forschungen starten',gq_titan:'Den Titan bekämpfen',gd_err_in_guild:'Du bist schon in einer Gilde',gd_err_bad_name:'Name: 3 bis 20 Zeichen',gd_err_name_taken:'Dieser Name ist schon vergeben',gd_err_no_guild:'Unbekannter Code',gd_err_full:'Diese Gilde ist voll',gd_err_gems:'Du brauchst 50 Edelsteine',gd_err_too_recent:'Verfügbar 24 h nach dem Beitritt',gd_err_not_reached:'Stufe noch nicht erreicht',gd_err_claimed:'Schon abgeholt',gd_err_quest:'Quest vom Server nicht bestätigt',gd_err_server:'Server nicht erreichbar',gd_err_not_leader:'Nur für den Gildenleiter'
 };
 I18N.pt={
   _name:'Português',_units:['mil','mi','bi','tri'],_days:['domingo','segunda','terça','quarta','quinta','sexta','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardente','Lunar','Elétrico','Sombrio','Radiante','Quântico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vetor','Nova','Pulsar','Octógono','Fotão','Órbita','Fractal'],
@@ -984,6 +1007,7 @@ I18N.pt={
   net_title:'Ligação necessária',net_p:'O Prisme Fusion precisa de internet para guardar o teu progresso e a liga. O jogo está em pausa.',net_restored:'Progresso recuperado do servidor',lg_sub_live:'O teu dano acumulado contra o Titã esta semana ({days}), frente aos jogadores da tua divisão. Os 5 primeiros sobem a Prata.',net_server:'O servidor do Prisme Fusion está inacessível neste momento. O jogo está em pausa, tenta de novo daqui a pouco.',net_back:'Ligação restabelecida',srv_banned:"Esta conta foi suspensa por batota.",srv_auth:"Identidade não reconhecida pelo servidor: usa o teu código de transferência.",srv_refused:"O servidor não validou esta ação.",
   ad_sim:'Anúncio simulado',ad_real:'No jogo real: um vídeo de 15 a 30 segundos.',ad_between:'Publicidade',
   toast_lock:'Todos os lugares estão ocupados',gift_title:'Presente',gift_p:'Vê um anúncio curto para o receber.',gift_go:'Ver e ganhar',gift_boost:'Ganhos ×2 durante {n} min',gift_aria:'Presente: toca para ver',
+  nav_clan:'Clã',cl_title:'Clã',cl_sub:'A tua liga da semana e a tua guilda.',cl_league:'Liga',cl_guild:'Guilda',loading:'A carregar…',gd_offline:'A guilda precisa da ligação ao servidor.',gd_none_p:'Uma guilda reúne até {n} jogadores. Cada missão de guilda concluída enche o medidor comum; em cada patamar atingido, todos os membros recebem uma recompensa.',gd_create:'Criar uma guilda',gd_name_ph:'Nome da guilda (3 a 20 caracteres)',gd_join:'Entrar com um código',gd_code_ph:'Código de 6 caracteres',gd_join_btn:'Entrar',gd_open_list:'Guildas abertas',gd_empty_list:'Nenhuma guilda aberta por agora: cria a tua!',gd_pts_short:'pts',gd_members:'{n} / {m} membros',gd_members_t:'Membros',gd_open:'aberta',gd_closed:'só por convite',gd_code:'Código de convite',gd_gauge:'Medidor semanal',gd_week_reset:'Segunda, em {t}',gd_per_member:'Recompensas por patamar, para cada membro:',gd_locked_recent:'As recompensas desbloqueiam 24 h depois de entrares na guilda.',gd_quests:'Missões de hoje',gd_quests_sub:'Cada missão concluída enche o medidor',gd_validate:'Validar',gd_kick:'Expulsar {n}',gd_kick_q:'Expulsar {n} da guilda?',gd_kick_ok:'Expulsar',gd_kicked:'Membro expulso',gd_leave:'Sair da guilda',gd_leave_q:'Sair da guilda?',gd_leave_p:'Os teus pontos ficam no medidor, mas perdes as recompensas não recolhidas.',gd_left:'Saíste da guilda',gd_set_open:'Abrir a novos membros',gd_set_closed:'Passar a só por convite',gd_created:'Guilda criada!',gd_joined:'Bem-vindo a {n}',gd_reward_got:'+{g} gemas · +{s} faíscas',gd_pts_added:'+{n} pontos para a guilda',gq_research:'Iniciar {n} pesquisas',gq_titan:'Enfrentar o Titã',gd_err_in_guild:'Já estás numa guilda',gd_err_bad_name:'Nome: 3 a 20 caracteres',gd_err_name_taken:'Esse nome já está em uso',gd_err_no_guild:'Código desconhecido',gd_err_full:'Esta guilda está cheia',gd_err_gems:'Precisas de 50 gemas',gd_err_too_recent:'Disponível 24 h depois de entrares',gd_err_not_reached:'Patamar ainda não atingido',gd_err_claimed:'Já recolhido',gd_err_quest:'Missão não validada pelo servidor',gd_err_server:'Servidor indisponível',gd_err_not_leader:'Só para o líder da guilda'
 };
 I18N.it={
   _name:'Italiano',_units:['k','M','Mrd','Bln'],_days:['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'],_dur:['s','min','h','g'],_adj:['Cobalto','Fulminante','Purpureo','Stellare','Vivace','Polare','Ardente','Lunare','Elettrico','Oscuro','Radioso','Quantico'],_noun:['Esagono','Prisma','Pentagono','Cometa','Spirale','Vettore','Nova','Pulsar','Ottagono','Fotone','Orbita','Frattale'],
@@ -1095,6 +1119,7 @@ I18N.it={
   net_title:'Connessione necessaria',net_p:'Prisme Fusion ha bisogno di internet per salvare i tuoi progressi e la lega. Il gioco è in pausa.',net_restored:'Progressi recuperati dal server',lg_sub_live:'Il tuo danno cumulato contro il Titano questa settimana ({days}), contro i giocatori della tua divisione. I primi 5 salgono in Argento.',net_server:'Il server di Prisme Fusion non è raggiungibile al momento. Il gioco è in pausa, riprova tra un istante.',net_back:'Connessione ripristinata',srv_banned:"Questo account è stato sospeso per imbrogli.",srv_auth:"Identità non riconosciuta dal server: usa il tuo codice di trasferimento.",srv_refused:"Il server non ha convalidato questa azione.",
   ad_sim:'Pubblicità simulata',ad_real:'Nel gioco reale: un video da 15 a 30 secondi.',ad_between:'Pubblicità',
   toast_lock:'Tutti gli slot sono occupati',gift_title:'Regalo',gift_p:'Guarda una breve pubblicità per riceverlo.',gift_go:'Guarda e vinci',gift_boost:'Guadagni ×2 per {n} min',gift_aria:'Regalo: tocca per vedere',
+  nav_clan:'Clan',cl_title:'Clan',cl_sub:'La tua lega della settimana e la tua gilda.',cl_league:'Lega',cl_guild:'Gilda',loading:'Caricamento…',gd_offline:'La gilda ha bisogno della connessione al server.',gd_none_p:'Una gilda riunisce fino a {n} giocatori. Ogni missione di gilda completata riempie la barra comune; a ogni livello raggiunto, tutti i membri ricevono una ricompensa.',gd_create:'Crea una gilda',gd_name_ph:'Nome della gilda (da 3 a 20 caratteri)',gd_join:'Entra con un codice',gd_code_ph:'Codice di 6 caratteri',gd_join_btn:'Entra',gd_open_list:'Gilde aperte',gd_empty_list:'Nessuna gilda aperta al momento: crea la tua!',gd_pts_short:'pt',gd_members:'{n} / {m} membri',gd_members_t:'Membri',gd_open:'aperta',gd_closed:'solo su invito',gd_code:'Codice invito',gd_gauge:'Barra settimanale',gd_week_reset:'Lunedì, tra {t}',gd_per_member:'Ricompense per livello, per ogni membro:',gd_locked_recent:'Le ricompense si sbloccano 24 h dopo il tuo ingresso nella gilda.',gd_quests:'Missioni di oggi',gd_quests_sub:'Ogni missione completata riempie la barra',gd_validate:'Convalida',gd_kick:'Espelli {n}',gd_kick_q:'Espellere {n} dalla gilda?',gd_kick_ok:'Espelli',gd_kicked:'Membro espulso',gd_leave:'Lascia la gilda',gd_leave_q:'Lasciare la gilda?',gd_leave_p:'I tuoi punti restano nella barra, ma perdi le ricompense non ritirate.',gd_left:'Hai lasciato la gilda',gd_set_open:'Apri ai nuovi membri',gd_set_closed:'Passa a solo su invito',gd_created:'Gilda creata!',gd_joined:'Benvenuto in {n}',gd_reward_got:'+{g} gemme · +{s} scintille',gd_pts_added:'+{n} punti per la gilda',gq_research:'Avvia {n} ricerche',gq_titan:'Affronta il Titano',gd_err_in_guild:'Sei già in una gilda',gd_err_bad_name:'Nome: da 3 a 20 caratteri',gd_err_name_taken:'Questo nome è già in uso',gd_err_no_guild:'Codice sconosciuto',gd_err_full:'Questa gilda è al completo',gd_err_gems:'Ti servono 50 gemme',gd_err_too_recent:'Disponibile 24 h dopo l’ingresso',gd_err_not_reached:'Livello non ancora raggiunto',gd_err_claimed:'Già ritirato',gd_err_quest:'Missione non convalidata dal server',gd_err_server:'Server non disponibile',gd_err_not_leader:'Solo per il capo gilda'
 };
 
 /* ================= utilitaires ================= */
@@ -1157,6 +1182,7 @@ const CFG={
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
+  guild:{size:30,create:50,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
   sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
@@ -1240,7 +1266,7 @@ function fresh(){
     pp:0,wp:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
-    day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]},
+    day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
     week:{k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]},
     onb:[],league:null,bestiary:{},login:{streak:0,last:'',claimed:''},offerAt:0,settings:{music:true,sound:true,fx:true}};
 }
@@ -1248,9 +1274,9 @@ let S=fresh();
 const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
-function migrate(m){delete m.idle;if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function migrate(m){delete m.idle;if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
+function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
 function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
@@ -1294,7 +1320,7 @@ function startBuild(id,now=Date.now()){
   if(upLocked(u))return 'locked';if(inBuild(id))return 'busy';
   const c=upCost(u);if(!isFinite(c))return 'max';
   if(S.build.length>=S.slots)return 'slots';if(S.run.sparks<c)return 'poor';
-  S.run.sparks-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
+  S.run.sparks-=c;S.st.started++;S.day.started=(S.day.started|0)+1;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
@@ -1613,6 +1639,27 @@ function claim(kind,i){
 }
 const claimable=()=>{const v=questView();return v.onb.concat(v.d,v.w).some(q=>!q.done&&q.p>=q.n);};
 
+/* ================= guilde : quêtes du jour (points) et paliers ================= */
+const GPOOL=[
+  {k:'q_kill',a:{n:30},v:()=>S.day.kills,n:30,p:10},
+  {k:'q_merge',a:{n:150},v:()=>S.day.merges,n:150,p:10},
+  {k:'q_tb',a:{n:10},v:()=>S.day.tb||0,n:10,p:10},
+  {k:'gq_research',a:{n:2},v:()=>S.day.started||0,n:2,p:20},
+  {k:'q_boss1',v:()=>S.day.bosses,n:1,p:20},
+  {k:'q_gift',a:{n:2},v:()=>S.day.gifts||0,n:2,p:20},
+  {k:'q_jok3',v:()=>S.day.jokers,n:3,p:20},
+  {k:'q_kill',a:{n:100},v:()=>S.day.kills,n:100,p:30},
+  {k:'q_pre1',v:()=>S.day.prestiges,n:1,p:30},
+  {k:'gq_titan',v:()=>S.day.titans,n:1,p:30},
+].map(q=>Object.assign(q,{get t(){return t(q.k,q.a)}}));
+/* 3 quêtes par jour, une par niveau de points (10/20/30), tirées de la date : identiques sur le téléphone et le serveur */
+function guildQuests(){roll();const h=dayHash(S.day.k+'g'),out=[];CFG.guild.pts.forEach((pts,lvl)=>{let pool=GPOOL.map((q,i)=>({q,i})).filter(x=>x.q.p===pts&&(x.q.k!=='gq_titan'||isTitanDay()));const x=pool[(h>>(lvl*3))%pool.length];out.push({i:x.i,t:x.q.t,p:Math.min(x.q.v(),x.q.n),n:x.q.n,pts,done:(S.day.gq||[]).includes(x.i)});});return out;}
+/* valide une quête de guilde : renvoie ses points (0 si non remplie, déjà validée ou absente du tirage du jour) */
+function guildQuestDone(i){const q=guildQuests().find(x=>x.i===i);if(!q||q.done||q.p<q.n)return 0;S.day.gq.push(i);return q.pts;}
+const guildClaimable=()=>guildQuests().some(q=>!q.done&&q.p>=q.n);
+/* récompense d'un palier (1..5) pour un membre : gemmes + étincelles en minutes de production (+ boost au dernier) */
+function guildReward(tier){const r=CFG.guild.rewards[tier-1];if(!r)return null;return {g:r.g,min:r.min,b:r.b||0,sparks:Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*r.min))};}
+
 /* ================= ligue simulée ================= */
 function ensureLeague(){
   roll();if(S.league&&S.league.k===S.week.k)return;
@@ -1724,6 +1771,16 @@ function applyServer(d,sent){
 }
 async function netTime(){try{const r=await rpc('pf_time',{},6000);syncClock(r);return true;}catch(e){return false;}}
 async function netBoard(){if(!NET.on||!netReady)return null;try{boardCache=await rpc('pf_board',auth());return boardCache;}catch(e){return null;}}
+/* guilde : lecture et gestion des membres par RPC (authentifiées par le secret) ; points, création et paliers passent par pf-act */
+let guildCache=null,guildAt=0;
+async function netGuild(force){if(!NET.on||!netReady)return null;if(!force&&guildCache&&_dateNow()-guildAt<15000)return guildCache;try{guildCache=await rpc('pf_guild',auth());guildAt=_dateNow();return guildCache;}catch(e){return guildCache;}}
+const guildErr=e=>(e&&e.body&&e.body.message)||(e&&e.message)||'server';
+async function netGuildCall(fn,args){try{const r=await rpc(fn,Object.assign(auth(),args||{}));guildCache=null;return {ok:true,data:r};}catch(e){return {ok:false,err:guildErr(e)};}}
+const netGuildList=()=>netGuildCall('pf_guild_list',{p_lang:LANG});
+const netGuildJoin=code=>netGuildCall('pf_guild_join',{p_code:code});
+const netGuildLeave=()=>netGuildCall('pf_guild_leave',{});
+const netGuildKick=id=>netGuildCall('pf_guild_kick',{p_target:id});
+const netGuildOpen=open=>netGuildCall('pf_guild_open',{p_open:!!open});
 function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
@@ -1848,7 +1905,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='9.1 · serveur juge';
+const VERSION='9.2 · guildes';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2075,7 +2132,8 @@ cv.addEventListener('pointerup',dropDrag);
 cv.addEventListener('pointercancel',dropDrag);
 
 /* ================= interface ================= */
-let tab='home',toastT=null,bannerT=null;
+let tab='home',toastT=null,bannerT=null,clanPane='league',guildList=null,guildBusy=false,gdErrMsg='';
+const gdErr=e=>{const k='gd_err_'+String(e||'server');return I18N.fr[k]?t(k):t('srv_refused');};
 function toast(m){const t=$('toast');t.hidden=true;void t.offsetWidth;t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200);}
 function banner(t,sub,cls,ms){const b=$('banner');b.hidden=true;void b.offsetWidth;b.className='banner '+(cls||'');b.innerHTML=esc(t)+(sub?`<small>${esc(sub)}</small>`:'');b.hidden=false;clearTimeout(bannerT);bannerT=setTimeout(()=>b.hidden=true,ms||2000);}
 let modalOnClose=null;
@@ -2091,7 +2149,7 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 function refresh(){
   roll();
   $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
-  $('bQ').hidden=!claimable();
+  $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
@@ -2191,6 +2249,39 @@ function upDetail(id){
   else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-spark" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${ic('spark')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
   modal(`<div class="mart" style="color:var(--beam)">${ic(upIcon(u))}</div><h2>${u.t}</h2><p>${isFinite(u.max)?t('at_lvl',{k,m:u.max}):t('lvl',{n:k})}</p><p style="color:var(--light)">${max?'':t('at_next',{d:u.d(k)})}</p>${act}<div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
 }
+/* ----- volet Guilde : jauge hebdomadaire, paliers, quêtes du jour, membres ----- */
+function guildHtml(){
+  if(!netReady)return `<p class="note">${t('gd_offline')}</p>`;
+  const g=guildCache;
+  if(!g){netGuild().then(()=>{if(tab==='clan'&&clanPane==='guild')renderTab();});return `<p class="note">${t('loading')}</p>`;}
+  const C=CFG.guild;let h='';
+  if(!g.guild){
+    h+=`<p class="note">${t('gd_none_p',{n:C.size})}</p>`;
+    h+=`<h2 class="sec">${t('gd_create')}</h2><div class="gform"><input id="gdName" class="xin" maxlength="20" placeholder="${t('gd_name_ph')}" autocomplete="off"><button class="b b-gem" id="gdCreate" ${S.gems<C.create||guildBusy?'disabled':''}>${ic('gem')}${C.create}</button></div><p id="gdErr" class="note" style="color:var(--danger);min-height:1.2em">${esc(gdErrMsg)}</p>`;
+    h+=`<h2 class="sec">${t('gd_join')}</h2><div class="gform"><input id="gdCode" class="xin" maxlength="8" placeholder="${t('gd_code_ph')}" autocapitalize="characters" autocomplete="off"><button class="b b-gold" id="gdJoin" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`;
+    h+=`<h2 class="sec">${t('gd_open_list')}</h2>`;
+    if(!guildList){netGuildList().then(r=>{guildList=r.ok?r.data.rows:[];if(tab==='clan'&&clanPane==='guild')renderTab();});h+=`<p class="note">${t('loading')}</p>`;}
+    else if(!guildList.length)h+=`<p class="note">${t('gd_empty_list')}</p>`;
+    else h+=`<div class="list" style="gap:4px">${guildList.map(r=>`<div class="lg lgg"><span class="nm">${esc(r.name)}</span><span class="sc">${r.n}/${C.size}</span><span class="sc">${fmt(r.pts)} ${t('gd_pts_short')}</span><button class="b b-gold sm" data-gjoin="${esc(r.code)}" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`).join('')}</div>`;
+    return h;
+  }
+  const G=g.guild,total=g.total|0,tiers=g.tiers||C.tiers,maxT=tiers[tiers.length-1],me=g.members.find(m=>m.me)||{},isLeader=G.leader===(DEV&&DEV.id),recent=(g.now-g.since)<86400e3;
+  const mon=new Date();mon.setHours(0,0,0,0);mon.setDate(mon.getDate()+((8-mon.getDay())%7||7));
+  h+=`<div class="gcard slab"><div><b class="gname">${esc(G.name)}</b><p class="note">${t('gd_members',{n:G.n,m:C.size})} · ${G.open?t('gd_open'):t('gd_closed')}</p></div><button class="b sm" id="gdCode" data-code="${esc(G.code)}" aria-label="${t('gd_code')}">${ic('link')}${esc(G.code)}</button></div>`;
+  h+=`<h2 class="sec">${t('gd_gauge')}<small>${t('gd_week_reset',{t:dur((mon-Date.now())/1000)})}</small></h2>`;
+  h+=`<div class="gauge"><i style="width:${Math.min(100,100*total/maxT)}%"></i>${tiers.map((v,i)=>`<em style="left:${100*v/maxT}%" class="${total>=v?'on':''}"></em>`).join('')}<span>${fmt(total)} / ${fmt(maxT)} ${t('gd_pts_short')}</span></div>`;
+  h+=`<p class="note">${t('gd_per_member')}</p><div class="list" style="gap:4px">`;
+  tiers.forEach((v,i)=>{const n=i+1,r=guildReward(n),got=(g.claims||[]).includes(n),reached=total>=v;let btn;
+    if(got)btn=`<span class="note">${t('quests_got')}</span>`;else if(!reached)btn=`<span class="note">${fmt(v-total)} ${t('gd_pts_short')}</span>`;else if(recent)btn=`<span class="note">${ic('clock')}24 h</span>`;else btn=`<button class="b b-gold sm" data-gclaim="${n}" ${guildBusy?'disabled':''}>${t('claim')}</button>`;
+    h+=`<div class="lg lgt ${reached&&!got&&!recent?'me':''}"><span class="rk">${fmt(v)}</span><span class="sc">${ic('gem','ig')}${r.g}</span><span class="sc">${ic('spark','ie')}${dur(r.min*60)}${r.b?` + ${ic('bolt','ie')}${r.b} h`:''}</span>${btn}</div>`;});
+  h+='</div>';
+  if(recent)h+=`<p class="note">${t('gd_locked_recent')}</p>`;
+  const qs=guildQuests();
+  h+=`<h2 class="sec">${t('gd_quests')}<small>${t('gd_quests_sub')}</small></h2><div class="list">${qs.map(q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-gquest="${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div><span class="rew"><span>${ic('shield','ie')}+${q.pts} ${t('gd_pts_short')}</span></span></div>${ready?`<span class="b b-gold sm">${t('gd_validate')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;}).join('')}</div>`;
+  h+=`<h2 class="sec">${t('gd_members_t')}<small>${t('gd_members',{n:G.n,m:C.size})}</small></h2><div class="list" style="gap:4px">${g.members.map((m,i)=>`<div class="lg lgm ${m.me?'me':''}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${tierOf(m.best||1).sides}" data-hue="${m.me?'me':idHue(m.id)}"></canvas><span class="nm">${m.leader?ic('crown','ig'):''}${esc(m.name)}</span><span class="sc">${fmt(m.pts)} ${t('gd_pts_short')}</span>${isLeader&&!m.me?`<button class="rep" data-gkick="${m.id}" data-name="${esc(m.name)}" aria-label="${t('gd_kick',{n:esc(m.name)})}">${ic('close')}</button>`:'<span></span>'}</div>`).join('')}</div>`;
+  h+=`<div class="acts" style="margin-top:14px">${isLeader?`<button class="b sm" id="gdToggle" data-open="${G.open?0:1}">${G.open?t('gd_set_closed'):t('gd_set_open')}</button>`:''}<button class="b b-red sm" id="gdLeave">${t('gd_leave')}</button></div>`;
+  return h;
+}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
@@ -2224,17 +2315,21 @@ function renderTab(){
     h+=`<h2 class="sec">${t('quests_today')}<small>${t('quests_new',{t:dur((mid-Date.now())/1000)})}</small></h2><div class="list">${v.d.map(qrow).join('')}</div>`;
     h+=`<h2 class="sec">${t('quests_week')}<small>${t('quests_monday')}</small></h2><div class="list">${v.w.map(qrow).join('')}</div>`;
     h+=`<h2 class="sec">${t('quests_cal')}</h2>`+loginHtml();
-  }else if(tab==='league'){
+  }else if(tab==='clan'){
+    h+=head(t('cl_title'),t('cl_sub'))+`<div class="grp seg" role="tablist"><button data-pane="league" aria-pressed="${clanPane==='league'}">${ic('trophy')}${t('cl_league')}</button><button data-pane="guild" aria-pressed="${clanPane==='guild'}">${ic('shield')}${t('cl_guild')}${guildClaimable()&&guildCache&&guildCache.guild?'<span class="badge"></span>':''}</button></div>`;
+    if(clanPane==='guild')h+=guildHtml();
+    else{
     const live=netReady&&boardCache&&boardCache.joined&&boardCache.rows.length>0;
     const rows=live?boardCache.rows.map(r=>({id:r.id,name:r.name,score:r.score,sides:tierOf(r.best||1).sides,hue:idHue(r.id),me:r.me})):standings();
-    if(netReady&&!boardCache)netBoard().then(b=>{if(b&&tab==='league')renderTab();});
-    h+=head(t('lg_title',{d:t('div_bronze')}),t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))}));
+    if(netReady&&!boardCache)netBoard().then(b=>{if(b&&tab==='clan')renderTab();});
+    h+=`<h2 class="sec">${t('lg_title',{d:t('div_bronze')})}</h2><p class="note">${t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))})}</p>`;
     const pod=rows.slice(0,3);while(pod.length<3)pod.push({name:'—',score:0,sides:3,hue:200});
     h+=`<div class="podium">${[1,0,2].map(i=>{const r=pod[i];return `<div class="pod p${i+1}"><canvas width="80" height="80" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><div class="blk">${i+1}</div></div>`;}).join('')}</div><div class="list" style="gap:4px">`;
     rows.forEach((r,i)=>{if(i===5&&rows.length>6)h+=`<div class="zone upz">${t('lg_up')}</div>`;if(i===25)h+=`<div class="zone downz">${t('lg_down')}</div>`;
       const cls=(r.me?' me':'')+(i<5?' up':i>=25?' down':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><span class="sc">${fmt(r.score)}</span>${r.me?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
     h+='</div>';
     h+=`<h2 class="sec">${t('lg_rewards')}<small>${t('lg_rewards_sub')}</small></h2><div class="list" style="gap:4px">${CFG.league.tiers.map(([a,b])=>`<div class="lg lgr"><span class="rk">${a===b?a:a+'–'+b}</span><span class="sc">${ic('gem','ig')}${CFG.league.gems(a)}</span><span class="sc">${ic('spark','ie')}${dur(CFG.league.minutes(a)*60)}</span></div>`).join('')}</div>`;
+    }
   }else if(tab==='shop'){
     h+=head(t('sh_title'),`${ic('tv')}${t('sh_demo')}`);
     const OART={starter:['box','ie'],loot:['shard','is'],noads:['tv','ie'],g80:['gem','ig'],g500:['gem','ig'],g1200:['gem','ig'],g2600:['box','ig'],g7000:['box','ig'],g15000:['crown','ig']};
@@ -2285,7 +2380,7 @@ $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
 function doBuild(id){const r=act('build',{id},()=>startBuild(id));if(r==='ok'){sfx.buy();toast(t('at_started',{t:upById(id).t}));}else if(r==='slots')toast(t('at_busy'));save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
-  const el=e.target.closest('button,[data-claim]');if(!el)return;audio();Music.start();
+  const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
   else if(el.dataset.wp){const i=+el.dataset.wp;if(act('wp',{i},()=>buyWP(i))){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(act('wpreset',{},()=>resetWP())){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
@@ -2300,6 +2395,15 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
   else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');if(act('claim',{kind:k,i:+i},()=>claim(k,+i))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
+  else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
+  else if(el.id==='gdCreate'){const nm=$('gdName').value.trim();guildBusy=true;renderTab();gdErrMsg='';actAsync('guild_create',{name:nm}).then(d=>{guildBusy=false;if(d&&d.ok){guildCache=null;guildList=null;sfx.win();toast(t('gd_created'));track('guild_create',{});}else gdErrMsg=gdErr(d&&d.err);renderTab();refresh();});}
+  else if(el.id==='gdJoin'||el.dataset.gjoin){const code=el.dataset.gjoin||$('gdCode').value;guildBusy=true;renderTab();netGuildJoin(code).then(r=>{guildBusy=false;guildList=null;if(r.ok){sfx.chord();toast(t('gd_joined',{n:r.data.name}));track('guild_join',{});}else toast(gdErr(r.err));renderTab();});}
+  else if(el.dataset.gclaim){const tier=+el.dataset.gclaim;guildBusy=true;renderTab();actAsync('guild_claim',{tier}).then(d=>{guildBusy=false;guildCache=null;if(d&&d.ok&&d.result&&d.result.reward){const r=d.result.reward;sfx.win();toast(t('gd_reward_got',{g:r.g,s:fmt(r.sparks)}));}else toast(gdErr(d&&d.err));save();refresh();if(R)renderTB();renderTab();});}
+  else if(el.dataset.gquest){const i=+el.dataset.gquest;guildBusy=true;renderTab();actAsync('gquest',{i}).then(d=>{guildBusy=false;guildCache=null;if(d&&d.ok&&d.result&&d.result.ok!==false){sfx.chord();toast(t('gd_pts_added',{n:d.result.pts}));}else toast(gdErr(d&&(d.err||(d.result&&d.result.err))));renderTab();});}
+  else if(el.id==='gdCode'){const c=el.dataset.code;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>toast(c));else toast(c);}
+  else if(el.id==='gdToggle'){netGuildOpen(el.dataset.open==='1').then(()=>renderTab());}
+  else if(el.dataset.gkick){const id=el.dataset.gkick,nm=el.dataset.name;modal(`<h2>${t('gd_kick_q',{n:esc(nm)})}</h2><div class="acts"><button class="b b-red" data-gkickok="${id}">${t('gd_kick_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+  else if(el.id==='gdLeave'){modal(`<h2>${t('gd_leave_q')}</h2><p>${t('gd_leave_p')}</p><div class="acts"><button class="b b-red" id="gdLeaveOk">${t('gd_leave')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))act('report',{target:el.dataset.report});}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){const id=el.dataset.gem;if(act('gemitem',{id},()=>buyGemItem(id))){sfx.buy();save();refresh();renderTab();}}
@@ -2312,7 +2416,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='xferEnter'){modal(`<h2>${t('pr_xfer_enter')}</h2><p>${t('pr_xfer_enter_p')}</p><input id="xferIn" class="xin" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="PF1-…"><p id="xferErr" style="color:var(--danger);min-height:1.2em"></p><div class="acts"><button class="b b-gold" id="xferGo">${t('pr_xfer_go')}</button><button class="b" data-close>${t('cancel')}</button></div>`);setTimeout(()=>$('xferIn').focus(),50);}
   else if(el.id==='resetBtn'){modal(`<h2>${t('pr_reset_q')}</h2><p>${t('pr_reset_p')}</p><div class="acts"><button class="b b-red" data-doreset>${t('pr_reset_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
 });
-$('panel').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.claim)e.target.click();});
+$('panel').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.claim||e.target.dataset.gquest))e.target.click();});
 $('panel').addEventListener('change',e=>{
   if(e.target.id==='setMusic'){S.settings.music=e.target.checked;if(S.settings.music)Music.start();else Music.stop();}
   if(e.target.id==='setSound')S.settings.sound=e.target.checked;
@@ -2327,6 +2431,8 @@ $('modal').addEventListener('click',e=>{
   else if(el.dataset.confirm){const id=el.dataset.confirm;act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
   else if(el.id==='xferCopy'){const c=$('xferCode').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{});else toast(c);}
   else if(el.id==='xferGo'){const d=xferParse($('xferIn').value);if(!d){$('xferErr').textContent=t('pr_xfer_bad');return;}if(d.id===DEV.id){closeModal();toast(t('pr_xfer_same'));return;}try{localStorage.setItem('prisme-dev',JSON.stringify(d));localStorage.removeItem(KEY);}catch(e){}location.reload();}
+  else if(el.dataset.gkickok){const id=el.dataset.gkickok;closeModal();netGuildKick(id).then(r=>{toast(r.ok?t('gd_kicked'):gdErr(r.err));renderTab();});}
+  else if(el.id==='gdLeaveOk'){closeModal();netGuildLeave().then(r=>{guildList=null;toast(r.ok?t('gd_left'):gdErr(r.err));renderTab();});}
   else if(el.id==='lgClaim'){closeModal();sfx.win();save();refresh();if(R)renderTB();toast('+'+el.dataset.gems+' '+t('gems'));}
   else if(el.hasAttribute('data-doreset')){S=fresh();closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}const r=act('rename',{name:v},()=>{const x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=r.msg;}
@@ -2414,7 +2520,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();if(
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
@@ -2424,6 +2530,7 @@ async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.
   renderJok();renderTab();refresh();if(R)renderTB();renderActs();
   const o=d.result&&d.result.offline;if(o&&(o.sparks>0||o.stages>0)){if(R&&o.stages)R.E=enemyFor(S.run.stage);if($('veil').hidden)offlineModal(o);}
   if(d.league&&d.league.rank)leagueModal(d.league);
+  netGuild(true).then(()=>{refresh();if(tab==='clan')renderTab();});
   if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},600);}
 }
 function netBoot(){wake();}

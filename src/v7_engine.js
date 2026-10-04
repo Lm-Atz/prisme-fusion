@@ -17,6 +17,7 @@ const CFG={
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
+  guild:{size:30,create:50,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
   sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
@@ -100,7 +101,7 @@ function fresh(){
     pp:0,wp:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
-    day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]},
+    day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
     week:{k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]},
     onb:[],league:null,bestiary:{},login:{streak:0,last:'',claimed:''},offerAt:0,settings:{music:true,sound:true,fx:true}};
 }
@@ -108,9 +109,9 @@ let S=fresh();
 const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
-function migrate(m){delete m.idle;if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function migrate(m){delete m.idle;if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
+function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
 function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
@@ -154,7 +155,7 @@ function startBuild(id,now=Date.now()){
   if(upLocked(u))return 'locked';if(inBuild(id))return 'busy';
   const c=upCost(u);if(!isFinite(c))return 'max';
   if(S.build.length>=S.slots)return 'slots';if(S.run.sparks<c)return 'poor';
-  S.run.sparks-=c;S.st.started++;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
+  S.run.sparks-=c;S.st.started++;S.day.started=(S.day.started|0)+1;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
@@ -472,6 +473,27 @@ function claim(kind,i){
   cl.push(i);give(q.r);return true;
 }
 const claimable=()=>{const v=questView();return v.onb.concat(v.d,v.w).some(q=>!q.done&&q.p>=q.n);};
+
+/* ================= guilde : quêtes du jour (points) et paliers ================= */
+const GPOOL=[
+  {k:'q_kill',a:{n:30},v:()=>S.day.kills,n:30,p:10},
+  {k:'q_merge',a:{n:150},v:()=>S.day.merges,n:150,p:10},
+  {k:'q_tb',a:{n:10},v:()=>S.day.tb||0,n:10,p:10},
+  {k:'gq_research',a:{n:2},v:()=>S.day.started||0,n:2,p:20},
+  {k:'q_boss1',v:()=>S.day.bosses,n:1,p:20},
+  {k:'q_gift',a:{n:2},v:()=>S.day.gifts||0,n:2,p:20},
+  {k:'q_jok3',v:()=>S.day.jokers,n:3,p:20},
+  {k:'q_kill',a:{n:100},v:()=>S.day.kills,n:100,p:30},
+  {k:'q_pre1',v:()=>S.day.prestiges,n:1,p:30},
+  {k:'gq_titan',v:()=>S.day.titans,n:1,p:30},
+].map(q=>Object.assign(q,{get t(){return t(q.k,q.a)}}));
+/* 3 quêtes par jour, une par niveau de points (10/20/30), tirées de la date : identiques sur le téléphone et le serveur */
+function guildQuests(){roll();const h=dayHash(S.day.k+'g'),out=[];CFG.guild.pts.forEach((pts,lvl)=>{let pool=GPOOL.map((q,i)=>({q,i})).filter(x=>x.q.p===pts&&(x.q.k!=='gq_titan'||isTitanDay()));const x=pool[(h>>(lvl*3))%pool.length];out.push({i:x.i,t:x.q.t,p:Math.min(x.q.v(),x.q.n),n:x.q.n,pts,done:(S.day.gq||[]).includes(x.i)});});return out;}
+/* valide une quête de guilde : renvoie ses points (0 si non remplie, déjà validée ou absente du tirage du jour) */
+function guildQuestDone(i){const q=guildQuests().find(x=>x.i===i);if(!q||q.done||q.p<q.n)return 0;S.day.gq.push(i);return q.pts;}
+const guildClaimable=()=>guildQuests().some(q=>!q.done&&q.p>=q.n);
+/* récompense d'un palier (1..5) pour un membre : gemmes + étincelles en minutes de production (+ boost au dernier) */
+function guildReward(tier){const r=CFG.guild.rewards[tier-1];if(!r)return null;return {g:r.g,min:r.min,b:r.b||0,sparks:Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*r.min))};}
 
 /* ================= ligue simulée ================= */
 function ensureLeague(){

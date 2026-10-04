@@ -1,4 +1,4 @@
-const VERSION='9.1 · serveur juge';
+const VERSION='9.2 · guildes';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -171,7 +171,8 @@ cv.addEventListener('pointerup',dropDrag);
 cv.addEventListener('pointercancel',dropDrag);
 
 /* ================= interface ================= */
-let tab='home',toastT=null,bannerT=null;
+let tab='home',toastT=null,bannerT=null,clanPane='league',guildList=null,guildBusy=false,gdErrMsg='';
+const gdErr=e=>{const k='gd_err_'+String(e||'server');return I18N.fr[k]?t(k):t('srv_refused');};
 function toast(m){const t=$('toast');t.hidden=true;void t.offsetWidth;t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200);}
 function banner(t,sub,cls,ms){const b=$('banner');b.hidden=true;void b.offsetWidth;b.className='banner '+(cls||'');b.innerHTML=esc(t)+(sub?`<small>${esc(sub)}</small>`:'');b.hidden=false;clearTimeout(bannerT);bannerT=setTimeout(()=>b.hidden=true,ms||2000);}
 let modalOnClose=null;
@@ -187,7 +188,7 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 function refresh(){
   roll();
   $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
-  $('bQ').hidden=!claimable();
+  $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
@@ -287,6 +288,39 @@ function upDetail(id){
   else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-spark" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${ic('spark')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
   modal(`<div class="mart" style="color:var(--beam)">${ic(upIcon(u))}</div><h2>${u.t}</h2><p>${isFinite(u.max)?t('at_lvl',{k,m:u.max}):t('lvl',{n:k})}</p><p style="color:var(--light)">${max?'':t('at_next',{d:u.d(k)})}</p>${act}<div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
 }
+/* ----- volet Guilde : jauge hebdomadaire, paliers, quêtes du jour, membres ----- */
+function guildHtml(){
+  if(!netReady)return `<p class="note">${t('gd_offline')}</p>`;
+  const g=guildCache;
+  if(!g){netGuild().then(()=>{if(tab==='clan'&&clanPane==='guild')renderTab();});return `<p class="note">${t('loading')}</p>`;}
+  const C=CFG.guild;let h='';
+  if(!g.guild){
+    h+=`<p class="note">${t('gd_none_p',{n:C.size})}</p>`;
+    h+=`<h2 class="sec">${t('gd_create')}</h2><div class="gform"><input id="gdName" class="xin" maxlength="20" placeholder="${t('gd_name_ph')}" autocomplete="off"><button class="b b-gem" id="gdCreate" ${S.gems<C.create||guildBusy?'disabled':''}>${ic('gem')}${C.create}</button></div><p id="gdErr" class="note" style="color:var(--danger);min-height:1.2em">${esc(gdErrMsg)}</p>`;
+    h+=`<h2 class="sec">${t('gd_join')}</h2><div class="gform"><input id="gdCode" class="xin" maxlength="8" placeholder="${t('gd_code_ph')}" autocapitalize="characters" autocomplete="off"><button class="b b-gold" id="gdJoin" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`;
+    h+=`<h2 class="sec">${t('gd_open_list')}</h2>`;
+    if(!guildList){netGuildList().then(r=>{guildList=r.ok?r.data.rows:[];if(tab==='clan'&&clanPane==='guild')renderTab();});h+=`<p class="note">${t('loading')}</p>`;}
+    else if(!guildList.length)h+=`<p class="note">${t('gd_empty_list')}</p>`;
+    else h+=`<div class="list" style="gap:4px">${guildList.map(r=>`<div class="lg lgg"><span class="nm">${esc(r.name)}</span><span class="sc">${r.n}/${C.size}</span><span class="sc">${fmt(r.pts)} ${t('gd_pts_short')}</span><button class="b b-gold sm" data-gjoin="${esc(r.code)}" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`).join('')}</div>`;
+    return h;
+  }
+  const G=g.guild,total=g.total|0,tiers=g.tiers||C.tiers,maxT=tiers[tiers.length-1],me=g.members.find(m=>m.me)||{},isLeader=G.leader===(DEV&&DEV.id),recent=(g.now-g.since)<86400e3;
+  const mon=new Date();mon.setHours(0,0,0,0);mon.setDate(mon.getDate()+((8-mon.getDay())%7||7));
+  h+=`<div class="gcard slab"><div><b class="gname">${esc(G.name)}</b><p class="note">${t('gd_members',{n:G.n,m:C.size})} · ${G.open?t('gd_open'):t('gd_closed')}</p></div><button class="b sm" id="gdCode" data-code="${esc(G.code)}" aria-label="${t('gd_code')}">${ic('link')}${esc(G.code)}</button></div>`;
+  h+=`<h2 class="sec">${t('gd_gauge')}<small>${t('gd_week_reset',{t:dur((mon-Date.now())/1000)})}</small></h2>`;
+  h+=`<div class="gauge"><i style="width:${Math.min(100,100*total/maxT)}%"></i>${tiers.map((v,i)=>`<em style="left:${100*v/maxT}%" class="${total>=v?'on':''}"></em>`).join('')}<span>${fmt(total)} / ${fmt(maxT)} ${t('gd_pts_short')}</span></div>`;
+  h+=`<p class="note">${t('gd_per_member')}</p><div class="list" style="gap:4px">`;
+  tiers.forEach((v,i)=>{const n=i+1,r=guildReward(n),got=(g.claims||[]).includes(n),reached=total>=v;let btn;
+    if(got)btn=`<span class="note">${t('quests_got')}</span>`;else if(!reached)btn=`<span class="note">${fmt(v-total)} ${t('gd_pts_short')}</span>`;else if(recent)btn=`<span class="note">${ic('clock')}24 h</span>`;else btn=`<button class="b b-gold sm" data-gclaim="${n}" ${guildBusy?'disabled':''}>${t('claim')}</button>`;
+    h+=`<div class="lg lgt ${reached&&!got&&!recent?'me':''}"><span class="rk">${fmt(v)}</span><span class="sc">${ic('gem','ig')}${r.g}</span><span class="sc">${ic('spark','ie')}${dur(r.min*60)}${r.b?` + ${ic('bolt','ie')}${r.b} h`:''}</span>${btn}</div>`;});
+  h+='</div>';
+  if(recent)h+=`<p class="note">${t('gd_locked_recent')}</p>`;
+  const qs=guildQuests();
+  h+=`<h2 class="sec">${t('gd_quests')}<small>${t('gd_quests_sub')}</small></h2><div class="list">${qs.map(q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-gquest="${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div><span class="rew"><span>${ic('shield','ie')}+${q.pts} ${t('gd_pts_short')}</span></span></div>${ready?`<span class="b b-gold sm">${t('gd_validate')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;}).join('')}</div>`;
+  h+=`<h2 class="sec">${t('gd_members_t')}<small>${t('gd_members',{n:G.n,m:C.size})}</small></h2><div class="list" style="gap:4px">${g.members.map((m,i)=>`<div class="lg lgm ${m.me?'me':''}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${tierOf(m.best||1).sides}" data-hue="${m.me?'me':idHue(m.id)}"></canvas><span class="nm">${m.leader?ic('crown','ig'):''}${esc(m.name)}</span><span class="sc">${fmt(m.pts)} ${t('gd_pts_short')}</span>${isLeader&&!m.me?`<button class="rep" data-gkick="${m.id}" data-name="${esc(m.name)}" aria-label="${t('gd_kick',{n:esc(m.name)})}">${ic('close')}</button>`:'<span></span>'}</div>`).join('')}</div>`;
+  h+=`<div class="acts" style="margin-top:14px">${isLeader?`<button class="b sm" id="gdToggle" data-open="${G.open?0:1}">${G.open?t('gd_set_closed'):t('gd_set_open')}</button>`:''}<button class="b b-red sm" id="gdLeave">${t('gd_leave')}</button></div>`;
+  return h;
+}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
@@ -320,17 +354,21 @@ function renderTab(){
     h+=`<h2 class="sec">${t('quests_today')}<small>${t('quests_new',{t:dur((mid-Date.now())/1000)})}</small></h2><div class="list">${v.d.map(qrow).join('')}</div>`;
     h+=`<h2 class="sec">${t('quests_week')}<small>${t('quests_monday')}</small></h2><div class="list">${v.w.map(qrow).join('')}</div>`;
     h+=`<h2 class="sec">${t('quests_cal')}</h2>`+loginHtml();
-  }else if(tab==='league'){
+  }else if(tab==='clan'){
+    h+=head(t('cl_title'),t('cl_sub'))+`<div class="grp seg" role="tablist"><button data-pane="league" aria-pressed="${clanPane==='league'}">${ic('trophy')}${t('cl_league')}</button><button data-pane="guild" aria-pressed="${clanPane==='guild'}">${ic('shield')}${t('cl_guild')}${guildClaimable()&&guildCache&&guildCache.guild?'<span class="badge"></span>':''}</button></div>`;
+    if(clanPane==='guild')h+=guildHtml();
+    else{
     const live=netReady&&boardCache&&boardCache.joined&&boardCache.rows.length>0;
     const rows=live?boardCache.rows.map(r=>({id:r.id,name:r.name,score:r.score,sides:tierOf(r.best||1).sides,hue:idHue(r.id),me:r.me})):standings();
-    if(netReady&&!boardCache)netBoard().then(b=>{if(b&&tab==='league')renderTab();});
-    h+=head(t('lg_title',{d:t('div_bronze')}),t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))}));
+    if(netReady&&!boardCache)netBoard().then(b=>{if(b&&tab==='clan')renderTab();});
+    h+=`<h2 class="sec">${t('lg_title',{d:t('div_bronze')})}</h2><p class="note">${t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))})}</p>`;
     const pod=rows.slice(0,3);while(pod.length<3)pod.push({name:'—',score:0,sides:3,hue:200});
     h+=`<div class="podium">${[1,0,2].map(i=>{const r=pod[i];return `<div class="pod p${i+1}"><canvas width="80" height="80" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><div class="blk">${i+1}</div></div>`;}).join('')}</div><div class="list" style="gap:4px">`;
     rows.forEach((r,i)=>{if(i===5&&rows.length>6)h+=`<div class="zone upz">${t('lg_up')}</div>`;if(i===25)h+=`<div class="zone downz">${t('lg_down')}</div>`;
       const cls=(r.me?' me':'')+(i<5?' up':i>=25?' down':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><span class="sc">${fmt(r.score)}</span>${r.me?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
     h+='</div>';
     h+=`<h2 class="sec">${t('lg_rewards')}<small>${t('lg_rewards_sub')}</small></h2><div class="list" style="gap:4px">${CFG.league.tiers.map(([a,b])=>`<div class="lg lgr"><span class="rk">${a===b?a:a+'–'+b}</span><span class="sc">${ic('gem','ig')}${CFG.league.gems(a)}</span><span class="sc">${ic('spark','ie')}${dur(CFG.league.minutes(a)*60)}</span></div>`).join('')}</div>`;
+    }
   }else if(tab==='shop'){
     h+=head(t('sh_title'),`${ic('tv')}${t('sh_demo')}`);
     const OART={starter:['box','ie'],loot:['shard','is'],noads:['tv','ie'],g80:['gem','ig'],g500:['gem','ig'],g1200:['gem','ig'],g2600:['box','ig'],g7000:['box','ig'],g15000:['crown','ig']};
@@ -381,7 +419,7 @@ $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
 function doBuild(id){const r=act('build',{id},()=>startBuild(id));if(r==='ok'){sfx.buy();toast(t('at_started',{t:upById(id).t}));}else if(r==='slots')toast(t('at_busy'));save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
-  const el=e.target.closest('button,[data-claim]');if(!el)return;audio();Music.start();
+  const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
   else if(el.dataset.wp){const i=+el.dataset.wp;if(act('wp',{i},()=>buyWP(i))){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(act('wpreset',{},()=>resetWP())){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
@@ -396,6 +434,15 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
   else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');if(act('claim',{kind:k,i:+i},()=>claim(k,+i))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
+  else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
+  else if(el.id==='gdCreate'){const nm=$('gdName').value.trim();guildBusy=true;renderTab();gdErrMsg='';actAsync('guild_create',{name:nm}).then(d=>{guildBusy=false;if(d&&d.ok){guildCache=null;guildList=null;sfx.win();toast(t('gd_created'));track('guild_create',{});}else gdErrMsg=gdErr(d&&d.err);renderTab();refresh();});}
+  else if(el.id==='gdJoin'||el.dataset.gjoin){const code=el.dataset.gjoin||$('gdCode').value;guildBusy=true;renderTab();netGuildJoin(code).then(r=>{guildBusy=false;guildList=null;if(r.ok){sfx.chord();toast(t('gd_joined',{n:r.data.name}));track('guild_join',{});}else toast(gdErr(r.err));renderTab();});}
+  else if(el.dataset.gclaim){const tier=+el.dataset.gclaim;guildBusy=true;renderTab();actAsync('guild_claim',{tier}).then(d=>{guildBusy=false;guildCache=null;if(d&&d.ok&&d.result&&d.result.reward){const r=d.result.reward;sfx.win();toast(t('gd_reward_got',{g:r.g,s:fmt(r.sparks)}));}else toast(gdErr(d&&d.err));save();refresh();if(R)renderTB();renderTab();});}
+  else if(el.dataset.gquest){const i=+el.dataset.gquest;guildBusy=true;renderTab();actAsync('gquest',{i}).then(d=>{guildBusy=false;guildCache=null;if(d&&d.ok&&d.result&&d.result.ok!==false){sfx.chord();toast(t('gd_pts_added',{n:d.result.pts}));}else toast(gdErr(d&&(d.err||(d.result&&d.result.err))));renderTab();});}
+  else if(el.id==='gdCode'){const c=el.dataset.code;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>toast(c));else toast(c);}
+  else if(el.id==='gdToggle'){netGuildOpen(el.dataset.open==='1').then(()=>renderTab());}
+  else if(el.dataset.gkick){const id=el.dataset.gkick,nm=el.dataset.name;modal(`<h2>${t('gd_kick_q',{n:esc(nm)})}</h2><div class="acts"><button class="b b-red" data-gkickok="${id}">${t('gd_kick_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+  else if(el.id==='gdLeave'){modal(`<h2>${t('gd_leave_q')}</h2><p>${t('gd_leave_p')}</p><div class="acts"><button class="b b-red" id="gdLeaveOk">${t('gd_leave')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))act('report',{target:el.dataset.report});}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){const id=el.dataset.gem;if(act('gemitem',{id},()=>buyGemItem(id))){sfx.buy();save();refresh();renderTab();}}
@@ -408,7 +455,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='xferEnter'){modal(`<h2>${t('pr_xfer_enter')}</h2><p>${t('pr_xfer_enter_p')}</p><input id="xferIn" class="xin" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="PF1-…"><p id="xferErr" style="color:var(--danger);min-height:1.2em"></p><div class="acts"><button class="b b-gold" id="xferGo">${t('pr_xfer_go')}</button><button class="b" data-close>${t('cancel')}</button></div>`);setTimeout(()=>$('xferIn').focus(),50);}
   else if(el.id==='resetBtn'){modal(`<h2>${t('pr_reset_q')}</h2><p>${t('pr_reset_p')}</p><div class="acts"><button class="b b-red" data-doreset>${t('pr_reset_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
 });
-$('panel').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.claim)e.target.click();});
+$('panel').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.claim||e.target.dataset.gquest))e.target.click();});
 $('panel').addEventListener('change',e=>{
   if(e.target.id==='setMusic'){S.settings.music=e.target.checked;if(S.settings.music)Music.start();else Music.stop();}
   if(e.target.id==='setSound')S.settings.sound=e.target.checked;
@@ -423,6 +470,8 @@ $('modal').addEventListener('click',e=>{
   else if(el.dataset.confirm){const id=el.dataset.confirm;act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
   else if(el.id==='xferCopy'){const c=$('xferCode').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{});else toast(c);}
   else if(el.id==='xferGo'){const d=xferParse($('xferIn').value);if(!d){$('xferErr').textContent=t('pr_xfer_bad');return;}if(d.id===DEV.id){closeModal();toast(t('pr_xfer_same'));return;}try{localStorage.setItem('prisme-dev',JSON.stringify(d));localStorage.removeItem(KEY);}catch(e){}location.reload();}
+  else if(el.dataset.gkickok){const id=el.dataset.gkickok;closeModal();netGuildKick(id).then(r=>{toast(r.ok?t('gd_kicked'):gdErr(r.err));renderTab();});}
+  else if(el.id==='gdLeaveOk'){closeModal();netGuildLeave().then(r=>{guildList=null;toast(r.ok?t('gd_left'):gdErr(r.err));renderTab();});}
   else if(el.id==='lgClaim'){closeModal();sfx.win();save();refresh();if(R)renderTB();toast('+'+el.dataset.gems+' '+t('gems'));}
   else if(el.hasAttribute('data-doreset')){S=fresh();closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}const r=act('rename',{name:v},()=>{const x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=r.msg;}
@@ -510,7 +559,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();if(
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
@@ -520,6 +569,7 @@ async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.
   renderJok();renderTab();refresh();if(R)renderTB();renderActs();
   const o=d.result&&d.result.offline;if(o&&(o.sparks>0||o.stages>0)){if(R&&o.stages)R.E=enemyFor(S.run.stage);if($('veil').hidden)offlineModal(o);}
   if(d.league&&d.league.rank)leagueModal(d.league);
+  netGuild(true).then(()=>{refresh();if(tab==='clan')renderTab();});
   if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},600);}
 }
 function netBoot(){wake();}

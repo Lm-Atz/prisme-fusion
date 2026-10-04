@@ -7,7 +7,7 @@ const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
 jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
-offlineGains,applyOffline,questView,claim,rename,checkName,randomName,purchase,buyGemItem,buySkin,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
+offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
   const code=src+'\n'+PF_TAIL;
@@ -73,7 +73,7 @@ function pfMergeSim(G,sim,dt,anomalies){
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report']);
+const PF_ACTIONS=new Set(['hello','sync','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -131,6 +131,9 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'skin':res.ok=G.buySkin(String(p.id));if(!res.ok)res.err='gems';break;
     case 'rename':{const r=G.rename(String(p.name||''));res.ok=!!r.ok;if(!r.ok)res.err=r.msg||'name';else res.effects=[{name:S.name}];break;}
     case 'report':res.effects=[{report:String(p.target||'')}];break;
+    case 'gquest':{const i=pfInt(p.i,0,99,-1);const pts=i>=0?G.guildQuestDone(i):0;if(pts>0){res.pts=pts;res.effects=[{gpts:pts,i}];}else{res.ok=false;res.err='quest';}break;}
+    case 'guild_pay':if(need(trusted,'trusted')){const g=pfInt(p.gems,0,500,0);if(need(S.gems>=g,'gems'))S.gems-=g;}break;
+    case 'guild_reward':if(need(trusted,'trusted')){const r=G.guildReward(pfInt(p.tier,1,9,0));if(need(!!r,'tier')){S.gems+=r.g;S.run.sparks+=r.sparks;if(r.b)G.give({b:r.b});res.reward=r;}}break;
     case 'league':if(need(trusted,'trusted')){const gems=pfInt(p.gems,0,1000,0),minutes=pfInt(p.minutes,0,1000,0);const sp=Math.max(G.CFG.ads.floor.shop,Math.floor(G.rateMin()*minutes));S.gems+=gems;S.run.sparks+=sp;res.gems=gems;res.sparks=sp;}break;
   }
   S.lastSeen=nowMs;if(anomalies.length)S.anom=(S.anom|0)+anomalies.length;
