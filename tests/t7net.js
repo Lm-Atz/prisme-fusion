@@ -1,108 +1,87 @@
-// Test du module réseau avec un faux Supabase (route Playwright) servi en http.
+// Test du client contre le VRAI noyau serveur (pf_core) servi par un faux Supabase (route Playwright).
 const {chromium}=require('playwright');const http=require('http');const fs=require('fs');
+const {pfApply,pfLeagueMinutes}=require('./pf_core.js');const ENGINE=require('./pf_src.js')().replace('days:[2,4,6]','days:[0,1,2,3,4,5,6]'); // Titan tous les jours pour le test
 let ok=0,ko=0;const T=(n,c)=>{if(c)ok++;else{ko++;console.log('KO',n);}};
 const html=fs.readFileSync('/home/claude/fusion/wrapped.html');
-const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html'});s.end(html);}).listen(8765);
-// faux serveur : état en mémoire
-const DB={players:{},league:[],reports:[],events:[]};const SKEW=90000; // serveur en avance de 90 s
-let calls=[],down=false;
-function handle(fn,a){
-  calls.push(fn);if(down)return [503,{message:'down'}];
-  const now=Date.now()+SKEW;
-  if(fn==='pf_time')return [200,{now}];
-  const p=DB.players[a.p_id];
-  if(fn==='pf_hello'){if(!p){DB.players[a.p_id]={secret:a.p_secret,save:null,updated:0,name:a.p_name,best:1};return [200,{now,save:null,updated:0,name:a.p_name,flags:0}];}
-    if(p.secret!==a.p_secret)return [400,{code:'P0001',message:'auth'}];return [200,{now,save:p.save,updated:p.updated,name:p.name,flags:0}];}
-  if(!p||p.secret!==a.p_secret)return [400,{code:'P0001',message:'auth'}];
-  if(fn==='pf_save'){if(a.p_best<1)return [400,{message:'bad_stage'}];p.save=a.p_save;p.updated=now;p.best=a.p_best;return [200,{now,updated:now}];}
-  if(fn==='pf_titan'){if(a.p_score>1e6*Math.pow(1.9,a.p_best))return [400,{code:'P0001',message:'implausible'}];let m=DB.league.find(x=>x.id===a.p_id);if(!m){m={id:a.p_id,score:0,best:a.p_best};DB.league.push(m);}m.score+=a.p_score;return [200,{ok:true,week:'2026-W40',bracket:1}];}
-  if(fn==='pf_board'){const me=DB.league.find(x=>x.id===a.p_id);if(!me)return [200,{week:'2026-W40',rows:[],joined:false}];
-    const rows=DB.league.map(m=>({id:m.id,name:(DB.players[m.id]||{name:'Bot'}).name,score:m.score,best:m.best,me:m.id===a.p_id})).sort((x,y)=>y.score-x.score);return [200,{week:'2026-W40',rows,joined:true,bracket:1}];}
-  if(fn==='pf_set_name'){p.name=a.p_name;return [200,{ok:true,name:a.p_name}];}
-  if(fn==='pf_report'){DB.reports.push(a.p_target);return [200,{ok:true,count:1}];}
-  if(fn==='pf_track'){DB.events.push(a.p_name);return [204,null];}
-  if(fn==='pf_league_result'){if(DB.pending&&DB.pending[a.p_id]){const r=DB.pending[a.p_id];delete DB.pending[a.p_id];return [200,r];}return [200,{none:true}];}
+const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html'});s.end(html);}).listen(8766);
+const SKEW=90000;const now=()=>Date.now()+SKEW;
+const DB={players:{},league:[],reports:[],anomalies:[]};let calls=[],down=false,pendingLeague={};
+function player(id,secret,lang,name){let p=DB.players[id];if(!p){p=DB.players[id]={secret,state:null,ver:0,name,anom:0,banned:false};}return p.secret===secret?p:null;}
+function handle(url,a){
+  const fn=url.includes('/rpc/')?url.split('/rpc/')[1]:url.includes('/functions/v1/pf-act')?'act':'?';calls.push(fn);
+  if(down)return [503,{message:'down'}];
+  if(fn==='pf_time')return [200,{now:now()}];
+  if(fn==='act'){
+    const p=player(a.id,a.secret,a.lang,a.name);if(!p)return [401,{ok:false,err:'auth'}];if(p.banned)return [403,{ok:false,err:'banned'}];
+    const r=pfApply(ENGINE,p.state,a,now(),false);
+    const effects=[];for(const e of (r.result.effects||[])){if(typeof e.titan==='number'){let m=DB.league.find(x=>x.id===a.id);if(!m){m={id:a.id,score:0,best:e.best};DB.league.push(m);}m.score+=e.titan;m.best=Math.max(m.best,e.best);effects.push({titan:true});}if(e.name){p.name=e.name;}if(e.report)DB.reports.push(e.report);}
+    let league=null;if(a.action==='hello'&&pendingLeague[a.id]){const lr=pendingLeague[a.id];delete pendingLeague[a.id];const r2=pfApply(ENGINE,r.state,{action:'league',payload:{gems:lr.gems,minutes:pfLeagueMinutes(lr.rank)}},now(),true);r.state=r2.state;league={...lr,sparks:r2.result.sparks};}
+    p.state=r.state;p.ver++;p.anom+=r.anomalies.length;if(r.anomalies.length)DB.anomalies.push({id:a.id,action:a.action,kinds:r.anomalies});
+    return [200,{ok:true,now:now(),state:r.state,result:r.result,anomalies:r.anomalies,league,effects}];
+  }
+  const p=player(a.p_id,a.p_secret);if(!p)return [400,{code:'P0001',message:'auth'}];
+  if(fn==='pf_board'){const me=DB.league.find(x=>x.id===a.p_id);if(!me)return [200,{week:'w',rows:[],joined:false}];const rows=DB.league.map(m=>({id:m.id,name:(DB.players[m.id]||{name:'Bot'}).name,score:m.score,best:m.best,me:m.id===a.p_id})).sort((x,y)=>y.score-x.score);return [200,{week:'w',rows,joined:true,bracket:1}];}
   return [404,{message:'nofn'}];
 }
-async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.co/**',async route=>{const q=route.request();const fn=q.url().split('/rpc/')[1];
-  T('apikey envoyée',q.headers()['apikey']&&q.headers()['apikey'].startsWith('sb_publishable'));
-  const [st,body]=handle(fn,q.postDataJSON()||{});await route.fulfill({status:st,contentType:'application/json',body:body==null?'':JSON.stringify(body)});});}
-(async()=>{const b=await chromium.launch();
-  // --- appareil A : première ouverture
-  const cA=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cA);const A=await cA.newPage();const errs=[];A.on('pageerror',e=>errs.push(e.message));
-  await A.goto('http://localhost:8765/');await A.waitForTimeout(1200);
-  const ev=(p,f,...a)=>p.evaluate(f,...a);
-  let r=await ev(A,()=>{const G=window.__G;return {ready:G.netReady,on:G.netOK,off:G.clockOff,id:G.DEV.id,secret:G.DEV.s.length,dev:localStorage.getItem('prisme-dev')!==null,ver:G.S.v};});
-  T('hello réussi',r.ready);T('en ligne',r.on);T('horloge calée sur le serveur (~90 s)',Math.abs(r.off-90000)<3000);T('uuid v4',/^[0-9a-f-]{36}$/.test(r.id)&&r.id[14]==='4');T('secret 48 hex',r.secret===48);T('identité persistée',r.dev);
-  T('hello appelé',calls.includes('pf_hello'));T('première sauvegarde envoyée',calls.includes('pf_save'));T('évènement open',DB.events.includes('open'));
-  // Date.now suit le serveur
-  r=await ev(A,()=>{const G=window.__G;G.S.lastSeen=Date.now()-3600e3;return Date.now()-G.S.lastSeen;});T('Date.now décalé',r>=3600e3&&r<3605e3);
-  // progression puis sauvegarde forcée
+async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.co/**',async route=>{const q=route.request();
+  const [st,body]=handle(q.url(),q.postDataJSON()||{});await route.fulfill({status:st,contentType:'application/json',body:JSON.stringify(body)});});}
+const ev=(p,f,...a)=>p.evaluate(f,...a);
+(async()=>{const b=await chromium.launch();const errs=[];
+  const cA=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cA);const A=await cA.newPage();A.on('pageerror',e=>errs.push('A:'+e.message));
+  await A.goto('http://localhost:8766/');await A.waitForTimeout(1500);
   const idA=await ev(A,()=>window.__G.DEV.id);
-  await ev(A,()=>{const G=window.__G;G.S.run.sparks=777;G.S.bestStage=12;G.S.run.stage=12;G.S.st.kills=50;G.save();return G.netSave(true);});await A.waitForTimeout(300);
-  T('sauvegarde serveur à jour',DB.players[idA].save.run.sparks===777&&DB.players[idA].best===12);
-  // throttle 30 s
-  const n0=calls.filter(c=>c==='pf_save').length;await ev(A,()=>window.__G.netSave(false));await A.waitForTimeout(200);T('netSave non forcé limité à 30 s',calls.filter(c=>c==='pf_save').length===n0);
-  // masquage → save forcée
-  await ev(A,()=>{Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(300);
-  T('sauvegarde au masquage',calls.filter(c=>c==='pf_save').length===n0+1);
-  // titan → serveur + ligue réelle
-  await ev(A,()=>{const G=window.__G;G.S.bestStage=12;G.R.titanDmg=12345;G.endTitan();});await A.waitForTimeout(400);
-  T('score titan envoyé',DB.league.length===1&&DB.league[0].score===12345);
-  DB.players['11111111-1111-4111-8111-111111111111']={secret:'x',name:'Rival',best:20};DB.league.push({id:'11111111-1111-4111-8111-111111111111',score:99999,best:20});
-  await ev(A,()=>{document.getElementById('veil').hidden=true;window.__G.setTab('league');});await A.waitForTimeout(500);await ev(A,()=>window.__G.renderTab());
-  r=await ev(A,()=>{const rows=[...document.querySelectorAll('.lg')].filter(e=>e.querySelector('canvas')).map(e=>({n:e.querySelector('.nm').textContent,me:e.classList.contains('me'),rep:e.querySelector('[data-report]')&&e.querySelector('[data-report]').dataset.report}));return {rows,sub:document.querySelector('.phead p, .phead .sub')?.textContent||document.getElementById('tabPanel').textContent.slice(0,300)};});
-  T('ligue serveur : 2 joueurs',r.rows.length===2);T('rival en tête',r.rows[0].n==='Rival'&&!r.rows[0].me);T('moi en 2e',r.rows[1].me);T('bouton signaler porte l\'uuid',r.rows[0].rep==='11111111-1111-4111-8111-111111111111');T('texte ligue réelle (pas "simulés")',!/simul/.test(r.sub));
-  await A.click('[data-report]');await A.waitForTimeout(300);T('signalement envoyé au serveur',DB.reports[0]==='11111111-1111-4111-8111-111111111111');
-  // pseudo
-  await ev(A,()=>{window.__G.S.gems=100;window.__G.setTab('profile');});await A.waitForTimeout(200);
-  await ev(A,()=>{document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();});await A.waitForTimeout(300);
-  T('pseudo envoyé au serveur',DB.players[idA].name==='Lumen Vif');
-  // panne serveur → voile, puis retour
-  down=true;await ev(A,()=>window.__G.probeNet());await A.waitForTimeout(400);
-  r=await ev(A,()=>({off:!window.__G.netOK,veil:!document.getElementById('offline').hidden,msg:document.getElementById('netMsg').textContent}));
-  T('serveur HS → partie en pause',r.off&&r.veil);T('message serveur injoignable',/injoignable/.test(r.msg));
-  down=false;await A.click('#retryNet');await A.waitForTimeout(400);r=await ev(A,()=>window.__G.netOK&&document.getElementById('offline').hidden);T('retour en ligne',r);
-  await ev(A,()=>{window.__G.S.run.sparks=4242;window.__G.S.st.kills=60;window.__G.save();return window.__G.netSave(true);});await A.waitForTimeout(300);
-  const savedUpdated=DB.players[idA].updated;
-  // --- appareil B : même identité, sauvegarde locale vide → récupère le serveur
-  const cB=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cB);const B=await cB.newPage();B.on('pageerror',e=>errs.push(e.message));
-  await B.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:await ev(A,()=>window.__G.DEV.s)}));
-  await B.goto('http://localhost:8765/');await B.waitForTimeout(1200);
-  r=await ev(B,()=>({shards:window.__G.S.run.sparks,name:window.__G.S.name,best:window.__G.S.bestStage,fire:window.__G.R.cells.some(c=>c&&c.ft!=null)||true}));
-  T('appareil B récupère la sauvegarde serveur',r.shards===4242&&r.best===12);T('pseudo serveur repris',r.name==='Lumen Vif');
-  // --- appareil B avec une sauvegarde locale plus récente → la garde
-  const cC=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cC);const C=await cC.newPage();C.on('pageerror',e=>errs.push(e.message));
-  await C.addInitScript(({d,s})=>{localStorage.setItem('prisme-dev',d);localStorage.setItem('prisme-fusion-v7',s);},{d:JSON.stringify({id:idA,s:await ev(A,()=>window.__G.DEV.s)}),s:await ev(A,()=>{const S=JSON.parse(JSON.stringify(window.__G.S));S.run.sparks=9999;S.lastSeen=Date.now()+600e3;return JSON.stringify(S);})});
-  await C.goto('http://localhost:8765/');await C.waitForTimeout(1200);
-  r=await ev(C,()=>window.__G.S.run.sparks);T('sauvegarde locale plus récente conservée',r===9999);
-  T('…et poussée au serveur',DB.players[idA].save.run.sparks===9999);
-  // --- mauvais secret → pas de hello, pas d'écrasement
-  const cD=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cD);const D=await cD.newPage();D.on('pageerror',e=>errs.push(e.message));
-  await D.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:'mauvais'}));
-  await D.goto('http://localhost:8765/');await D.waitForTimeout(1200);
-  r=await ev(D,()=>({ready:window.__G.netReady,on:window.__G.netOK}));T('secret faux → hors session serveur',!r.ready);T('mais le jeu reste jouable en ligne',r.on);
-  T('sauvegarde serveur intacte',DB.players[idA].save.run.sparks===9999);
-
-
-  // récompenses de ligue : le serveur annonce un résultat → modale → gemmes + étincelles
-  DB.pending={[idA]:{week:'2026-39',rank:2,size:12,gems:40}};
-  await ev(A,()=>{document.getElementById('veil').hidden=true;window.__G.S.run.brate=5;});
-  r=await ev(A,async()=>{const G=window.__G;const g0=G.S.gems,s0=G.S.run.sparks;await G.leagueResult();const open=!document.getElementById('veil').hidden&&!!document.getElementById('lgClaim');const txt=document.getElementById('modal').textContent;document.getElementById('lgClaim').click();return {open,txt,dg:G.S.gems-g0,ds:G.S.run.sparks-s0,closed:document.getElementById('veil').hidden};});
-  T('résultat de ligue affiché',r.open&&/2/.test(r.txt)&&/12/.test(r.txt));T('+40 gemmes et 60 min de production',r.dg===40&&r.ds===5*60*60);T('modale fermée après récupération',r.closed);
-  r=await ev(A,async()=>{const G=window.__G;const g0=G.S.gems;await G.leagueResult();return G.S.gems===g0&&document.getElementById('veil').hidden;});T('pas de double récompense',r);
-  // code de transfert : A → appareil E vierge récupère la partie
-  const code=await ev(A,()=>window.__G.xferCode());T('code PF1- lisible',/^PF1(-[A-Z2-9]{1,6})+$/.test(code));
-  r=await ev(A,c=>{const G=window.__G;const d=G.xferParse(c);return d&&d.id===G.DEV.id&&d.s===G.DEV.s;},code);T('code → même identité',r);
-  r=await ev(A,c=>window.__G.xferParse(c.slice(0,-3)+'AAA'),code);T('code altéré refusé',r===null);
-  r=await ev(A,c=>window.__G.xferParse(c.toLowerCase().replace(/-/g,' ')),code);T('code tolérant à la casse et aux séparateurs',r&&r.id===idA);
-  const cE=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cE);const E=await cE.newPage();E.on('pageerror',e=>errs.push(e.message));
-  await E.goto('http://localhost:8765/');await E.waitForTimeout(900);
-  await ev(E,()=>{document.getElementById('veil').hidden=true;window.__G.setTab('profile');});await E.waitForTimeout(200);
-  await E.click('#xferEnter');await E.fill('#xferIn',code);await E.click('#xferGo');await E.waitForTimeout(1500);
-  r=await ev(E,()=>({id:window.__G.DEV.id,sparks:window.__G.S.run.sparks,name:window.__G.S.name}));
-  T('appareil E adopte l\'identité du code',r.id===idA);T('…et récupère la partie serveur',r.sparks===DB.players[idA].save.run.sparks&&r.sparks>1000&&r.name==='Lumen Vif');
-  // score implausible refusé côté client sans casser le jeu
-  await ev(A,()=>{window.__G.R.titanDmg=1e40;window.__G.endTitan();});await A.waitForTimeout(300);T('score absurde rejeté, jeu intact',DB.league[0].score===12345);
-  T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs);
+  let r=await ev(A,()=>{const G=window.__G;return {ready:G.netReady,off:G.clockOff,gems:G.S.gems,name:G.S.name};});
+  T('hello → joueur créé côté serveur',!!DB.players[idA]&&!!DB.players[idA].state);T('état serveur appliqué (20 gemmes)',r.ready&&r.gems===20);T('horloge calée (+90 s)',Math.abs(r.off-90000)<3000);
+  // --- recherche : locale immédiate, confirmée par le serveur, pas de double débit
+  await ev(A,()=>{document.getElementById('veil').hidden=true;window.__G.S.run.sparks=500;});
+  await ev(A,()=>window.__G.actAsync('sync'));await A.waitForTimeout(200);
+  r=await ev(A,async()=>{const G=window.__G;const s0=G.S.run.sparks;G.setTab('atelier');const el=document.querySelector('[data-build="st_cad"]');el.click();const local=G.S.run.sparks;await G.actAsync('sync');return {s0,local,after:G.S.run.sparks,build:G.S.build.length};});
+  T('recherche débitée une seule fois (60 ✦)',r.s0-r.local===60&&Math.abs(r.after-r.local)<5&&r.build===1);T('serveur : recherche en cours',DB.players[idA].state.build.length===1&&Math.abs(DB.players[idA].state.run.sparks-r.after)<5);
+  // --- triche : étincelles gonflées en mémoire → plafonnées par le serveur
+  r=await ev(A,async()=>{const G=window.__G;G.S.run.sparks=1e9;await G.actAsync('sync');return G.S.run.sparks;});
+  T('triche étincelles plafonnée',r<1e6);T('anomalie journalisée',DB.anomalies.some(a=>a.kinds.includes('sparks')));
+  r=await ev(A,async()=>{const G=window.__G;G.S.run.stage=400;G.S.bestStage=400;await G.actAsync('sync');return {st:G.S.run.stage,best:G.S.bestStage};});
+  T('triche étape plafonnée',r.st<50&&r.best<50);
+  // --- refus serveur : le téléphone croit avoir 100 gemmes, le serveur sait qu'il en a 20
+  r=await ev(A,async()=>{const G=window.__G;G.S.gems=100;G.setTab('shop');document.querySelector('[data-gem="boost"]').click();const local=G.S.gems;await new Promise(z=>setTimeout(z,400));await G.actAsync('sync');return {local,after:G.S.gems,boost:G.S.boostUntil>Date.now()};});
+  T('achat local optimiste (75 gemmes)',r.local===75);T('serveur : refusé → 20 gemmes, pas de boost',r.after===20&&!r.boost);
+  // --- cadeau : tiré par le serveur, accordé par le serveur après la pub
+  r=await ev(A,async()=>{const G=window.__G;G.setTab('home');G.forceGift();await new Promise(z=>setTimeout(z,500));const gf=G.gift;const g0=G.S.gems,s0=G.S.run.sparks;if(!gf)return {gf:null};document.getElementById('gift').click();await new Promise(z=>setTimeout(z,100));document.getElementById('giftGo').click();await new Promise(z=>setTimeout(z,3800));await G.actAsync('sync');return {gf,dg:G.S.gems-g0,ds:G.S.run.sparks-s0,boost:G.S.boostUntil>Date.now()};});
+  T('cadeau fourni par le serveur',r.gf&&['sp','g','b'].includes(r.gf.k));
+  T('récompense du cadeau accordée une seule fois',r.gf&&((r.gf.k==='g'&&r.dg===r.gf.v)||(r.gf.k==='sp'&&r.ds>=r.gf.v-1&&r.ds<r.gf.v*2+100)||(r.gf.k==='b'&&r.boost)));
+  // --- réfraction : le serveur recalcule points et trésor
+  {const st=DB.players[idA].state;st.run.stage=31;st.run.max=31;st.bestStage=31;st.maxStage=31;}
+  r=await ev(A,async()=>{const G=window.__G;await G.actAsync('hello');document.getElementById('veil').hidden=true;G.renderActs();document.getElementById('prest').click();await new Promise(z=>setTimeout(z,100));document.getElementById('doPrest').click();await new Promise(z=>setTimeout(z,400));await G.actAsync('sync');return {p:G.S.prestiges,pp:G.S.pp,stage:G.S.run.stage,sp:G.S.run.sparks};});
+  T('réfraction validée par le serveur',r.p===1&&r.pp===1&&r.stage===1&&DB.players[idA].state.prestiges===1);T('trésor de départ crédité',r.sp>=600);
+  // --- Titan (jour forcé) → ticket serveur → score serveur → ligue réelle
+  r=await ev(A,async()=>{const G=window.__G;G.CFG.titan.days=[0,1,2,3,4,5,6];await G.actAsync('sync');document.getElementById('veil').hidden=true;const d=await G.actAsync('titan_start');G.R.titanDmg=12345;G.endTitan();await new Promise(z=>setTimeout(z,300));await G.actAsync('sync');return {start:d&&d.result&&d.result.ok,best:G.S.week.best};});
+  T('titan : ticket serveur + score accepté',r.start&&r.best===12345&&DB.league[0]&&DB.league[0].score===12345);
+  // --- pseudo
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();await new Promise(z=>setTimeout(z,300));return G.S.name;});
+  T('pseudo validé et propagé',r==='Lumen Vif'&&DB.players[idA].name==='Lumen Vif'&&DB.players[idA].state.name==='Lumen Vif');
+  // --- hors-ligne : calculé par le serveur au réveil
+  DB.players[idA].state.lastSeen=now()-3*3600e3;DB.players[idA].state.run.srate=2;
+  r=await ev(A,async()=>{const G=window.__G;const s0=G.S.run.sparks;const d=await G.actAsync('hello');return {off:d&&d.result&&d.result.offline&&d.result.offline.sparks,gain:G.S.run.sparks-s0,modal:!document.getElementById('veil').hidden};});
+  T('gains hors-ligne calculés par le serveur (2 h plafond ×0,3)',r.off===Math.floor(2*7200*0.3));T('…crédités',r.gain>=r.off-5);
+  await ev(A,()=>{window.__G.S.run.sparks=5000;document.getElementById('veil').hidden=true;return window.__G.actAsync('sync');});
+  // --- appareil B : même identité → état complet du serveur + résultat de ligue
+  const secretA=await ev(A,()=>window.__G.DEV.s);
+  pendingLeague[idA]={week:'w-1',rank:2,size:12,gems:40};
+  const cB=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cB);const B=await cB.newPage();B.on('pageerror',e=>errs.push('B:'+e.message));
+  await B.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:secretA}));
+  await B.goto('http://localhost:8766/');await B.waitForTimeout(1800);
+  r=await ev(B,()=>{const G=window.__G;return {name:G.S.name,p:G.S.prestiges,gems:G.S.gems,modal:document.getElementById('modal').textContent};});
+  T('appareil B reçoit l\'état serveur',r.name==='Lumen Vif'&&r.p===1);T('résultat de ligue accordé par le serveur au réveil (+40 gemmes)',r.gems>=60&&/sur 12/.test(r.modal));
+  // --- mauvais secret
+  const cD=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cD);const D=await cD.newPage();D.on('pageerror',e=>errs.push('D:'+e.message));
+  await D.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:'mauvais-secret-mauvais'}));
+  await D.goto('http://localhost:8766/');await D.waitForTimeout(1200);
+  r=await ev(D,()=>({ready:window.__G.netReady,on:window.__G.netOK}));
+  T('secret faux → pas de session serveur, jeu intact',!r.ready&&r.on);T('état serveur intact',DB.players[idA].state.name==='Lumen Vif');
+  // --- panne serveur → voile ; retour
+  down=true;await ev(A,()=>window.__G.probeNet());await A.waitForTimeout(400);r=await ev(A,()=>!window.__G.netOK&&!document.getElementById('offline').hidden);T('serveur HS → pause',r);
+  down=false;await A.click('#retryNet');await A.waitForTimeout(400);r=await ev(A,()=>window.__G.netOK);T('retour en ligne',r);
+  // --- code de transfert
+  const code=await ev(A,()=>window.__G.xferCode());r=await ev(A,c=>{const d=window.__G.xferParse(c);return d&&d.id===window.__G.DEV.id;},code);T('code de transfert cohérent',r);
+  T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs.slice(0,5));
   console.log(`t7net : ${ok} OK, ${ko} KO`);await b.close();srv.close();})();

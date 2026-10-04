@@ -132,7 +132,7 @@ function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.st.gifts=(S.st.gif
 /* ================= calendrier de connexion ================= */
 const LOGIN=[{g:10},{b:2},{s:300},{g:20},{b:4},{s:2000},{joker:true}];
 function loginState(){roll();const today=dayKey();if(S.login.last===today)return {day:S.login.streak,claimedToday:S.login.claimed===today};
-  const y=new Date();y.setDate(y.getDate()-1);const consecutive=S.login.last===dayKey(y.getTime());
+  const consecutive=S.login.last===dayKey(Date.now()-86400e3);
   S.login.streak=consecutive?(S.login.streak%7)+1:1;S.login.last=today;return {day:S.login.streak,claimedToday:false};}
 function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.login.claimed=dayKey();const r=LOGIN[st.day-1];
   if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else S.gems+=50;}else give(r);return true;}
@@ -330,8 +330,8 @@ function challengeBoss(){if(!R||R.mode!=='farm'||!S.run.fled)return false;S.run.
 /* ---------- Titan ---------- */
 const TITAN_DAYS={get 0(){return dayName(0)},get 1(){return dayName(1)},get 2(){return dayName(2)},get 3(){return dayName(3)},get 4(){return dayName(4)},get 5(){return dayName(5)},get 6(){return dayName(6)}};
 const dayName=i=>(I18N[LANG]._days||I18N.fr._days)[i];
-const isTitanDay=(t=Date.now())=>CFG.titan.days.includes(new Date(t).getDay());
-function nextTitanDay(t=Date.now()){for(let k=1;k<=7;k++){const d=new Date(t);d.setDate(d.getDate()+k);if(isTitanDay(d.getTime()))return TITAN_DAYS[d.getDay()];}return '';}
+const isTitanDay=(t=Date.now())=>CFG.titan.days.includes(dayOfWeek(t));
+function nextTitanDay(t=Date.now()){for(let k=1;k<=7;k++){const tk=t+k*86400e3;if(isTitanDay(tk))return TITAN_DAYS[dayOfWeek(tk)];}return '';}
 function titanState(){roll();if(!S.titan||S.titan.k!==dayKey())S.titan={k:dayKey(),used:0,ad:0,gem:0};return S.titan;}
 const titanTickets=()=>{const t=titanState();return CFG.titan.free+(S.up.au_titan||0)+t.ad+t.gem-t.used;};
 const titanReady=()=>isTitanDay()&&titanTickets()>0;

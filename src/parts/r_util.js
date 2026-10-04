@@ -13,8 +13,11 @@ function fmt(n){
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const dur=s=>{s=Math.max(0,Math.ceil(s));const U=(I18N[LANG]._dur||I18N.fr._dur);if(s<60)return s+' '+U[0];if(s<3600)return Math.ceil(s/60)+' '+U[1];if(s<86400){const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h+' '+U[2]+(m?' '+String(m).padStart(2,'0'):'');}const d=Math.floor(s/86400),h=Math.floor(s%86400/3600);return d+' '+U[3]+(h?' '+h+' '+U[2]:'');};
 const clock=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
-function dayKey(t=Date.now()){const d=new Date(t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-function weekKey(t=Date.now()){const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return dayKey(d.getTime());}
+let TZOFF=null; // côté serveur : décalage du joueur en minutes (−getTimezoneOffset) ; null = heure locale de l'appareil
+function dparts(t){if(TZOFF==null){const d=new Date(t);return [d.getFullYear(),d.getMonth(),d.getDate(),d.getDay()];}const d=new Date(t+TZOFF*60000);return [d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),d.getUTCDay()];}
+function dayKey(t=Date.now()){const [y,m,d]=dparts(t);return y+'-'+(m+1)+'-'+d;}
+function weekKey(t=Date.now()){const [y,m,d,wd]=dparts(t);const mon=new Date(Date.UTC(y,m,d-((wd+6)%7)));return mon.getUTCFullYear()+'-'+(mon.getUTCMonth()+1)+'-'+mon.getUTCDate();}
+const dayOfWeek=(t=Date.now())=>dparts(t)[3];
 const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const ic=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 const I={e:ic('bolt','ie'),g:ic('gem','ig'),s:ic('shard','is')};
