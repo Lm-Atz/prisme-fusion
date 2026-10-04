@@ -2,7 +2,7 @@
 const fs=require('fs');
 const sp='/tmp/claude-0/-home-claude/81df6a99-c7ba-558a-9b66-58a3676a4af2/scratchpad/';
 const code=fs.readFileSync('v7_i18n.js','utf8')+'\n'+fs.readFileSync('parts/r_util.js','utf8')+'\n'+fs.readFileSync('v7_engine.js','utf8')+`
-return {get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,collect,accrue,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
+return {get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
 let NOW=Date.UTC(2026,9,5,8,0,0);
 const localStorage={o:{},getItem(k){return this.o[k]||null},setItem(k,v){this.o[k]=v}};
 const G=new Function('Date','localStorage','cell','document','window','navigator',code)(new Proxy(Date,{construct(t,a){return a.length?new t(...a):new t(NOW)},get(t,k){return k==='now'?()=>NOW:t[k]}}),localStorage,60,{documentElement:{}},undefined,{languages:['fr']});
@@ -25,7 +25,7 @@ function research(){G.tickBuild(NOW);while(S().build.length<S().slots){let best=
 function claimAll(){const v=G.questView();for(const q of v.onb.concat(v.d,v.w))if(q.p>=q.n&&!q.done)G.claim(q.kind,q.i);}
 function session(sec){
   const o=G.offlineGains(NOW);if(o)G.applyOffline(o,PROF.ads?2:1);
-  S().lastSeen=NOW;G.roll();G.loginState();G.claimLogin();G.collect();
+  S().lastSeen=NOW;G.roll();G.loginState();G.claimLogin();
   if(PROF.ads)G.give({b:1});
   G.newRun();let t=0,lastKill=0,lastStage=S().run.stage,noProg=0;const dt=0.25;
   while(t<sec){

@@ -1,4 +1,4 @@
-const VERSION='8.8 · débit';
+const VERSION='8.9 · allégé';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -185,7 +185,7 @@ function rewarded(done){showAd(()=>{roll();S.day.ads++;done();save();refresh();}
 function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){S.adCount=0;save();showAd(then,t('ad_between'));}else then();}
 
 function refresh(){
-  accrue();roll();
+  roll();
   $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
   $('bQ').hidden=!claimable();
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
@@ -346,7 +346,6 @@ function renderTab(){
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
     h+=`<h2 class="sec">${t('pr_name')}</h2><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('pr_newname')}"><button class="b b-gold sm" id="nameBtn">${S.nameChanges===0?t('pr_change'):t('pr_change')+' '+ic('gem')+RENAME}</button></div><p class="err" id="nameErr"></p>`;
     h+=`<p class="note">${S.nameChanges===0?t('pr_first'):''}${t('pr_note')}</p>`;
-    h+=`<h2 class="sec">${t('pr_forge')}<small>${t('pr_forge_sub',{r:fmt(idleRate()),h:2+S.up.cap})}</small></h2><div class="slot slab"><span class="ring" id="forgeRing" style="--p:${100*S.idle.bank/idleCap()}%">${ic('forge','ie')}</span><div><b id="forgeN">${t('pr_forge_n',{n:fmt(Math.floor(S.idle.bank))})}</b><div class="note" style="margin:2px 0 0">${t('pr_forge_d')}</div></div><button class="b b-spark sm" id="collectBtn" ${S.idle.bank<1?'disabled':''}>${t('pr_collect')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_settings')}</h2><div class="list">`;
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
     h+=`<label class="switch slab">${t('pr_music')}<input type="checkbox" id="setMusic" ${S.settings.music?'checked':''}></label>`;
@@ -380,7 +379,6 @@ function doBuild(id){const r=startBuild(id);if(r==='ok'){sfx.buy();toast(t('at_s
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
-  else if(el.id==='collectBtn'){const g=collect();if(g){sfx.chord();save();toast('+'+fmt(g)+' '+t('sparks'));const cs=$('cSp');flyShards($('forgeRing'),cs,Math.min(8,2+Math.floor(Math.log10(g+1))));refresh();renderTab();}}
   else if(el.dataset.wp){if(buyWP(+el.dataset.wp)){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(resetWP()){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
   else if(el.dataset.build)doBuild(el.dataset.build);
@@ -505,13 +503,13 @@ if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');con
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();netSave(true);}else{last=performance.now();const o=offlineGains();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
-window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,xferCode,xferParse};
-setLang(pickLang());load();const localSeen=S.lastSeen||0;accrue();roll();applyStatic();
+setLang(pickLang());load();const localSeen=S.lastSeen||0;roll();applyStatic();
 {const o=offlineGains();startRun();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0))offlineModal(o);S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
 if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},400);
-async function netBoot(){const r=await netHello(localSeen);if(!r.ok)return;if(r.used==='server'){accrue();roll();const o=offlineGains();startRun();renderJok();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();toast(t('net_restored'));}else netSave(true);track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});}
+async function netBoot(){const r=await netHello(localSeen);if(!r.ok)return;if(r.used==='server'){roll();const o=offlineGains();startRun();renderJok();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0)&&$('veil').hidden)offlineModal(o);S.lastSeen=Date.now();toast(t('net_restored'));}else netSave(true);track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});}
 netBoot();
 /* ----- bouton Retour Android (Capacitor) ----- */
 try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){closeModal();return;}if(tab!=='home'){goTab('home');return;}save();netSave(true);if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}

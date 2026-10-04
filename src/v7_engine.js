@@ -70,8 +70,6 @@ const UPG=[
   // Économie
   {id:'spark',g:'eco',get t(){return t('u_spark')},d:k=>t('u_spark_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>100*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
   {id:'loot',g:'eco',get t(){return t('u_loot')},d:k=>t('u_loot_d',{n:8*(k+1)}),c:k=>300*Math.pow(1.4,k),time:T(120,1.25),max:Infinity},
-  {id:'prod',g:'eco',get t(){return t('u_prod')},d:k=>t('u_prod_d',{n:fmt(10*Math.pow(1.45,k+1))}),c:k=>60*Math.pow(1.45,k),time:T(45,1.25),max:Infinity},
-  {id:'cap',g:'eco',get t(){return t('u_cap')},d:k=>t('u_cap_d',{n:2+k+1}),c:k=>250*Math.pow(1.7,k),time:T(600,1.35),max:Infinity},
   {id:'off',g:'eco',get t(){return t('u_off')},d:k=>t('u_off_d',{n:2+k+1}),c:k=>500*Math.pow(1.6,k),time:T(900,1.3),max:Infinity,req:5},
   {id:'killspark',g:'eco',get t(){return t('u_killspark')},d:k=>t('u_killspark_d',{n:15*(k+1)}),c:k=>800*Math.pow(1.45,k),time:T(300,1.25),max:Infinity,req:10},
   // Jokers
@@ -98,7 +96,7 @@ function fresh(){
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
-    pp:0,wp:{},idle:{bank:0,t:now},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
+    pp:0,wp:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]},
@@ -107,9 +105,9 @@ function fresh(){
 }
 let S=fresh();
 const KEY='prisme-fusion-v7';
-function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','idle','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
-function migrate(m){if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function migrate(m){delete m.idle;if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,claimed:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
@@ -128,7 +126,7 @@ const rateMin=()=>(S.run.brate||0)*60; // étincelles par minute, référence de
 const adSparks=kind=>Math.max(CFG.ads.floor[kind],Math.floor(rateMin()*CFG.ads[kind+'Min']));
 const packSparks=p=>Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*p.min));
 function buyPack(i){roll();const p=CFG.sparkShop.packs[i];if(!p||S.gems<p.g)return false;if((S.day.spMin||0)+p.min>CFG.sparkShop.capMin)return 'cap';S.gems-=p.g;S.day.spMin=(S.day.spMin||0)+p.min;S.run.sparks+=packSparks(p);return true;}
-function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
+function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.st.gifts=(S.st.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
 
 /* ================= calendrier de connexion ================= */
 const LOGIN=[{g:10},{b:2},{s:300},{g:20},{b:4},{s:2000},{joker:true}];
@@ -138,11 +136,6 @@ function loginState(){roll();const today=dayKey();if(S.login.last===today)return
 function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.login.claimed=dayKey();const r=LOGIN[st.day-1];
   if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else S.gems+=50;}else give(r);return true;}
 
-/* ================= forge (production passive, en éclats) ================= */
-const idleRate=()=>10*Math.pow(1.45,S.up.prod);
-const idleCap=()=>idleRate()*(2+S.up.cap);
-function accrue(now=Date.now()){S.idle.bank=Math.min(idleCap(),S.idle.bank+(now-S.idle.t)/3600e3*idleRate());S.idle.t=now;}
-function collect(){accrue();const g=Math.floor(S.idle.bank);if(g<1)return 0;S.idle.bank-=g;S.run.sparks+=g;S.st.collects++;roll();S.week.collects++;S.day.collects++;return g;}
 
 /* ================= atelier : chantiers ================= */
 const upById=id=>ALLUP.find(x=>x.id===id);
@@ -152,7 +145,7 @@ const upTime=u=>u.time(lvlOf(u));
 const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u.id)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
 const inBuild=id=>S.build.find(b=>b.id===id);
-function applyUp(id){const u=upById(id);if(u.id==='prod'||u.id==='cap')accrue();if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;if(u.id==='board')growBoard();}
+function applyUp(id){const u=upById(id);if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;if(u.id==='board')growBoard();}
 function growBoard(){if(!R)return;const N=boardN(),M=R.N;if(N<=M)return;const cells=Array(N*N).fill(null);R.cells.forEach((c,i)=>{if(c)cells[Math.floor(i/M)*N+(i%M)]=c;});R.N=N;R.cells=cells;snapBoard();hooks.grow&&hooks.grow(N);}
 function tickBuild(now=Date.now()){const done=[];S.build=S.build.filter(b=>{if(now>=b.until){applyUp(b.id);done.push(b.id);return false;}return true;});return done;}
 function startBuild(id,now=Date.now()){
@@ -393,7 +386,7 @@ const DPOOL=[
   {k:'q_ad',v:()=>S.day.ads,n:1,r:{b:1}},
   {k:'q_boss1',v:()=>S.day.bosses,n:1,r:{g:10}},
   {k:'q_tb',a:{n:15},v:()=>S.day.tb||0,n:15,r:{g:10}},
-  {k:'q_forge',v:()=>S.day.collects,n:1,r:{s:60}},
+  {k:'q_gift',a:{n:2},v:()=>S.day.gifts||0,n:2,r:{s:60}},
   {k:'q_jok3',v:()=>S.day.jokers,n:3,r:{s:150}},
   {k:'q_combo',a:{n:8},v:()=>S.day.combo,n:8,r:{b:1}},
   {k:'q_pre1',v:()=>S.day.prestiges,n:1,r:{g:15}},
@@ -420,7 +413,7 @@ const ONB=[
   Q('o4',()=>S.bestStage,5,{g:10},{n:5}),
   Q('o5',()=>S.st.started,1,{s:100}),
   Q('o6',()=>S.bestStage,6,{sp:400}),
-  Q('o7',()=>S.st.collects,1,{g:10}),
+  Q('o7',()=>S.st.gifts||0,1,{g:10}),
   Q('o4',()=>S.bestStage,10,{g:20},{n:10}),
   Q('o9',bossTotal,1,{s:300}),
   Q('o10',()=>S.prestiges,1,{g:30,b:2}),
