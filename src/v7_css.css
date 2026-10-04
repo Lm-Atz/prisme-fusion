@@ -112,3 +112,4 @@ body{margin:0}
 .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:auto}
 .pill.sm{min-height:44px;padding:0 8px 0 4px;font-size:16px;gap:4px}.pill.sm .i{width:24px;height:24px}.pill.sm .plus{width:16px;height:16px}.pill.sm .plus .i{width:11px;height:11px}
 .qb.me{width:44px;height:44px}.qb.me canvas{border-radius:50%;background:var(--night-2);box-shadow:0 0 0 2px var(--line)}.qb.me canvas{width:32px;height:32px;display:block}
+.lg.lgr{grid-template-columns:56px 1fr 1fr;min-height:42px}.lg.lgr .rk{font-size:15px;white-space:nowrap}.lg.lgr .sc{display:inline-flex;align-items:center;gap:4px;font-size:15px}.lg.lgr .sc .i{width:18px;height:18px}

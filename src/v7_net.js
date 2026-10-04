@@ -43,6 +43,7 @@ async function netSave(force){
 }
 async function netTime(){try{const r=await rpc('pf_time',{},6000);syncClock(r);return true;}catch(e){return false;}}
 async function netTitan(score,best){if(!NET.on||!netReady)return null;try{return await rpc('pf_titan',Object.assign(auth(),{p_score:Math.floor(score),p_best:Math.max(1,best|0)}));}catch(e){return null;}}
+async function netLeagueResult(){if(!NET.on||!netReady)return null;try{return await rpc('pf_league_result',auth());}catch(e){return null;}}
 async function netBoard(){if(!NET.on||!netReady)return null;try{boardCache=await rpc('pf_board',auth());return boardCache;}catch(e){return null;}}
 async function netName(name){if(!NET.on||!netReady)return {ok:true};try{return await rpc('pf_set_name',Object.assign(auth(),{p_name:name}));}catch(e){return {ok:false};}}
 async function netReport(target){if(!NET.on||!netReady)return;try{await rpc('pf_report',Object.assign(auth(),{p_target:target}));}catch(e){}}

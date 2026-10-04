@@ -21,6 +21,7 @@ function handle(fn,a){
   if(fn==='pf_set_name'){p.name=a.p_name;return [200,{ok:true,name:a.p_name}];}
   if(fn==='pf_report'){DB.reports.push(a.p_target);return [200,{ok:true,count:1}];}
   if(fn==='pf_track'){DB.events.push(a.p_name);return [204,null];}
+  if(fn==='pf_league_result'){if(DB.pending&&DB.pending[a.p_id]){const r=DB.pending[a.p_id];delete DB.pending[a.p_id];return [200,r];}return [200,{none:true}];}
   return [404,{message:'nofn'}];
 }
 async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.co/**',async route=>{const q=route.request();const fn=q.url().split('/rpc/')[1];
@@ -50,7 +51,7 @@ async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.
   T('score titan envoyé',DB.league.length===1&&DB.league[0].score===12345);
   DB.players['11111111-1111-4111-8111-111111111111']={secret:'x',name:'Rival',best:20};DB.league.push({id:'11111111-1111-4111-8111-111111111111',score:99999,best:20});
   await ev(A,()=>{document.getElementById('veil').hidden=true;window.__G.setTab('league');});await A.waitForTimeout(500);await ev(A,()=>window.__G.renderTab());
-  r=await ev(A,()=>{const rows=[...document.querySelectorAll('.lg')].map(e=>({n:e.querySelector('.nm').textContent,me:e.classList.contains('me'),rep:e.querySelector('[data-report]')&&e.querySelector('[data-report]').dataset.report}));return {rows,sub:document.querySelector('.phead p, .phead .sub')?.textContent||document.getElementById('tabPanel').textContent.slice(0,300)};});
+  r=await ev(A,()=>{const rows=[...document.querySelectorAll('.lg')].filter(e=>e.querySelector('canvas')).map(e=>({n:e.querySelector('.nm').textContent,me:e.classList.contains('me'),rep:e.querySelector('[data-report]')&&e.querySelector('[data-report]').dataset.report}));return {rows,sub:document.querySelector('.phead p, .phead .sub')?.textContent||document.getElementById('tabPanel').textContent.slice(0,300)};});
   T('ligue serveur : 2 joueurs',r.rows.length===2);T('rival en tête',r.rows[0].n==='Rival'&&!r.rows[0].me);T('moi en 2e',r.rows[1].me);T('bouton signaler porte l\'uuid',r.rows[0].rep==='11111111-1111-4111-8111-111111111111');T('texte ligue réelle (pas "simulés")',!/simul/.test(r.sub));
   await A.click('[data-report]');await A.waitForTimeout(300);T('signalement envoyé au serveur',DB.reports[0]==='11111111-1111-4111-8111-111111111111');
   // pseudo
@@ -83,6 +84,13 @@ async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.
   r=await ev(D,()=>({ready:window.__G.netReady,on:window.__G.netOK}));T('secret faux → hors session serveur',!r.ready);T('mais le jeu reste jouable en ligne',r.on);
   T('sauvegarde serveur intacte',DB.players[idA].save.run.sparks===9999);
 
+
+  // récompenses de ligue : le serveur annonce un résultat → modale → gemmes + étincelles
+  DB.pending={[idA]:{week:'2026-39',rank:2,size:12,gems:40}};
+  await ev(A,()=>{document.getElementById('veil').hidden=true;window.__G.S.run.brate=5;});
+  r=await ev(A,async()=>{const G=window.__G;const g0=G.S.gems,s0=G.S.run.sparks;await G.leagueResult();const open=!document.getElementById('veil').hidden&&!!document.getElementById('lgClaim');const txt=document.getElementById('modal').textContent;document.getElementById('lgClaim').click();return {open,txt,dg:G.S.gems-g0,ds:G.S.run.sparks-s0,closed:document.getElementById('veil').hidden};});
+  T('résultat de ligue affiché',r.open&&/2/.test(r.txt)&&/12/.test(r.txt));T('+40 gemmes et 60 min de production',r.dg===40&&r.ds===5*60*60);T('modale fermée après récupération',r.closed);
+  r=await ev(A,async()=>{const G=window.__G;const g0=G.S.gems;await G.leagueResult();return G.S.gems===g0&&document.getElementById('veil').hidden;});T('pas de double récompense',r);
   // code de transfert : A → appareil E vierge récupère la partie
   const code=await ev(A,()=>window.__G.xferCode());T('code PF1- lisible',/^PF1(-[A-Z2-9]{1,6})+$/.test(code));
   r=await ev(A,c=>{const G=window.__G;const d=G.xferParse(c);return d&&d.id===G.DEV.id&&d.s===G.DEV.s;},code);T('code → même identité',r);

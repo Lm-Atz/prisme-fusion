@@ -16,6 +16,7 @@ const CFG={
   gift:{every:[150,300],show:45},
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
+  league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
   sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
