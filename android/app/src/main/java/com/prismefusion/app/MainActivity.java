@@ -7,7 +7,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState); // Capacitor applique AppTheme.NoActionBar ici
         EdgeToEdge.enable(this);
-        super.onCreate(savedInstanceState);
     }
 }
