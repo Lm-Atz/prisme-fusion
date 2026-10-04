@@ -28,7 +28,7 @@ _engine=''.join(rd(f)+'\n' for f in ['v7_i18n_server.js',sp+'r_util.js','v7_engi
 import subprocess as _sp
 def _min(code,extra=''):
     p=_sp.run(['npx','-y','terser','-c','passes=2,unused=false','--comments','false'],input=code.encode(),capture_output=True);return p.stdout.decode() if p.returncode==0 and p.stdout else code
-_edge=rd('edge_pf_act.ts').replace('__CORE__',_json.dumps(_min(rd('pf_core.js')),ensure_ascii=False))
-open('pf_engine.js','w',encoding='utf8').write(_min(_engine))
+_edge=rd('edge_pf_act.ts')
+open('pf_server.js','w',encoding='utf8').write(_min(rd('pf_core.js'))+'\nmodule.exports.ENGINE_SRC='+_json.dumps(_min(_engine),ensure_ascii=False)+';\n')
 import os as _os
 _os.makedirs('edge/pf-act',exist_ok=True);open('edge/pf-act/index.ts','w',encoding='utf8').write(_edge)

@@ -1,22 +1,23 @@
 // Prisme Fusion — fonction serveur « pf-act » : toutes les décisions du jeu passent ici.
-// Le moteur de règles est le même que celui du téléphone (ENGINE_SRC), exécuté avec l'heure du serveur.
+// Le moteur de règles est le même que celui du téléphone, exécuté avec l'heure du serveur.
 import { createClient } from "npm:@supabase/supabase-js@2";
-// Les deux constantes ci-dessous sont injectées par build7.py (moteur + noyau minifiés)
-const CORE_SRC: string = __CORE__;
-// Le moteur de règles (identique à celui du jeu publié) est servi par GitHub Pages avec le jeu ; mis en cache 10 min par instance.
-const ENGINE_URL = "https://lm-atz.github.io/prisme-fusion/pf_engine.js";
-let engineCache: { src: string; at: number } | null = null;
-async function engineSrc(): Promise<string> {
-  if (engineCache && Date.now() - engineCache.at < 600_000) return engineCache.src;
-  const r = await fetch(ENGINE_URL, { headers: { "cache-control": "no-cache" } });
-  if (!r.ok) { if (engineCache) return engineCache.src; throw new Error("engine"); }
-  const src = await r.text();
-  if (!src.includes("function doPrestige")) { if (engineCache) return engineCache.src; throw new Error("engine"); }
-  engineCache = { src, at: Date.now() };
-  return src;
-}
+// Les règles du jeu (noyau pf_core + moteur v7_engine) sont publiées avec le jeu sur GitHub Pages dans pf_server.js :
+// le serveur charge toujours exactement la version que les téléphones utilisent. Mis en cache 10 min par instance.
+const RULES_URL = "https://lm-atz.github.io/prisme-fusion/pf_server.js";
 // deno-lint-ignore no-explicit-any
-const core: any = new Function("module", "exports", CORE_SRC + "\nreturn module.exports;")({ exports: {} }, {});
+let rules: { core: any; engine: string; at: number } | null = null;
+// deno-lint-ignore no-explicit-any
+async function loadRules(): Promise<{ core: any; engine: string }> {
+  if (rules && Date.now() - rules.at < 600_000) return rules;
+  const r = await fetch(RULES_URL, { headers: { "cache-control": "no-cache" } });
+  if (!r.ok) { if (rules) return rules; throw new Error("rules"); }
+  const src = await r.text();
+  if (!src.includes("pfApply") || !src.includes("ENGINE_SRC")) { if (rules) return rules; throw new Error("rules"); }
+  const mod = new Function("module", "exports", src + "\nreturn module.exports;")({ exports: {} }, {});
+  if (typeof mod.pfApply !== "function" || typeof mod.ENGINE_SRC !== "string") { if (rules) return rules; throw new Error("rules"); }
+  rules = { core: mod, engine: mod.ENGINE_SRC, at: Date.now() };
+  return rules;
+}
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
@@ -31,8 +32,8 @@ Deno.serve(async (req: Request) => {
   const id = String(body.id || ""), secret = String(body.secret || "");
   if (!UUID.test(id) || secret.length < 16 || secret.length > 128) return json({ ok: false, err: "auth" }, 401);
   if (JSON.stringify(body).length > 120000) return json({ ok: false, err: "too_big" }, 413);
-  let ENGINE_SRC: string;
-  try { ENGINE_SRC = await engineSrc(); } catch { return json({ ok: false, err: "engine" }, 503); }
+  let core, ENGINE_SRC: string;
+  try { ({ core, engine: ENGINE_SRC } = await loadRules()); } catch { return json({ ok: false, err: "rules" }, 503); }
 
   // 1. authentification (et création du joueur au premier contact) via la RPC existante
   const hello = await sb.rpc("pf_hello", { p_id: id, p_secret: secret, p_lang: String(body.lang || "fr").slice(0, 5), p_name: String(body.name || "Prisme").slice(0, 16) });
