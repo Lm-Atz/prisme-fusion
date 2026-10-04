@@ -39,6 +39,23 @@ T('plateau sauvegardé (niveaux, dorée, joker)',Array.isArray(r.saved)&&r.saved
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.stage=20;S.run.fled=false;G.startRun();const R=G.R;document.getElementById('veil').hidden=true;o.boss=R.mode==='boss';G.renderActs();o.btn=!!document.getElementById('retreat');
   o.ok=G.retreat();o.farm=R.mode==='farm'&&R.E.stage===19&&S.run.fled===true;G.renderActs();o.btnGone=!document.getElementById('retreat')&&!!document.getElementById('chal');o.again=G.retreat()===false;o.chal=G.challengeBoss()&&R.mode==='boss';return o;});
 T('bouton Repli visible pendant le boss',r.boss&&r.btn);T('repli → retour au monstre précédent',r.ok&&r.farm);T('après repli : bouton Redéfier',r.btnGone&&r.again);T('on peut redéfier',r.chal);
+
+r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};R.paused=false;S.boostUntil=0;
+  // débit de référence : 2 min, hors boost
+  R.baseWin.length=0;R.sparkWin.length=0;R.cells.fill(null);S.run.tb.auto=0;for(let i=0;i<20;i++){R.cells[0]={l:1};R.cells[1]={l:1};G.runMove(0,1,true);}for(let i=0;i<12;i++)G.runTick(0.1);o.rate=G.rateMin();o.pos=o.rate>0;
+  const gained=R.baseWin.reduce((a,x)=>a+x[1],0);o.coh=Math.abs(o.rate-gained/120*60)<1e-6;
+  // le boost ×2 ne gonfle pas la référence
+  const r0=G.rateMin();S.boostUntil=Date.now()+3600e3;R.baseWin.length=0;R.sparkWin.length=0;for(let i=0;i<20;i++){R.cells[0]={l:1};R.cells[1]={l:1};G.runMove(0,1,true);}for(let i=0;i<12;i++)G.runTick(0.1);o.boostSame=Math.abs(G.rateMin()-r0)<1e-6;S.boostUntil=0;
+  // pubs et packs = minutes de production, avec plancher
+  R.baseWin.length=0;G.runTick(0.1);G.runTick(1.1);o.zero=G.rateMin()===0;o.giftFloor=G.adSparks('gift')===60;o.shopFloor=G.adSparks('shop')===200;o.packFloor=G.packSparks(G.CFG.sparkShop.packs[0])===200;
+  S.run.brate=10;o.gift=G.adSparks('gift')===6000;o.shop=G.adSparks('shop')===18000;o.pack=G.packSparks(G.CFG.sparkShop.packs[2])===600*240;
+  // achat en gemmes + plafond journalier
+  S.gems=1000;S.day.spMin=0;const sp0=S.run.sparks;o.buy=G.buyPack(0)===true&&S.gems===985&&S.run.sparks===sp0+600*30&&S.day.spMin===30;
+  S.day.spMin=1440-200;o.cap=G.buyPack(2)==='cap'&&S.gems===985;S.gems=0;o.poor=G.buyPack(0)===false;S.day.spMin=0;
+  // cadeau : fermer = disparaît ; plus de limite journalière
+  S.day.gifts=99;o.okNoCap=G.giftOK();G.forceGift();o.shown=!document.getElementById('gift').hidden;document.getElementById('gift').click();o.modal=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();o.gone=document.getElementById('gift').hidden&&!G.gift;
+  return o;});
+T('débit de référence mesuré',r.pos&&r.coh);T('boost ×2 exclu de la référence',r.boostSame);T('pub cadeau : plancher 60',r.zero&&r.giftFloor);T('pub boutique : plancher 200',r.shopFloor&&r.packFloor);T('pub = 10 / 30 min de production',r.gift&&r.shop);T('pack 100 gemmes = 4 h',r.pack);T('achat de pack',r.buy);T('plafond 24 h / jour',r.cap);T('sans gemmes : refus',r.poor);T('cadeaux sans limite journalière',r.okNoCap);T('cadeau : fermer le fait disparaître',r.shown&&r.modal&&r.gone);
 // --- tick, spawn, auto, kill, étapes, boss
 r=await ev(()=>{const G=window.__G,R=G.R,S=G.S;const o={};R.paused=false;
   R.cells.fill(null);const n0=R.cells.filter(Boolean).length;for(let i=0;i<40;i++)G.runTick(0.1);o.spawned=R.cells.filter(Boolean).length>n0;
@@ -147,7 +164,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('power');S.
   S.bestStage=40;S.day.gifts=0;G.forceGift();o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.run.sparks,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
 T('recherches infinies, durée plafonnée à 30 j',r.inf);T('probabilités et plateau restent plafonnés',r.crit&&r.board);T('bulle cadeau affichée',r.shown);T('cadeau : modale',r.modal);
 await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S=window.__G.S;return S.day.gifts===1&&(S.run.sparks>b.sh||S.gems>b.gm||S.run.sparks>b.sp||S.boostUntil>Date.now());},r.before));
-T('plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=G.CFG.gift.perDay;const ok=!G.giftOK();G.S.day.gifts=0;return ok;}));
+T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=999;const ok=G.giftOK();G.S.day.gifts=0;return ok;}));
 // secousses : pas de cumul
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));
 // connexion obligatoire

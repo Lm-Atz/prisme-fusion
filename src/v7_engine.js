@@ -10,10 +10,13 @@ const CFG={
   prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n))},
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
-  build:{gemSec:300,adCut:1800,adPerDay:3,slotGems:[200,500],jslotGems:[150,350]},
+  build:{gemSec:300,adCut:1800,slotGems:[200,500],jslotGems:[150,350]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
-  gift:{every:[150,300],show:45,perDay:10},
+  gift:{every:[150,300],show:45},
+  rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
+  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
+  sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
 const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.assign(w,{get n(){return t('w'+i)}}));
@@ -115,11 +118,16 @@ const boosted=()=>Date.now()<S.boostUntil;
 /* ---------- cadeaux : une bulle apparaît de temps en temps, une pub = un bonus ---------- */
 function giftRoll(){
   const r=Math.random(),st=Math.max(S.bestStage,1);
-  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300),Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*lootMult()*0.25))};
+  if(r<0.6)return {k:'sp',v:adSparks('gift')};
   if(r<0.85)return {k:'g',v:5+Math.floor(Math.random()*6)};
   return {k:'b',v:0.5};
 }
-function giftOK(){roll();return (S.day.gifts||0)<CFG.gift.perDay;}
+function giftOK(){roll();return true;}
+const pushBase=sp=>pushWin(R.baseWin,R.t,sp/(boosted()?2:1),CFG.rate.window);
+const rateMin=()=>(S.run.brate||0)*60; // étincelles par minute, référence des pubs et des packs
+const adSparks=kind=>Math.max(CFG.ads.floor[kind],Math.floor(rateMin()*CFG.ads[kind+'Min']));
+const packSparks=p=>Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*p.min));
+function buyPack(i){roll();const p=CFG.sparkShop.packs[i];if(!p||S.gems<p.g)return false;if((S.day.spMin||0)+p.min>CFG.sparkShop.capMin)return 'cap';S.gems-=p.g;S.day.spMin=(S.day.spMin||0)+p.min;S.run.sparks+=packSparks(p);return true;}
 function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
 
 /* ================= calendrier de connexion ================= */
@@ -156,7 +164,7 @@ function startBuild(id,now=Date.now()){
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
-function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b||S.day.buildAds>=CFG.build.adPerDay)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
+function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
 const jokerAvail=j=>S.bestStage>=j.lvl;
@@ -194,7 +202,7 @@ function titanEnemy(){const th=weekTheme();return {type:'titan',th,name:THEMES[t
 function newRun(){
   const N=boardN();
   R={N,cells:Array(N*N).fill(null),t:0,spawnT:0,autoT:0,combo:0,comboT:0,jk:{},surgeUntil:0,frostUntil:0,breakUntil:0,paused:false,hold:false,
-    mode:'farm',bossT:0,titanT:0,titanDmg:0,dmgWin:[],sparkWin:[],killWin:[],buyT:0};
+    mode:'farm',bossT:0,titanT:0,titanDmg:0,dmgWin:[],sparkWin:[],baseWin:[],killWin:[],buyT:0};
   for(const id of S.equip)if(S.jk[id])R.jk[id]=0;
   if(S.run.fled)S.run.fledAt=0;
   R.E=S.run.fled?enemyFor(S.run.stage-1):enemyFor(S.run.stage);
@@ -228,8 +236,8 @@ function bossAttack(){
   else if(kind==='shuffle'){const idx=R.cells.map((c,i)=>i).filter(i=>!R.cells[i]||R.cells[i].k!=='lock');const vals=idx.map(i=>R.cells[i]).sort(()=>Math.random()-.5);idx.forEach((i,k)=>R.cells[i]=vals[k]);shapes().filter(([c])=>c.l>spawnLevel()).sort(()=>Math.random()-.5).slice(0,s).forEach(([c,i])=>{c.l--;hit.push(i);});}
   hooks.attack(kind,hit);
 }
-function pushWin(arr,t,v){arr.push([t,v]);while(arr.length&&arr[0][0]<t-CFG.offline.rateWindow)arr.shift();}
-function measureRates(){const w=CFG.offline.rateWindow;S.run.srate=R.sparkWin.reduce((a,x)=>a+x[1],0)/w;S.run.rate=R.dmgWin.reduce((a,x)=>a+x[1],0)/w;S.run.krate=R.killWin.length/w;}
+function pushWin(arr,t,v,w=CFG.offline.rateWindow){arr.push([t,v]);while(arr.length&&arr[0][0]<t-w)arr.shift();}
+function measureRates(){const w=CFG.offline.rateWindow;S.run.srate=R.sparkWin.reduce((a,x)=>a+x[1],0)/w;S.run.brate=R.baseWin.reduce((a,x)=>a+x[1],0)/CFG.rate.window;S.run.rate=R.dmgWin.reduce((a,x)=>a+x[1],0)/w;S.run.krate=R.killWin.length/w;}
 function runTick(dt){
   if(!R||R.paused||R.hold)return;
   R.t+=dt;
@@ -246,7 +254,7 @@ function runTick(dt){
   const ar=autoRate();if(ar>0){R.autoT+=dt;const ai=1/ar;while(R.autoT>=ai){R.autoT-=ai;autoMerge();}}
   autoBuyTick(dt);
   if(S.up.au_joker)for(const id in R.jk)if(R.jk[id]>=jokerNeed(id))useJoker(id);
-  R.rateT=(R.rateT||0)+dt;if(R.rateT>1){R.rateT=0;pushWin(R.dmgWin,R.t,0);pushWin(R.sparkWin,R.t,0);measureRates();}
+  R.rateT=(R.rateT||0)+dt;if(R.rateT>1){R.rateT=0;pushWin(R.dmgWin,R.t,0);pushWin(R.sparkWin,R.t,0);pushWin(R.baseWin,R.t,0,CFG.rate.window);measureRates();}
 }
 function autoMerge(){const seen={};const o=shapes().filter(x=>!x[0].fog).sort((a,b)=>a[0].l-b[0].l);for(const [c,i] of o){if(seen[c.l]!=null){runMove(seen[c.l],i,false);return true;}seen[c.l]=i;}
   const j=R.cells.findIndex(c=>c&&c.k==='joker');if(j>=0){const cap=jokerCap(),t=o.filter(x=>x[0].l<=cap).pop();if(t){runMove(j,t[1],false);return true;}}return false;}
@@ -269,7 +277,7 @@ function fireOne(i,C){
   if(w.id==='pen'){R.burn={dps:Math.max(R.burn&&R.burn.until>R.t?R.burn.dps:0,d*0.35*p),until:R.t+3+S.up.brule};}
   if(w.id==='hex')for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+0.5*p);
   if(w.id==='oct'&&R.mode==='boss'){R.bossT=Math.min(R.bossT+0.4*p,CFG.enemy.bossTime);}
-  if(w.id==='star'){const sp=0.15*l*p*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);hooks.harvest(i,sp);}
+  if(w.id==='star'){const sp=0.15*l*p*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);hooks.harvest(i,sp);}
   applyDamage(i,d,crit,w);
 }
 function fireTick(dt){
@@ -280,7 +288,7 @@ function fireTick(dt){
 function doMerge(into,l,gold,manual){
   R.cells[into]={l};if(gold)R.cells[into].k='gold';
   S.st.merges++;S.day.merges++;if(manual){S.st.manual++;R.combo=Math.min(R.combo+1,30);R.comboT=3;if(R.combo>S.st.maxCombo)S.st.maxCombo=R.combo;if(R.combo>(S.day.combo||0))S.day.combo=R.combo;}
-  const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);
+  const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);
   if(gold)S.run.sparks+=Math.max(1,Math.round(l*lootMult()));
   for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+1);
   for(const j of nb(into))if(R.cells[j]&&R.cells[j].k==='lock'){R.cells[j]=null;hooks.unlock(j);}
@@ -310,7 +318,7 @@ function snapTarget(from,x,y){
 }
 function onKill(){
   const E=R.E,n=E.stage;S.st.kills++;S.day.kills++;S.week.kills++;
-  const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushWin(R.killWin,R.t,1);
+  const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);pushWin(R.killWin,R.t,1);
   if(E.type!=='mob'){const k=String(n);if(!S.bestiary[k]||R.bossT>S.bestiary[k])S.bestiary[k]=Math.round(E.type==='boss'?CFG.enemy.bossTime-R.bossT:0);if(E.type==='boss'){S.st.bosses++;S.day.bosses++;}}
   const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.run.sparks+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
   hooks.kill(E,sp,sh);
@@ -343,7 +351,7 @@ function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
   S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
   S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
-  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
+  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
 function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}

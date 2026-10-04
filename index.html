@@ -263,7 +263,7 @@ body{margin:0}
 .jtool.ready small{color:var(--gem)}
 @keyframes jready{to{transform:scale(1.08)}}
 /* boosters temporaires */
-.sparks{display:flex;justify-content:center;align-items:center;padding:0 2px}
+.sparks{display:flex;justify-content:center;align-items:baseline;gap:10px;padding:0 2px}
 .sparks b{display:inline-flex;align-items:center;gap:5px;font:22px/1 var(--display);color:var(--beam);font-variant-numeric:tabular-nums}
 .sparks b .i{width:24px;height:24px}
 .sparks small{font:800 12.5px var(--body);color:var(--mist)}
@@ -383,7 +383,7 @@ body{margin:0}
     <button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button>
     <div class="boardwrap" id="bw"><canvas id="board" data-i18n-aria="board_aria"></canvas></div>
     <div class="jok" id="jok" hidden></div>
-    <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b></div>
+    <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b><small id="rateMin"></small></div>
     <div class="tb" id="tb"></div>
   </div>
 </section>
@@ -505,7 +505,7 @@ I18N.fr={
   // ligue
   lg_title:'Ligue {d}',lg_sub:'Tes dégâts cumulés contre le Titan cette semaine ({days}), face à 29 joueurs simulés. Les 5 premiers montent en Argent.',lg_days:'mardi, jeudi, samedi',lg_today:"aujourd'hui !",lg_next:'prochain : {d}',lg_up:'Zone de montée au-dessus',lg_down:'Zone de descente en dessous',lg_report:'Signaler le pseudo {n}',lg_reported:'Signalement envoyé',div_bronze:'Bronze',
   // boutique
-  sh_title:'Boutique',sh_demo:'Démo : achats et publicités simulés, aucun paiement réel.',sh_boost:'Gains doublés',sh_active:'Actif encore {t}',sh_inactive:'Inactif',sh_adboost:'Pub : ×2 pendant {n} h',sh_boost_d:'Dégâts et étincelles doublés. Se cumule.',sh_gemboost:'×2 pendant {n} h',sh_watch:'Regarder',sh_skin:'Couleur de ta gemme',sh_worn:'Portée',sh_wear:'Porter',sh_price:'{n} gemmes',sh_own:'Acquis',sh_confirm:"Confirmer l'achat",sh_sim:'Achat simulé : aucun paiement réel.',sh_bought:'Achat simulé effectué',sh_boosted:'Gains doublés pendant {n} h',
+  sh_title:'Boutique',sh_cap:"Limite : {h} h de production achetées par jour",sh_pack:"{t} de production",sh_now:"≈ {n} étincelles au débit actuel",sh_adsparks:"Pub : {t} de production",sh_sparks:"Étincelles",rate_min:"≈ {n} / min",sh_demo:'Démo : achats et publicités simulés, aucun paiement réel.',sh_boost:'Gains doublés',sh_active:'Actif encore {t}',sh_inactive:'Inactif',sh_adboost:'Pub : ×2 pendant {n} h',sh_boost_d:'Dégâts et étincelles doublés. Se cumule.',sh_gemboost:'×2 pendant {n} h',sh_watch:'Regarder',sh_skin:'Couleur de ta gemme',sh_worn:'Portée',sh_wear:'Porter',sh_price:'{n} gemmes',sh_own:'Acquis',sh_confirm:"Confirmer l'achat",sh_sim:'Achat simulé : aucun paiement réel.',sh_bought:'Achat simulé effectué',sh_boosted:'Gains doublés pendant {n} h',
   of_starter:'Pack de départ',of_starter_d:'150 gemmes et 6 h de gains doublés. Une seule fois.',of_loot:"Trésor ×2 à vie",of_loot_d:"Double le trésor de départ offert à chaque réfraction.",of_noads:'Supprimer les pubs',of_noads_d:'Plus de pub imposée. Les pubs récompensées restent au choix.',of_gems:'{n} gemmes',of_small:'Petit paquet.',of_more:'+{n} % par rapport au petit paquet.',of_big:'Le plus gros coffre : +85 %.',
   starter_p:'150 gemmes et 6 h de gains doublés pour {p}. Une seule fois.',starter_left:'Offre visible encore {t}',starter_btn:'{p} (achat simulé)',starter_no:'Non merci',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Or',skin_prisme:'Prisme',
@@ -628,7 +628,7 @@ I18N.en={
   at_started:'{t}: research started',at_busy:'All slots are busy',at_done:'{t}: research complete',at_rushed:'Research sped up by 30 minutes',at_newslot:'New research slot',at_newjslot:'New joker slot',no_gems:'Not enough gems',
   pp_n:'{n} refraction point{n|s}',pp_reset:'Redistribute',pp_note:'Each refraction gives points (1 at stage 30, then +1 per 10 stages). One point per level, then two, then three. Level: effect +20%, damage +8%.',pp_up:'Upgrade {t}, {n} point{n|s}',pp_back:'Refraction points returned',
   lg_title:'{d} League',lg_sub:'Your total damage against the Titan this week ({days}), against 29 simulated players. The top 5 move up to Silver.',lg_days:'Tuesday, Thursday, Saturday',lg_today:'today!',lg_next:'next: {d}',lg_up:'Promotion zone above',lg_down:'Relegation zone below',lg_report:'Report the name {n}',lg_reported:'Report sent',div_bronze:'Bronze',
-  sh_title:'Shop',sh_demo:'Demo: purchases and ads are simulated, no real payment.',sh_boost:'Doubled gains',sh_active:'Active for {t} more',sh_inactive:'Inactive',sh_adboost:'Ad: ×2 for {n} h',sh_boost_d:'Damage and sparks doubled. Stacks.',sh_gemboost:'×2 for {n} h',sh_watch:'Watch',sh_skin:'Your gem colour',sh_worn:'Worn',sh_wear:'Wear',sh_price:'{n} gems',sh_own:'Owned',sh_confirm:'Confirm purchase',sh_sim:'Simulated purchase: no real payment.',sh_bought:'Simulated purchase done',sh_boosted:'Gains doubled for {n} h',
+  sh_title:'Shop',sh_cap:"Limit: {h} h of output bought per day",sh_pack:"{t} of output",sh_now:"≈ {n} sparks at the current rate",sh_adsparks:"Ad: {t} of output",sh_sparks:"Sparks",rate_min:"≈ {n} / min",sh_demo:'Demo: purchases and ads are simulated, no real payment.',sh_boost:'Doubled gains',sh_active:'Active for {t} more',sh_inactive:'Inactive',sh_adboost:'Ad: ×2 for {n} h',sh_boost_d:'Damage and sparks doubled. Stacks.',sh_gemboost:'×2 for {n} h',sh_watch:'Watch',sh_skin:'Your gem colour',sh_worn:'Worn',sh_wear:'Wear',sh_price:'{n} gems',sh_own:'Owned',sh_confirm:'Confirm purchase',sh_sim:'Simulated purchase: no real payment.',sh_bought:'Simulated purchase done',sh_boosted:'Gains doubled for {n} h',
   of_starter:'Starter Pack',of_starter_d:'150 gems and 6 h of doubled gains. One time only.',of_loot:"Treasure ×2 forever",of_loot_d:"Doubles the starting treasure of every refraction.",of_noads:'Remove ads',of_noads_d:'No more forced ads. Rewarded ads stay optional.',of_gems:'{n} gems',of_small:'Small pack.',of_more:'+{n}% compared to the small pack.',of_big:'The biggest chest: +85%.',
   starter_p:'150 gems and 6 h of doubled gains for {p}. One time only.',starter_left:'Offer visible for {t} more',starter_btn:'{p} (simulated purchase)',starter_no:'No thanks',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Gold',skin_prisme:'Prism',
@@ -739,7 +739,7 @@ I18N.es={
   at_started:'{t}: investigación iniciada',at_busy:'Todas las ranuras están ocupadas',at_done:'{t}: investigación terminada',at_rushed:'Investigación acelerada 30 minutos',at_newslot:'Nueva ranura de investigación',at_newjslot:'Nueva ranura de comodín',no_gems:'No tienes suficientes gemas',
   pp_n:'{n} punto{n|s} de refracción',pp_reset:'Redistribuir',pp_note:'Cada refracción da puntos (1 en la etapa 30, luego +1 por cada 10 etapas). Un punto por nivel, luego dos, luego tres. Nivel: efecto +20 %, daño +8 %.',pp_up:'Mejorar {t}, {n} punto{n|s}',pp_back:'Puntos de refracción devueltos',
   lg_title:'Liga {d}',lg_sub:'Tu daño acumulado contra el Titán esta semana ({days}), frente a 29 jugadores simulados. Los 5 primeros suben a Plata.',lg_days:'martes, jueves, sábado',lg_today:'¡hoy!',lg_next:'próximo: {d}',lg_up:'Zona de ascenso arriba',lg_down:'Zona de descenso abajo',lg_report:'Denunciar el nombre {n}',lg_reported:'Denuncia enviada',div_bronze:'Bronce',
-  sh_title:'Tienda',sh_demo:'Demo: compras y anuncios simulados, sin pago real.',sh_boost:'Ganancias dobles',sh_active:'Activo {t} más',sh_inactive:'Inactivo',sh_adboost:'Anuncio: ×2 durante {n} h',sh_boost_d:'Daño y chispas dobles. Se acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Color de tu gema',sh_worn:'Puesta',sh_wear:'Poner',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sin pago real.',sh_bought:'Compra simulada realizada',sh_boosted:'Ganancias dobles durante {n} h',
+  sh_title:'Tienda',sh_cap:"Límite: {h} h de producción compradas al día",sh_pack:"{t} de producción",sh_now:"≈ {n} chispas al ritmo actual",sh_adsparks:"Anuncio: {t} de producción",sh_sparks:"Chispas",rate_min:"≈ {n} / min",sh_demo:'Demo: compras y anuncios simulados, sin pago real.',sh_boost:'Ganancias dobles',sh_active:'Activo {t} más',sh_inactive:'Inactivo',sh_adboost:'Anuncio: ×2 durante {n} h',sh_boost_d:'Daño y chispas dobles. Se acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Color de tu gema',sh_worn:'Puesta',sh_wear:'Poner',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sin pago real.',sh_bought:'Compra simulada realizada',sh_boosted:'Ganancias dobles durante {n} h',
   of_starter:'Pack inicial',of_starter_d:'150 gemas y 6 h de ganancias dobles. Solo una vez.',of_loot:"Tesoro ×2 para siempre",of_loot_d:"Duplica el tesoro inicial de cada refracción.",of_noads:'Quitar anuncios',of_noads_d:'Sin anuncios forzados. Los anuncios con recompensa siguen siendo opcionales.',of_gems:'{n} gemas',of_small:'Paquete pequeño.',of_more:'+{n} % respecto al paquete pequeño.',of_big:'El cofre más grande: +85 %.',
   starter_p:'150 gemas y 6 h de ganancias dobles por {p}. Solo una vez.',starter_left:'Oferta visible {t} más',starter_btn:'{p} (compra simulada)',starter_no:'No, gracias',
   skin_cyan:'Cian',skin_rose:'Magenta',skin_or:'Oro',skin_prisme:'Prisma',
@@ -850,7 +850,7 @@ I18N.de={
   at_started:'{t}: Forschung gestartet',at_busy:'Alle Plätze sind belegt',at_done:'{t}: Forschung abgeschlossen',at_rushed:'Forschung um 30 Minuten beschleunigt',at_newslot:'Neuer Forschungsplatz',at_newjslot:'Neuer Joker-Platz',no_gems:'Nicht genug Edelsteine',
   pp_n:'{n} Brechungspunkt{n|e}',pp_reset:'Neu verteilen',pp_note:'Jede Brechung gibt Punkte (1 auf Stufe 30, dann +1 je 10 Stufen). Ein Punkt pro Level, dann zwei, dann drei. Level: Effekt +20 %, Schaden +8 %.',pp_up:'{t} verbessern, {n} Punkt{n|e}',pp_back:'Brechungspunkte zurückgegeben',
   lg_title:'{d}-Liga',lg_sub:'Dein Gesamtschaden gegen den Titan diese Woche ({days}), gegen 29 simulierte Spieler. Die besten 5 steigen in Silber auf.',lg_days:'Dienstag, Donnerstag, Samstag',lg_today:'heute!',lg_next:'nächster: {d}',lg_up:'Aufstiegszone darüber',lg_down:'Abstiegszone darunter',lg_report:'Den Namen {n} melden',lg_reported:'Meldung gesendet',div_bronze:'Bronze',
-  sh_title:'Shop',sh_demo:'Demo: Käufe und Werbung sind simuliert, keine echte Zahlung.',sh_boost:'Doppelte Erträge',sh_active:'Noch {t} aktiv',sh_inactive:'Inaktiv',sh_adboost:'Werbung: ×2 für {n} Std.',sh_boost_d:'Schaden und Funken verdoppelt. Stapelbar.',sh_gemboost:'×2 für {n} Std.',sh_watch:'Ansehen',sh_skin:'Farbe deines Edelsteins',sh_worn:'Getragen',sh_wear:'Tragen',sh_price:'{n} Edelsteine',sh_own:'Gekauft',sh_confirm:'Kauf bestätigen',sh_sim:'Simulierter Kauf: keine echte Zahlung.',sh_bought:'Simulierter Kauf ausgeführt',sh_boosted:'Erträge für {n} Std. verdoppelt',
+  sh_title:'Shop',sh_cap:"Limit: {h} Std. Produktion pro Tag kaufbar",sh_pack:"{t} Produktion",sh_now:"≈ {n} Funken beim aktuellen Tempo",sh_adsparks:"Werbung: {t} Produktion",sh_sparks:"Funken",rate_min:"≈ {n} / Min.",sh_demo:'Demo: Käufe und Werbung sind simuliert, keine echte Zahlung.',sh_boost:'Doppelte Erträge',sh_active:'Noch {t} aktiv',sh_inactive:'Inaktiv',sh_adboost:'Werbung: ×2 für {n} Std.',sh_boost_d:'Schaden und Funken verdoppelt. Stapelbar.',sh_gemboost:'×2 für {n} Std.',sh_watch:'Ansehen',sh_skin:'Farbe deines Edelsteins',sh_worn:'Getragen',sh_wear:'Tragen',sh_price:'{n} Edelsteine',sh_own:'Gekauft',sh_confirm:'Kauf bestätigen',sh_sim:'Simulierter Kauf: keine echte Zahlung.',sh_bought:'Simulierter Kauf ausgeführt',sh_boosted:'Erträge für {n} Std. verdoppelt',
   of_starter:'Starterpaket',of_starter_d:'150 Edelsteine und 6 Std. doppelte Erträge. Nur einmal.',of_loot:"Schatz ×2 für immer",of_loot_d:"Verdoppelt den Start-Schatz jeder Brechung.",of_noads:'Werbung entfernen',of_noads_d:'Keine erzwungene Werbung mehr. Belohnungswerbung bleibt freiwillig.',of_gems:'{n} Edelsteine',of_small:'Kleines Paket.',of_more:'+{n} % gegenüber dem kleinen Paket.',of_big:'Die größte Truhe: +85 %.',
   starter_p:'150 Edelsteine und 6 Std. doppelte Erträge für {p}. Nur einmal.',starter_left:'Angebot noch {t} sichtbar',starter_btn:'{p} (simulierter Kauf)',starter_no:'Nein danke',
   skin_cyan:'Cyan',skin_rose:'Magenta',skin_or:'Gold',skin_prisme:'Prisma',
@@ -961,7 +961,7 @@ I18N.pt={
   at_started:'{t}: pesquisa iniciada',at_busy:'Todos os lugares estão ocupados',at_done:'{t}: pesquisa terminada',at_rushed:'Pesquisa acelerada em 30 minutos',at_newslot:'Novo lugar de pesquisa',at_newjslot:'Novo lugar de curinga',no_gems:'Gemas insuficientes',
   pp_n:'{n} ponto{n|s} de refração',pp_reset:'Redistribuir',pp_note:'Cada refração dá pontos (1 na etapa 30, depois +1 por cada 10 etapas). Um ponto por nível, depois dois, depois três. Nível: efeito +20 %, dano +8 %.',pp_up:'Melhorar {t}, {n} ponto{n|s}',pp_back:'Pontos de refração devolvidos',
   lg_title:'Liga {d}',lg_sub:'O teu dano acumulado contra o Titã esta semana ({days}), frente a 29 jogadores simulados. Os 5 primeiros sobem a Prata.',lg_days:'terça, quinta, sábado',lg_today:'hoje!',lg_next:'próximo: {d}',lg_up:'Zona de subida acima',lg_down:'Zona de descida abaixo',lg_report:'Denunciar o nome {n}',lg_reported:'Denúncia enviada',div_bronze:'Bronze',
-  sh_title:'Loja',sh_demo:'Demo: compras e anúncios simulados, sem pagamento real.',sh_boost:'Ganhos a dobrar',sh_active:'Ativo por mais {t}',sh_inactive:'Inativo',sh_adboost:'Anúncio: ×2 durante {n} h',sh_boost_d:'Dano e faíscas a dobrar. Acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Cor da tua gema',sh_worn:'Em uso',sh_wear:'Usar',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sem pagamento real.',sh_bought:'Compra simulada efetuada',sh_boosted:'Ganhos a dobrar durante {n} h',
+  sh_title:'Loja',sh_cap:"Limite: {h} h de produção compradas por dia",sh_pack:"{t} de produção",sh_now:"≈ {n} faíscas ao ritmo atual",sh_adsparks:"Anúncio: {t} de produção",sh_sparks:"Faíscas",rate_min:"≈ {n} / min",sh_demo:'Demo: compras e anúncios simulados, sem pagamento real.',sh_boost:'Ganhos a dobrar',sh_active:'Ativo por mais {t}',sh_inactive:'Inativo',sh_adboost:'Anúncio: ×2 durante {n} h',sh_boost_d:'Dano e faíscas a dobrar. Acumula.',sh_gemboost:'×2 durante {n} h',sh_watch:'Ver',sh_skin:'Cor da tua gema',sh_worn:'Em uso',sh_wear:'Usar',sh_price:'{n} gemas',sh_own:'Adquirido',sh_confirm:'Confirmar compra',sh_sim:'Compra simulada: sem pagamento real.',sh_bought:'Compra simulada efetuada',sh_boosted:'Ganhos a dobrar durante {n} h',
   of_starter:'Pacote inicial',of_starter_d:'150 gemas e 6 h de ganhos a dobrar. Uma só vez.',of_loot:"Tesouro ×2 para sempre",of_loot_d:"Duplica o tesouro inicial de cada refração.",of_noads:'Remover anúncios',of_noads_d:'Sem anúncios forçados. Os anúncios com recompensa continuam opcionais.',of_gems:'{n} gemas',of_small:'Pacote pequeno.',of_more:'+{n} % em relação ao pacote pequeno.',of_big:'O maior baú: +85 %.',
   starter_p:'150 gemas e 6 h de ganhos a dobrar por {p}. Uma só vez.',starter_left:'Oferta visível por mais {t}',starter_btn:'{p} (compra simulada)',starter_no:'Não, obrigado',
   skin_cyan:'Ciano',skin_rose:'Magenta',skin_or:'Ouro',skin_prisme:'Prisma',
@@ -1072,7 +1072,7 @@ I18N.it={
   at_started:'{t}: ricerca avviata',at_busy:'Tutti gli slot sono occupati',at_done:'{t}: ricerca completata',at_rushed:'Ricerca accelerata di 30 minuti',at_newslot:'Nuovo slot di ricerca',at_newjslot:'Nuovo slot jolly',no_gems:'Gemme insufficienti',
   pp_n:'{n} punt{n|o/i} rifrazione',pp_reset:'Ridistribuisci',pp_note:'Ogni rifrazione dà punti (1 al livello 30, poi +1 ogni 10 livelli). Un punto per grado, poi due, poi tre. Grado: effetto +20 %, danno +8 %.',pp_up:'Migliora {t}, {n} punt{n|o/i}',pp_back:'Punti rifrazione restituiti',
   lg_title:'Lega {d}',lg_sub:'Il tuo danno cumulato contro il Titano questa settimana ({days}), contro 29 giocatori simulati. I primi 5 salgono in Argento.',lg_days:'martedì, giovedì, sabato',lg_today:'oggi!',lg_next:'prossimo: {d}',lg_up:'Zona promozione sopra',lg_down:'Zona retrocessione sotto',lg_report:'Segnala il nome {n}',lg_reported:'Segnalazione inviata',div_bronze:'Bronzo',
-  sh_title:'Negozio',sh_demo:'Demo: acquisti e pubblicità simulati, nessun pagamento reale.',sh_boost:'Guadagni raddoppiati',sh_active:'Attivo ancora {t}',sh_inactive:'Inattivo',sh_adboost:'Pubblicità: ×2 per {n} h',sh_boost_d:'Danno e scintille raddoppiati. Si cumula.',sh_gemboost:'×2 per {n} h',sh_watch:'Guarda',sh_skin:'Colore della tua gemma',sh_worn:'Indossato',sh_wear:'Indossa',sh_price:'{n} gemme',sh_own:'Acquistato',sh_confirm:"Conferma l'acquisto",sh_sim:'Acquisto simulato: nessun pagamento reale.',sh_bought:'Acquisto simulato effettuato',sh_boosted:'Guadagni raddoppiati per {n} h',
+  sh_title:'Negozio',sh_cap:"Limite: {h} h di produzione acquistabili al giorno",sh_pack:"{t} di produzione",sh_now:"≈ {n} scintille al ritmo attuale",sh_adsparks:"Pubblicità: {t} di produzione",sh_sparks:"Scintille",rate_min:"≈ {n} / min",sh_demo:'Demo: acquisti e pubblicità simulati, nessun pagamento reale.',sh_boost:'Guadagni raddoppiati',sh_active:'Attivo ancora {t}',sh_inactive:'Inattivo',sh_adboost:'Pubblicità: ×2 per {n} h',sh_boost_d:'Danno e scintille raddoppiati. Si cumula.',sh_gemboost:'×2 per {n} h',sh_watch:'Guarda',sh_skin:'Colore della tua gemma',sh_worn:'Indossato',sh_wear:'Indossa',sh_price:'{n} gemme',sh_own:'Acquistato',sh_confirm:"Conferma l'acquisto",sh_sim:'Acquisto simulato: nessun pagamento reale.',sh_bought:'Acquisto simulato effettuato',sh_boosted:'Guadagni raddoppiati per {n} h',
   of_starter:'Pacchetto iniziale',of_starter_d:'150 gemme e 6 h di guadagni raddoppiati. Una sola volta.',of_loot:"Tesoro ×2 per sempre",of_loot_d:"Raddoppia il tesoro iniziale di ogni rifrazione.",of_noads:'Rimuovi la pubblicità',of_noads_d:'Niente più pubblicità forzata. Quella premiata resta facoltativa.',of_gems:'{n} gemme',of_small:'Pacchetto piccolo.',of_more:'+{n} % rispetto al pacchetto piccolo.',of_big:'Il forziere più grande: +85 %.',
   starter_p:'150 gemme e 6 h di guadagni raddoppiati per {p}. Una sola volta.',starter_left:'Offerta visibile ancora {t}',starter_btn:'{p} (acquisto simulato)',starter_no:'No grazie',
   skin_cyan:'Ciano',skin_rose:'Magenta',skin_or:'Oro',skin_prisme:'Prisma',
@@ -1146,10 +1146,13 @@ const CFG={
   prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n))},
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
-  build:{gemSec:300,adCut:1800,adPerDay:3,slotGems:[200,500],jslotGems:[150,350]},
+  build:{gemSec:300,adCut:1800,slotGems:[200,500],jslotGems:[150,350]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
-  gift:{every:[150,300],show:45,perDay:10},
+  gift:{every:[150,300],show:45},
+  rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
+  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
+  sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
 const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.assign(w,{get n(){return t('w'+i)}}));
@@ -1251,11 +1254,16 @@ const boosted=()=>Date.now()<S.boostUntil;
 /* ---------- cadeaux : une bulle apparaît de temps en temps, une pub = un bonus ---------- */
 function giftRoll(){
   const r=Math.random(),st=Math.max(S.bestStage,1);
-  if(r<0.6)return {k:'sp',v:Math.max(50,Math.floor((S.run.srate||1)*300),Math.floor(CFG.prestige.shards(Math.max(CFG.prestige.minStage,S.maxStage))*lootMult()*0.25))};
+  if(r<0.6)return {k:'sp',v:adSparks('gift')};
   if(r<0.85)return {k:'g',v:5+Math.floor(Math.random()*6)};
   return {k:'b',v:0.5};
 }
-function giftOK(){roll();return (S.day.gifts||0)<CFG.gift.perDay;}
+function giftOK(){roll();return true;}
+const pushBase=sp=>pushWin(R.baseWin,R.t,sp/(boosted()?2:1),CFG.rate.window);
+const rateMin=()=>(S.run.brate||0)*60; // étincelles par minute, référence des pubs et des packs
+const adSparks=kind=>Math.max(CFG.ads.floor[kind],Math.floor(rateMin()*CFG.ads[kind+'Min']));
+const packSparks=p=>Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*p.min));
+function buyPack(i){roll();const p=CFG.sparkShop.packs[i];if(!p||S.gems<p.g)return false;if((S.day.spMin||0)+p.min>CFG.sparkShop.capMin)return 'cap';S.gems-=p.g;S.day.spMin=(S.day.spMin||0)+p.min;S.run.sparks+=packSparks(p);return true;}
 function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
 
 /* ================= calendrier de connexion ================= */
@@ -1292,7 +1300,7 @@ function startBuild(id,now=Date.now()){
 }
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
-function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b||S.day.buildAds>=CFG.build.adPerDay)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
+function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
 const jokerAvail=j=>S.bestStage>=j.lvl;
@@ -1330,7 +1338,7 @@ function titanEnemy(){const th=weekTheme();return {type:'titan',th,name:THEMES[t
 function newRun(){
   const N=boardN();
   R={N,cells:Array(N*N).fill(null),t:0,spawnT:0,autoT:0,combo:0,comboT:0,jk:{},surgeUntil:0,frostUntil:0,breakUntil:0,paused:false,hold:false,
-    mode:'farm',bossT:0,titanT:0,titanDmg:0,dmgWin:[],sparkWin:[],killWin:[],buyT:0};
+    mode:'farm',bossT:0,titanT:0,titanDmg:0,dmgWin:[],sparkWin:[],baseWin:[],killWin:[],buyT:0};
   for(const id of S.equip)if(S.jk[id])R.jk[id]=0;
   if(S.run.fled)S.run.fledAt=0;
   R.E=S.run.fled?enemyFor(S.run.stage-1):enemyFor(S.run.stage);
@@ -1364,8 +1372,8 @@ function bossAttack(){
   else if(kind==='shuffle'){const idx=R.cells.map((c,i)=>i).filter(i=>!R.cells[i]||R.cells[i].k!=='lock');const vals=idx.map(i=>R.cells[i]).sort(()=>Math.random()-.5);idx.forEach((i,k)=>R.cells[i]=vals[k]);shapes().filter(([c])=>c.l>spawnLevel()).sort(()=>Math.random()-.5).slice(0,s).forEach(([c,i])=>{c.l--;hit.push(i);});}
   hooks.attack(kind,hit);
 }
-function pushWin(arr,t,v){arr.push([t,v]);while(arr.length&&arr[0][0]<t-CFG.offline.rateWindow)arr.shift();}
-function measureRates(){const w=CFG.offline.rateWindow;S.run.srate=R.sparkWin.reduce((a,x)=>a+x[1],0)/w;S.run.rate=R.dmgWin.reduce((a,x)=>a+x[1],0)/w;S.run.krate=R.killWin.length/w;}
+function pushWin(arr,t,v,w=CFG.offline.rateWindow){arr.push([t,v]);while(arr.length&&arr[0][0]<t-w)arr.shift();}
+function measureRates(){const w=CFG.offline.rateWindow;S.run.srate=R.sparkWin.reduce((a,x)=>a+x[1],0)/w;S.run.brate=R.baseWin.reduce((a,x)=>a+x[1],0)/CFG.rate.window;S.run.rate=R.dmgWin.reduce((a,x)=>a+x[1],0)/w;S.run.krate=R.killWin.length/w;}
 function runTick(dt){
   if(!R||R.paused||R.hold)return;
   R.t+=dt;
@@ -1382,7 +1390,7 @@ function runTick(dt){
   const ar=autoRate();if(ar>0){R.autoT+=dt;const ai=1/ar;while(R.autoT>=ai){R.autoT-=ai;autoMerge();}}
   autoBuyTick(dt);
   if(S.up.au_joker)for(const id in R.jk)if(R.jk[id]>=jokerNeed(id))useJoker(id);
-  R.rateT=(R.rateT||0)+dt;if(R.rateT>1){R.rateT=0;pushWin(R.dmgWin,R.t,0);pushWin(R.sparkWin,R.t,0);measureRates();}
+  R.rateT=(R.rateT||0)+dt;if(R.rateT>1){R.rateT=0;pushWin(R.dmgWin,R.t,0);pushWin(R.sparkWin,R.t,0);pushWin(R.baseWin,R.t,0,CFG.rate.window);measureRates();}
 }
 function autoMerge(){const seen={};const o=shapes().filter(x=>!x[0].fog).sort((a,b)=>a[0].l-b[0].l);for(const [c,i] of o){if(seen[c.l]!=null){runMove(seen[c.l],i,false);return true;}seen[c.l]=i;}
   const j=R.cells.findIndex(c=>c&&c.k==='joker');if(j>=0){const cap=jokerCap(),t=o.filter(x=>x[0].l<=cap).pop();if(t){runMove(j,t[1],false);return true;}}return false;}
@@ -1405,7 +1413,7 @@ function fireOne(i,C){
   if(w.id==='pen'){R.burn={dps:Math.max(R.burn&&R.burn.until>R.t?R.burn.dps:0,d*0.35*p),until:R.t+3+S.up.brule};}
   if(w.id==='hex')for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+0.5*p);
   if(w.id==='oct'&&R.mode==='boss'){R.bossT=Math.min(R.bossT+0.4*p,CFG.enemy.bossTime);}
-  if(w.id==='star'){const sp=0.15*l*p*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);hooks.harvest(i,sp);}
+  if(w.id==='star'){const sp=0.15*l*p*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);hooks.harvest(i,sp);}
   applyDamage(i,d,crit,w);
 }
 function fireTick(dt){
@@ -1416,7 +1424,7 @@ function fireTick(dt){
 function doMerge(into,l,gold,manual){
   R.cells[into]={l};if(gold)R.cells[into].k='gold';
   S.st.merges++;S.day.merges++;if(manual){S.st.manual++;R.combo=Math.min(R.combo+1,30);R.comboT=3;if(R.combo>S.st.maxCombo)S.st.maxCombo=R.combo;if(R.combo>(S.day.combo||0))S.day.combo=R.combo;}
-  const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);
+  const sp=CFG.sparks.merge(l)*sparkMult()*(manual?CFG.sparks.manual:1);S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);
   if(gold)S.run.sparks+=Math.max(1,Math.round(l*lootMult()));
   for(const id in R.jk)R.jk[id]=Math.min(jokerNeed(id),R.jk[id]+1);
   for(const j of nb(into))if(R.cells[j]&&R.cells[j].k==='lock'){R.cells[j]=null;hooks.unlock(j);}
@@ -1446,7 +1454,7 @@ function snapTarget(from,x,y){
 }
 function onKill(){
   const E=R.E,n=E.stage;S.st.kills++;S.day.kills++;S.week.kills++;
-  const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushWin(R.killWin,R.t,1);
+  const sp=CFG.sparks.kill(n)*(E.type==='boss'?5:E.type==='mini'?2:1)*(1+0.15*S.up.killspark)*sparkMult();S.run.sparks+=sp;pushWin(R.sparkWin,R.t,sp);pushBase(sp);pushWin(R.killWin,R.t,1);
   if(E.type!=='mob'){const k=String(n);if(!S.bestiary[k]||R.bossT>S.bestiary[k])S.bestiary[k]=Math.round(E.type==='boss'?CFG.enemy.bossTime-R.bossT:0);if(E.type==='boss'){S.st.bosses++;S.day.bosses++;}}
   const sh=CFG.shards.kill(n,E.type)*lootMult();if(sh>0){S.run.sparks+=sh;R.shardAcc=(R.shardAcc||0)+sh;}
   hooks.kill(E,sp,sh);
@@ -1479,7 +1487,7 @@ function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
   S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
   S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
-  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
+  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
 function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}
@@ -1820,7 +1828,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='8.7 · écran';
+const VERSION='8.8 · débit';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2062,7 +2070,7 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 
 function refresh(){
   accrue();roll();
-  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);
+  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
   $('bQ').hidden=!claimable();
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
@@ -2127,7 +2135,7 @@ function giftTick(dt){
   else if(giftT>=giftNext&&!giftOK())giftNext=giftT+600;
 }
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
-$('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('later')}</button></div>`);});
+$('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('close')}</button></div>`,()=>{if(gift){gift=null;$('gift').hidden=true;giftNext=0;}});});
 /* ----- tutoriel ----- */
 let tutoStep=0,hpLagV=1,hintT=null;
 function showHint(txt,ms){const h=$('hint');h.textContent=txt;h.hidden=false;clearTimeout(hintT);if(ms)hintT=setTimeout(()=>h.hidden=true,ms);}
@@ -2210,6 +2218,10 @@ function renderTab(){
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gold sm" id="adBoost">${ic('tv')}${t('sh_watch')}</button></div>`;
     h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}</button></div></div>`;
+    const capLeft=CFG.sparkShop.capMin-(S.day.spMin||0);
+    h+=`<h2 class="sec">${t('sh_sparks')}<small>${t('rate_min',{n:fmt(Math.round(rateMin()))})}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adsparks',{t:dur(CFG.ads.shopMin*60)})}</b><p>${t('sh_now',{n:fmt(adSparks('shop'))})}</p><button class="b b-gold sm" id="adSparks">${ic('tv')}${t('sh_watch')}</button></div>`;
+    h+=CFG.sparkShop.packs.map((p,i)=>`<div class="gitem slab"><span class="oart">${ic('spark','ie')}</span><b>${t('sh_pack',{t:dur(p.min*60)})}</b><p>${t('sh_now',{n:fmt(packSparks(p))})}</p><button class="b b-gem sm" data-pack="${i}" ${S.gems<p.g||capLeft<p.min?'disabled':''}>${ic('gem')}${p.g}</button></div>`).join('')+`</div>`;
+    if(capLeft<CFG.sparkShop.packs[0].min)h+=`<p class="sub">${t('sh_cap',{h:CFG.sparkShop.capMin/60})}</p>`;
     h+=`<h2 class="sec">${t('sh_skin')}</h2><div class="skins">`;
     SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):t('sh_price',{n:k.price})}</span></button>`;});
     h+='</div>';
@@ -2269,6 +2281,8 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))netReport(el.dataset.report);}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){if(buyGemItem(el.dataset.gem)){sfx.buy();save();refresh();renderTab();}}
+  else if(el.id==='adSparks'){rewarded(()=>{const v=adSparks('shop');S.run.sparks+=v;toast('+'+fmt(v)+' '+t('sparks'));sfx.win();if(R)renderTB();renderTab();});}
+  else if(el.dataset.pack){const r=buyPack(+el.dataset.pack);if(r===true){sfx.buy();save();refresh();if(R)renderTB();renderTab();}else if(r==='cap')toast(t('sh_cap',{h:CFG.sparkShop.capMin/60}));}
   else if(el.id==='adBoost'){rewarded(()=>{give({b:CFG.boost.adH});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
   else if(el.dataset.skin){if(!buySkin(el.dataset.skin))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
   else if(el.id==='nameBtn'){const r=rename($('nameIn').value);if(r.ok){toast(t('name_updated'));netName(S.name);save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
@@ -2376,7 +2390,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();net
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,collect,accrue,idleCap,idleRate,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,xferCode,xferParse};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,netHello,netSave,netTime,netTitan,netBoard,netName,netReport,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,xferCode,xferParse};
 setLang(pickLang());load();const localSeen=S.lastSeen||0;accrue();roll();applyStatic();
 {const o=offlineGains();startRun();renderTab();refresh();if(o&&(o.sparks>0||o.stages>0))offlineModal(o);S.lastSeen=Date.now();}
 requestAnimationFrame(frame);

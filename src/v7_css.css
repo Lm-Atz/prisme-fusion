@@ -46,7 +46,7 @@ body{margin:0}
 .jtool.ready small{color:var(--gem)}
 @keyframes jready{to{transform:scale(1.08)}}
 /* boosters temporaires */
-.sparks{display:flex;justify-content:center;align-items:center;padding:0 2px}
+.sparks{display:flex;justify-content:center;align-items:baseline;gap:10px;padding:0 2px}
 .sparks b{display:inline-flex;align-items:center;gap:5px;font:22px/1 var(--display);color:var(--beam);font-variant-numeric:tabular-nums}
 .sparks b .i{width:24px;height:24px}
 .sparks small{font:800 12.5px var(--body);color:var(--mist)}
