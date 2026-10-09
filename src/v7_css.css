@@ -132,3 +132,6 @@ body{margin:0}
 .lg.lgt .b{min-height:40px}
 .lg.lgg{grid-template-columns:1fr auto auto auto;min-height:48px}
 .lg.lgm .nm .i{width:16px;height:16px;vertical-align:-2px;margin-right:4px}
+/* ----- profil : rangée de boutons, compte ----- */
+#panel .row{display:flex;gap:8px;margin-top:8px}
+#panel .row .b{flex:1;min-height:48px}

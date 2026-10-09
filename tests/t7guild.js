@@ -51,7 +51,7 @@ function handle(url,a){
 }
 async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.co/**',async route=>{const q=route.request();const [st,body]=handle(q.url(),q.postDataJSON()||{});await route.fulfill({status:st,contentType:'application/json',body:JSON.stringify(body)});});}
 const ev=(p,f,...a)=>p.evaluate(f,...a);const wait=(p,ms)=>p.waitForTimeout(ms);
-async function open(b,errs,tag){const c=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(c);const p=await c.newPage();p.on('pageerror',e=>errs.push(tag+':'+e.message));await p.goto('http://localhost:8767/');await wait(p,1200);await ev(p,()=>{document.getElementById('veil').hidden=true;});return p;}
+async function open(b,errs,tag){const c=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(c);const p=await c.newPage();p.on('pageerror',e=>errs.push(tag+':'+e.message));await p.goto('http://localhost:8767/');await wait(p,1200);await ev(p,()=>{document.getElementById('veil').hidden=true;window.__G.CFG.titan.days=[0,1,2,3,4,5,6];});return p;}
 const toGuild=async p=>{await ev(p,()=>{const G=window.__G;G.guildCache=null;G.guildList=null;G.clanPane='guild';G.setTab('clan');});await wait(p,500);return ev(p,()=>document.getElementById('panel').innerText);};
 (async()=>{const b=await chromium.launch();const errs=[];
   const A=await open(b,errs,'A'),B=await open(b,errs,'B'),C=await open(b,errs,'C');

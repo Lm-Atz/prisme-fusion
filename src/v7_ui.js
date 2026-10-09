@@ -1,4 +1,4 @@
-const VERSION='9.2 · guildes';
+const VERSION='9.3 · compte';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -321,6 +321,31 @@ function guildHtml(){
   h+=`<div class="acts" style="margin-top:14px">${isLeader?`<button class="b sm" id="gdToggle" data-open="${G.open?0:1}">${G.open?t('gd_set_closed'):t('gd_set_open')}</button>`:''}<button class="b b-red sm" id="gdLeave">${t('gd_leave')}</button></div>`;
   return h;
 }
+/* ----- compte (e-mail + mot de passe) : lier la partie, la retrouver ailleurs ----- */
+let acct=null,acctBusy=false,acctErr='';
+const acctMsg=c=>{const k='pr_acct_err_'+String(c||'server');return I18N.fr[k]?t(k):t('pr_acct_err_server');};
+function accountHtml(){
+  let h=`<h2 class="sec">${t('pr_acct')}</h2>`;
+  if(!AUTH){
+    h+=`<p class="sub" style="margin:-4px 0 8px">${t('pr_acct_p')}</p><div class="list" style="gap:8px"><input id="acEmail" class="xin" type="email" autocomplete="email" autocapitalize="off" placeholder="${t('pr_email')}"><input id="acPw" class="xin" type="password" autocomplete="current-password" minlength="8" placeholder="${t('pr_pw')}"></div><p class="err" id="acErr" style="min-height:1.2em">${esc(acctErr)}</p><div class="row"><button class="b b-gold" style="flex:1" id="acSignup" ${acctBusy?'disabled':''}>${t('pr_signup')}</button><button class="b" style="flex:1" id="acLogin" ${acctBusy?'disabled':''}>${t('pr_login')}</button></div>`;
+    return h;
+  }
+  if(!acct){if(netReady)netAccount().then(a=>{acct=a;if(tab==='profile')renderTab();}).catch(e=>{if(e.code==='login'){authLogout();if(tab==='profile')renderTab();}});h+=`<p class="note">${t('loading')}</p>`;return h;}
+  if(acct.mine)h+=`<div class="slab" style="padding:12px 14px"><b>${ic('check','ig')} ${t('pr_linked')}</b><p class="note" style="margin:4px 0 0">${esc(authEmail())}</p></div>`;
+  else if(acct.linked)h+=`<div class="slab" style="padding:12px 14px"><b>${esc(authEmail())}</b><p class="note" style="margin:4px 0 0">${t('pr_acct_other',{n:esc(acct.other.name),s:acct.other.best})}</p><div class="acts" style="margin-top:8px"><button class="b b-gold" id="acRecover">${t('pr_recover')}</button></div></div>`;
+  else h+=`<div class="slab" style="padding:12px 14px"><b>${esc(authEmail())}</b><p class="note" style="margin:4px 0 0">${t('pr_acct_unlinked')}</p><div class="acts" style="margin-top:8px"><button class="b b-gold" id="acLink">${t('pr_link')}</button></div></div>`;
+  h+=`<p class="err" id="acErr" style="min-height:1.2em">${esc(acctErr)}</p><div class="row"><button class="b" style="flex:1" id="acLogout">${t('pr_logout')}</button></div>`;
+  return h;
+}
+/* après connexion ou création : lier la partie, ou proposer de récupérer celle du compte */
+async function afterLogin(){
+  acctErr='';acct=null;
+  try{const a=await netAccount();acct=a;
+    if(!a.linked){const r=await netLink();if(r.ok){acct=Object.assign(a,{linked:true,mine:true});toast(t('pr_acct_done'));track('account_link',{});}else if(r.err==='linked_other'){acct=Object.assign(a,{linked:true,mine:false,other:r.other});}}
+  }catch(e){acctErr=acctMsg(e.code);}
+  acctBusy=false;renderTab();
+}
+function recoverModal(){modal(`<h2>${t('pr_recover')}</h2><p>${t('pr_acct_other',{n:esc(acct.other.name),s:acct.other.best})}</p><p>${t('pr_recover_p')}</p><div class="acts"><button class="b b-gold" id="acRecoverOk">${t('pr_recover')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
@@ -396,6 +421,7 @@ function renderTab(){
     h+=`<h2 class="sec">${t('pr_stats')}</h2><div class="stats"><div class="stat slab"><b>${S.bestStage}</b><span>${t('pr_best')}</span></div><div class="stat slab"><b>${S.prestiges}</b><span>${t('pr_pres')}</span></div><div class="stat slab"><b>${fmt(S.st.merges)}</b><span>${t('pr_merges',{n:fmt(S.st.manual)})}</span></div><div class="stat slab"><b>${fmt(S.st.kills)}</b><span>${t('pr_kills',{n:S.st.bosses})}</span></div><div class="stat slab"><b>${fmt(S.st.titanBest)}</b><span>${t('pr_titan')}</span></div><div class="stat slab"><b>${S.st.bought}</b><span>${t('pr_res')}</span></div></div>`;
     const bk=Object.keys(S.bestiary).map(Number).sort((a,b)=>a-b);
     h+=`<h2 class="sec">${t('pr_bestiary')}<small>${t('pr_beaten',{n:bk.length})}</small></h2><div class="list" style="gap:4px">${bk.length?bk.map(n=>{const e=enemyFor(n);return `<div class="best"><canvas width="88" height="88" style="width:44px;height:44px" data-foe="${n}"></canvas><span>${t('pr_stage',{n:e.name,s:n})}</span><span>${e.type==='boss'?t('pr_in',{n:S.bestiary[n]}):t('pr_guard')}</span></div>`;}).join(''):'<p class="note">'+t('pr_bestiary_empty')+'</p>'}</div>`;
+    h+=accountHtml();
     h+=`<h2 class="sec">${t('pr_xfer')}</h2><p class="sub" style="margin:-4px 0 8px">${t('pr_xfer_p')}</p><div class="row"><button class="b" style="flex:1" id="xferShow">${t('pr_xfer_show')}</button><button class="b" style="flex:1" id="xferEnter">${t('pr_xfer_enter')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_demo')}<small>${t('pr_version',{v:VERSION})}</small></h2><button class="b b-red" style="width:100%" id="resetBtn">${t('pr_reset')}</button>`;
   }
@@ -451,6 +477,10 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='adBoost'){rewarded(()=>{act('ad',{kind:'boost'},()=>{give({b:CFG.boost.adH});return true;});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
   else if(el.dataset.skin){const id=el.dataset.skin;if(!act('skin',{id},()=>buySkin(id)))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
   else if(el.id==='nameBtn'){const nm=$('nameIn').value;const r=act('rename',{name:nm},()=>{const x=rename(nm);return x.ok?x:false;});if(r&&r.ok){toast(t('name_updated'));save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
+  else if(el.id==='acSignup'||el.id==='acLogin'){const em=$('acEmail').value.trim(),pw=$('acPw').value;if(pw.length<8){$('acErr').textContent=t('pr_acct_err_weak_password');return;}acctBusy=true;acctErr='';renderTab();(el.id==='acSignup'?authSignup(em,pw):authLogin(em,pw)).then(afterLogin).catch(e=>{acctBusy=false;acctErr=acctMsg(e.code);renderTab();});}
+  else if(el.id==='acLink'){acctBusy=true;renderTab();afterLogin();}
+  else if(el.id==='acRecover')recoverModal();
+  else if(el.id==='acLogout'){authLogout();acct=null;acctErr='';renderTab();}
   else if(el.id==='xferShow'){const code=xferCode();modal(`<h2>${t('pr_xfer_show')}</h2><p>${t('pr_xfer_show_p')}</p><div class="code" id="xferCode">${code}</div><div class="acts"><button class="b b-gold" id="xferCopy">${t('copy')}</button><button class="b" data-close>${t('close')}</button></div>`);}
   else if(el.id==='xferEnter'){modal(`<h2>${t('pr_xfer_enter')}</h2><p>${t('pr_xfer_enter_p')}</p><input id="xferIn" class="xin" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="PF1-…"><p id="xferErr" style="color:var(--danger);min-height:1.2em"></p><div class="acts"><button class="b b-gold" id="xferGo">${t('pr_xfer_go')}</button><button class="b" data-close>${t('cancel')}</button></div>`);setTimeout(()=>$('xferIn').focus(),50);}
   else if(el.id==='resetBtn'){modal(`<h2>${t('pr_reset_q')}</h2><p>${t('pr_reset_p')}</p><div class="acts"><button class="b b-red" data-doreset>${t('pr_reset_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
@@ -469,6 +499,7 @@ $('modal').addEventListener('click',e=>{
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
   else if(el.dataset.confirm){const id=el.dataset.confirm;act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
   else if(el.id==='xferCopy'){const c=$('xferCode').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{});else toast(c);}
+  else if(el.id==='acRecoverOk'){closeModal();netRecover().then(d=>{toast(t('pr_recovered'));setTimeout(()=>adoptIdentity(d),300);}).catch(e=>{acctErr=acctMsg(e.code);renderTab();});}
   else if(el.id==='xferGo'){const d=xferParse($('xferIn').value);if(!d){$('xferErr').textContent=t('pr_xfer_bad');return;}if(d.id===DEV.id){closeModal();toast(t('pr_xfer_same'));return;}try{localStorage.setItem('prisme-dev',JSON.stringify(d));localStorage.removeItem(KEY);}catch(e){}location.reload();}
   else if(el.dataset.gkickok){const id=el.dataset.gkickok;closeModal();netGuildKick(id).then(r=>{toast(r.ok?t('gd_kicked'):gdErr(r.err));renderTab();});}
   else if(el.id==='gdLeaveOk'){closeModal();netGuildLeave().then(r=>{guildList=null;toast(r.ok?t('gd_left'):gdErr(r.err));renderTab();});}
@@ -559,7 +590,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();if(
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
 window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authSignup,authLogin,authLogout,authEmail,netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
@@ -576,7 +607,7 @@ function netBoot(){wake();}
 function leagueModal(r){const show=()=>modal(`<div class="mart" style="color:var(--beam)">${ic('trophy')}</div><h2>${t('lg_res_title')}</h2><p>${t('lg_res_p',{r:r.rank,n:r.size})}</p><div class="loot">${ic('gem','ig')}+${r.gems} · ${ic('spark','ie')}+${fmt(r.sparks||0)}</div><p class="sub">${t('lg_res_sub',{t:dur(CFG.league.minutes(r.rank)*60)})}</p><div class="acts"><button class="b b-gold" id="lgClaim" data-gems="${r.gems}">${t('claim')}</button></div>`);if($('veil').hidden)show();else{const prev=modalOnClose;modalOnClose=()=>{if(prev)prev();setTimeout(show,200);};}}
 /* retours du serveur : refus → l'état officiel a déjà remplacé le nôtre, on prévient ; anomalies → rien à dire au joueur honnête */
 onServer=({action,d,fail})=>{
-  if(fail){if(fail==='auth')toast(t('srv_auth'));else if(fail==='banned'){$('netMsg').textContent=t('srv_banned');setOnline(false);}return;}
+  if(fail){if(fail==='auth'){if(AUTH&&!window.__recovering){window.__recovering=true;netRecover().then(d=>adoptIdentity(d)).catch(()=>{toast(t('srv_auth'));});}else toast(t('srv_auth'));}else if(fail==='banned'){$('netMsg').textContent=t('srv_banned');setOnline(false);}return;}
   if(d&&d.result&&d.result.ok===false&&action!=='sync'&&action!=='hello'&&action!=='gift_offer'){toast(t('srv_refused'));}
   if(R&&boardN()!==R.N)growBoard();
   if(R)for(const id of S.equip)if(S.jk[id]&&R.jk[id]==null)R.jk[id]=0;

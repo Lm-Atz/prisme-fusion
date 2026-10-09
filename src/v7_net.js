@@ -78,6 +78,33 @@ const netGuildJoin=code=>netGuildCall('pf_guild_join',{p_code:code});
 const netGuildLeave=()=>netGuildCall('pf_guild_leave',{});
 const netGuildKick=id=>netGuildCall('pf_guild_kick',{p_target:id});
 const netGuildOpen=open=>netGuildCall('pf_guild_open',{p_open:!!open});
+/* ================= compte : e-mail + mot de passe (Supabase Auth) =================
+   Le compte sert à une chose : lier la partie de cet appareil et la retrouver ailleurs (nouveau téléphone, réinstallation).
+   Aucun e-mail n'est envoyé par le jeu ; la connexion se fait avec les identifiants. */
+let AUTH=null;try{AUTH=JSON.parse(localStorage.getItem('prisme-auth')||'null');}catch(e){}
+function authSave(a){AUTH=a;try{if(a)localStorage.setItem('prisme-auth',JSON.stringify(a));else localStorage.removeItem('prisme-auth');}catch(e){}}
+async function authPost(path,body){
+  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),10000);
+  try{const r=await fetch(`${NET.url}/auth/v1/${path}`,{method:'POST',headers:{'apikey':NET.key,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){const e=new Error(d.error_code||d.msg||'http'+r.status);e.code=d.error_code||d.error||(r.status===429?'over_request_rate_limit':'server');throw e;}
+    return d;}
+  finally{clearTimeout(to);}
+}
+const authKeep=d=>{if(d&&d.access_token){authSave({at:d.access_token,rt:d.refresh_token,exp:_dateNow()+(d.expires_in||3600)*1000,email:(d.user&&d.user.email)||(AUTH&&AUTH.email)||''});return true;}return false;};
+async function authSignup(email,pw){const d=await authPost('signup',{email,password:pw});if(!authKeep(d)){const e=new Error('confirm');e.code='confirm';throw e;}return d;}
+async function authLogin(email,pw){const d=await authPost('token?grant_type=password',{email,password:pw});authKeep(d);return d;}
+async function authToken(){if(!AUTH)return null;if(_dateNow()<AUTH.exp-60e3)return AUTH.at;try{const d=await authPost('token?grant_type=refresh_token',{refresh_token:AUTH.rt});authKeep(d);return AUTH.at;}catch(e){if(e.code!=='server')authSave(null);return null;}}
+const authLogout=()=>authSave(null);
+const authEmail=()=>AUTH&&AUTH.email||'';
+async function rpcAuth(fn,args){const tok=await authToken();if(!tok){const e=new Error('login');e.code='login';throw e;}
+  const r=await fetch(`${NET.url}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
+  const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.message||'http'+r.status);e.code=d.message||'server';throw e;}return d;}
+const netLink=()=>rpcAuth('pf_link_account',auth());
+const netAccount=()=>rpcAuth('pf_account',auth());
+const netRecover=()=>rpcAuth('pf_recover',{});
+/* adopter une identité (récupération de compte ou code de transfert) : la partie de cet appareil est remplacée */
+function adoptIdentity(d){try{localStorage.setItem('prisme-dev',JSON.stringify({id:d.id,s:d.s||d.secret}));localStorage.removeItem(KEY);}catch(e){}location.reload();}
 function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
