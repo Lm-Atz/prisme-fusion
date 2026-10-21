@@ -73,7 +73,7 @@ const UPG=[
   // Économie
   {id:'spark',g:'eco',get t(){return t('u_spark')},d:k=>t('u_spark_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>100*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
   {id:'loot',g:'eco',get t(){return t('u_loot')},d:k=>t('u_loot_d',{n:8*(k+1)}),c:k=>300*Math.pow(1.4,k),time:T(120,1.25),max:Infinity},
-  {id:'off',g:'eco',get t(){return t('u_off')},d:k=>t('u_off_d',{n:2+k+1}),c:k=>500*Math.pow(1.6,k),time:T(900,1.3),max:Infinity,req:5},
+  {id:'off',g:'start',get t(){return t('u_off')},d:k=>t('u_off_d',{n:2+k+1}),c:k=>500*Math.pow(1.6,k),time:T(900,1.3),max:Infinity,req:5},
   {id:'killspark',g:'eco',get t(){return t('u_killspark')},d:k=>t('u_killspark_d',{n:15*(k+1)}),c:k=>800*Math.pow(1.45,k),time:T(300,1.25),max:Infinity,req:10},
   // Jokers
   {id:'catal',g:'jok',get t(){return t('u_catal')},d:k=>t('u_catal_d',{n:8*(k+1)}),c:k=>2000*Math.pow(1.6,k),time:T(900,1.35),max:8,req:8},

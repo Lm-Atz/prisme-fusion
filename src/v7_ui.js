@@ -1,4 +1,4 @@
-const VERSION='9.4 · réfraction';
+const VERSION='9.5 · corrections';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -410,7 +410,7 @@ function renderTab(){
   }else if(tab==='shop'){
     h+=head(t('sh_title'),`${ic('tv')}${t('sh_demo')}`);
     const OART={starter:['box','ie'],loot:['shard','is'],noads:['tv','ie'],g80:['gem','ig'],g500:['gem','ig'],g1200:['gem','ig'],g2600:['box','ig'],g7000:['box','ig'],g15000:['crown','ig']};
-    h+=`<div class="list">${OFFERS.map(o=>{const own=o.once&&o.once();const left=o.id==='starter'&&S.offerAt&&!S.starter?Math.max(0,S.offerAt+86400e3-Date.now()):0;return `<div class="offer slab"><span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span><div style="min-width:0"><b>${o.t}</b><p>${o.d}${left>0?` <span style="color:var(--beam)">${t('starter_left',{t:dur(left/1000)})}</span>`:''}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;}).join('')}</div>`;
+    h+=`<div class="list">${OFFERS.map(o=>{const own=o.once&&o.once();const left=0; /* v9.5 : plus de compte à rebours (l'offre ne disparaît pas, une échéance serait trompeuse) */return `<div class="offer slab"><span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span><div style="min-width:0"><b>${o.t}</b><p>${o.d}${left>0?` <span style="color:var(--beam)">${t('starter_left',{t:dur(left/1000)})}</span>`:''}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;}).join('')}</div>`;
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gold sm" id="adBoost">${ic('tv')}${t('sh_watch')}</button></div>`;
     h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}</button></div></div>`;
@@ -544,7 +544,7 @@ function flyShards(fromEl,toEl,n,onEach){
     requestAnimationFrame(step);}
 }
 function starterModal(){
-  const left=S.offerAt?Math.max(0,S.offerAt+86400e3-Date.now()):0;
+  const left=0; /* v9.5 : pas d'échéance fictive */
   const so=OFFERS[0];modal(`<div class="mart">${ic('box','ie')}</div><h2>${so.t}</h2><p>${t('starter_p',{p:priceOf(so)})}</p>${left>0?`<p class="tm" style="color:var(--beam);font-weight:800">${t('starter_left',{t:dur(left/1000)})}</p>`:''}<div class="acts"><button class="b b-gold" data-confirm="starter">${t('starter_btn',{p:priceOf(so)})}</button><button class="b" data-close>${t('starter_no')}</button></div>`);
 }
 function homeMoments(){

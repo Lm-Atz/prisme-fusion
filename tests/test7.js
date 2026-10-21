@@ -169,13 +169,13 @@ T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));
 // v9.4 Réfraction : Attaque/Plateau/Économie remis à zéro et mémorisés, automatisations en points, rachat instantané
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.bestStage=60;S.run.max=45;S.pp=0;S.gems=500;S.build=[];S.slots=1;
-  S.up.power=5;S.up.board=1;S.up.spark=4;S.up.loot=2;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.mem={};
+  S.up.power=5;S.up.board=1;S.up.spark=4;S.up.loot=2;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.up.off=2;S.mem={};
   S.build.push({id:'crit',until:Date.now()+9e6,dur:9e6});S.up.crit=1;
   G.growBoard&&G.growBoard();o.N0=G.R.N;
   const pp0=G.ppGain(45);o.ppGain=pp0===Math.floor(1.5*2.5);
   o.g=G.doPrestige()>0;
   o.reset=S.up.power===0&&S.up.board===0&&S.up.spark===0&&S.up.loot===0&&S.up.crit===0;
-  o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1;
+  o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1&&S.up.off===2; // v9.5 : la Veille est permanente
   o.mem=S.mem.power===5&&S.mem.board===1&&S.mem.spark===4&&S.mem.crit===2; // la recherche en cours compte comme acquise
   o.buildGone=!S.build.length;o.shrunk=G.R.N===4&&G.R.cells.length===16;
   const u=G.upById('power');o.memTag=G.inMem(u);o.half=Math.abs(G.upCost(u)-u.c(0)*0.5)<1e-9;o.instant=G.upTime(u)===0;
@@ -197,6 +197,8 @@ r=await ev(()=>({bar:!!document.getElementById('restoreAll'),tag:!!document.quer
 T('Atelier : barre « Tout restaurer » et repère mémoire',r.bar&&r.tag&&/en mémoire/.test(r.txt));
 await ev(()=>document.getElementById('restoreAll').click());T('bouton Tout restaurer',await ev(()=>window.__G.S.up.power===3));
 await ev(()=>document.querySelector('[data-grp="auto"]').click());T('onglet Automatisation : solde de points',await ev(()=>/point/.test(document.getElementById('panel').innerText)&&!!document.querySelector('[data-build="au_merge"] .i')));
+await ev(()=>{const G=window.__G;G.S.offerAt=Date.now()-3600e3;G.S.starter=false;G.setTab('shop');});
+T('boutique : pas de compte à rebours sur le pack de départ',await ev(()=>!/visible encore/.test(document.getElementById('panel').innerText)));
 await ev(()=>window.__G.setTab('home'));
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
