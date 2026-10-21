@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
   let guildRes: any = null;
   const pl = (body.payload && typeof body.payload === "object") ? body.payload : {};
   if (body.action === "guild_create") {
-    const price = 50;
+    const price = core.pfMakeEngine(ENGINE_SRC, Date.now()).CFG.guild.create; // prix lu dans les règles du jeu, jamais recopié
     if (((stateIn && stateIn.gems) | 0) < price) return json({ ok: false, err: "gems" });
     const c = await sb.rpc("pf_guild_create", { p_id: id, p_secret: secret, p_name: String(pl.name || "").slice(0, 40), p_lang: String(body.lang || "fr").slice(0, 2) });
     if (c.error) return json({ ok: false, err: c.error.message });

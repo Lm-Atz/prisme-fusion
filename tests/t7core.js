@@ -44,8 +44,8 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'build',payload:{id:'st_cad'}},now+61000);T('recherche lancée',r.result.ok&&r.state.build.length===1);S=r.state;
  r=pfApply(src2,S,{action:'build',payload:{id:'st_power'}},now+61000);T('un seul emplacement',r.result.err==='slots');
  r=pfApply(src2,S,{action:'wp',payload:{i:0}},now+61000);T('arme sans point refusée',r.result.err==='pp');
- r=pfApply(src2,S,{action:'purchase',payload:{id:'g80'}},now+61000);T('achat non certifié refusé',r.result.err==='store');
- r=pfApply(src2,S,{action:'purchase',payload:{id:'g80'},demo:true},now+61000);T('achat démo accepté',r.result.ok&&r.state.gems===100);S=r.state;
+ r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'}},now+61000);T('achat non certifié refusé',r.result.err==='store');
+ r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('achat démo accepté (100 gemmes)',r.result.ok&&r.state.gems===120);S=r.state;
  r=pfApply(src2,S,{action:'gift_offer'},now+62000);T('cadeau tiré par le serveur',r.result.gift&&r.state.gift);S=r.state;
  r=pfApply(src2,S,{action:'gift_offer'},now+63000);T('même cadeau tant qu\'il est affiché',r.result.gift&&r.result.gift.at===S.gift.at);
  r=pfApply(src2,S,{action:'ad',payload:{kind:'gift'}},now+70000);T('pub cadeau : accordée',r.result.ok&&!r.state.gift);S=r.state;
@@ -54,7 +54,7 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'ad',payload:{kind:'shop'}},now+72000);T('pub boutique : plancher 200',r.result.sparks===200);S=r.state;
  r=pfApply(src2,S,{action:'ad',payload:{kind:'shop'}},now+80000);T('pub boutique : 40 s entre deux',r.result.err==='cooldown');
  r=pfApply(src2,S,{action:'sync'},now+200000);T('recherche appliquée au terme',r.state.up.st_cad===1&&r.state.build.length===0);S=r.state;
- r=pfApply(src2,S,{action:'pack',payload:{i:0}},now+200000);T('pack 15 gemmes : étincelles créditées',r.result.ok&&r.state.gems===S.gems-15&&r.state.run.sparks>=S.run.sparks+200);if(!r.result.ok)console.log(r.result,S.gems);S=r.state;
+ r=pfApply(src2,S,{action:'pack',payload:{i:0}},now+200000);T('pack 20 gemmes : étincelles créditées',r.result.ok&&r.state.gems===S.gems-20&&r.state.run.sparks>=S.run.sparks+200);if(!r.result.ok)console.log(r.result,S.gems);S=r.state;
  S.day.spMin=1440;r=pfApply(src2,S,{action:'pack',payload:{i:0}},now+200000);T('plafond 24 h / jour',r.result.err==='cap');S.day.spMin=0;
  S.run.max=35;S.run.stage=35;S.up.power=3;r=pfApply(src2,S,{action:'prestige'},now+200000);T('réfraction : ×1,2, 2 points (+50 %) + 2 offerts, trésor',r.result.ok&&r.state.prestiges===1&&r.state.pp===4&&r.state.run.stage===1&&r.state.run.sparks>=600);S=r.state;
  T('réfraction : Attaque remise à zéro, mémorisée',S.up.power===0&&S.mem.power===3);

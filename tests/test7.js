@@ -50,8 +50,8 @@ r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};R.paused=false;S.boost
   R.baseWin.length=0;G.runTick(0.1);G.runTick(1.1);o.zero=G.rateMin()===0;o.giftFloor=G.adSparks('gift')===60;o.shopFloor=G.adSparks('shop')===200;o.packFloor=G.packSparks(G.CFG.sparkShop.packs[0])===200;
   S.run.brate=10;o.gift=G.adSparks('gift')===6000;o.shop=G.adSparks('shop')===18000;o.pack=G.packSparks(G.CFG.sparkShop.packs[2])===600*240;
   // achat en gemmes + plafond journalier
-  S.gems=1000;S.day.spMin=0;const sp0=S.run.sparks;o.buy=G.buyPack(0)===true&&S.gems===985&&S.run.sparks===sp0+600*30&&S.day.spMin===30;
-  S.day.spMin=1440-200;o.cap=G.buyPack(2)==='cap'&&S.gems===985;S.gems=0;o.poor=G.buyPack(0)===false;S.day.spMin=0;
+  S.gems=1000;S.day.spMin=0;const sp0=S.run.sparks;o.buy=G.buyPack(0)===true&&S.gems===980&&S.run.sparks===sp0+600*30&&S.day.spMin===30;
+  S.day.spMin=1440-200;o.cap=G.buyPack(2)==='cap'&&S.gems===980;S.gems=0;o.poor=G.buyPack(0)===false;S.day.spMin=0;
   // cadeau : fermer = disparaît ; plus de limite journalière
   S.day.gifts=99;o.okNoCap=G.giftOK();G.forceGift();o.shown=!document.getElementById('gift').hidden;document.getElementById('gift').click();o.modal=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();o.gone=document.getElementById('gift').hidden&&!G.gift;
   return o;});
@@ -200,6 +200,16 @@ await ev(()=>document.querySelector('[data-grp="auto"]').click());T('onglet Auto
 await ev(()=>{const G=window.__G;G.S.offerAt=Date.now()-3600e3;G.S.starter=false;G.setTab('shop');});
 T('boutique : pas de compte à rebours sur le pack de départ',await ev(()=>!/visible encore/.test(document.getElementById('panel').innerText)));
 await ev(()=>window.__G.setTab('home'));
+// v9.7 prix : packs, bonus exacts, prix en euros, plafonds des pubs
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};const g=G.OFFERS.filter(x=>x.n);o.packs=g.map(x=>x.n).join()==='100,600,1300,2800,7500,16000';
+  const per=g.map(x=>x.n/x.price);o.mono=per.every((v,i)=>!i||v>per[i-1]);
+  o.bonusTrue=g.slice(1).every(x=>{const real=100*(x.n/x.price)/(100/0.99)-100;const shown=+x.d.match(/\+(\d+)/)[1];return shown<=real&&real-shown<1;});
+  o.eur=/0,25/.test(G.eurOf(25));
+  S.day.adk={};const l0=G.adLeft('shop');G.adUse('shop');o.adcap=l0===5&&G.adLeft('shop')===4;S.day.adk={shop:5};o.adzero=G.adLeft('shop')===0;S.day.adk={};
+  return o;});
+T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('équivalent en euros (25 gemmes ≈ 0,25 €)',r.eur);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
+await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/0 restante/.test(document.getElementById('adSparks').textContent)));
+await ev(()=>{window.__G.S.day.adk={};window.__G.setTab('home');});
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran

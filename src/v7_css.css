@@ -140,3 +140,4 @@ body{margin:0}
 .tile.inmem{box-shadow:inset 0 0 0 2px rgba(127,226,255,.35)}
 .membar{border:1px solid rgba(127,226,255,.35);border-radius:14px;padding:8px 10px;margin:8px 0}
 .membar>span{display:inline-flex;align-items:center;gap:6px;color:var(--shard);font-weight:800}
+.b small.eur,.skin small.eur{display:block;font-size:12px;font-weight:600;opacity:.8;margin-left:4px}

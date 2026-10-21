@@ -36,7 +36,7 @@ function handle(url,a){
   if(fn==='act'){
     const p=player(a.id,a.secret,a.name);if(!p)return [401,{ok:false,err:'auth'}];
     let body=a,trusted=false,guildRes=null;const pl=a.payload||{};
-    if(a.action==='guild_create'){if(((p.state&&p.state.gems)|0)<50)return [200,{ok:false,err:'gems'}];const c=guildRpc('pf_guild_create',{p_id:a.id,p_name:pl.name});if(c[0]!==200)return [200,{ok:false,err:c[1].message}];guildRes=c[1];body={...a,action:'guild_pay',payload:{gems:50}};trusted=true;}
+    if(a.action==='guild_create'){if(((p.state&&p.state.gems)|0)<100)return [200,{ok:false,err:'gems'}];const c=guildRpc('pf_guild_create',{p_id:a.id,p_name:pl.name});if(c[0]!==200)return [200,{ok:false,err:c[1].message}];guildRes=c[1];body={...a,action:'guild_pay',payload:{gems:100}};trusted=true;}
     else if(a.action==='guild_claim'){const e=guildClaim(a.id,Number(pl.tier)|0);if(e)return [200,{ok:false,err:e}];body={...a,action:'guild_reward',payload:{tier:Number(pl.tier)|0}};trusted=true;}
     else if(a.action==='guild_pay'||a.action==='guild_reward')return [403,{ok:false,err:'trusted'}];
     const r=pfApply(ENGINE,p.state,body,now(),trusted);if(guildRes)r.result.guild=guildRes;
@@ -62,12 +62,12 @@ const toGuild=async p=>{await ev(p,()=>{const G=window.__G;G.guildCache=null;G.g
   txt=await toGuild(A);T('volet Guilde sans guilde : créer / rejoindre / liste',/Créer une guilde/.test(txt)&&/Rejoindre avec un code/.test(txt)&&/Aucune guilde ouverte/.test(txt));
   // --- création : 20 gemmes → refus ; bouton désactivé
   let r=await ev(A,()=>document.getElementById('gdCreate').disabled);T('création désactivée à 20 gemmes',r===true);
-  r=await ev(A,async()=>{const G=window.__G;const d=await G.actAsync('guild_create',{name:'Les Prismes'});return d&&d.err;});T('serveur refuse la création sans 50 gemmes',r==='gems');
-  DB.players[idA].state.gems=80;await ev(A,()=>window.__G.actAsync('hello'));await wait(A,300);
+  r=await ev(A,async()=>{const G=window.__G;const d=await G.actAsync('guild_create',{name:'Les Prismes'});return d&&d.err;});T('serveur refuse la création sans 100 gemmes',r==='gems');
+  DB.players[idA].state.gems=130;await ev(A,()=>window.__G.actAsync('hello'));await wait(A,300);
   r=await ev(A,async()=>{const G=window.__G;G.guildCache=null;G.setTab('clan');await new Promise(z=>setTimeout(z,300));document.getElementById('gdName').value='ab';document.getElementById('gdCreate').click();await new Promise(z=>setTimeout(z,500));return {err:document.getElementById('gdErr')&&document.getElementById('gdErr').textContent,gems:G.S.gems};});
-  T('nom trop court refusé, gemmes intactes',/3 à 20/.test(r.err)&&r.gems===80);
+  T('nom trop court refusé, gemmes intactes',/3 à 20/.test(r.err)&&r.gems===130);
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('gdName').value='Les Prismes';document.getElementById('gdCreate').click();await new Promise(z=>setTimeout(z,700));return {gems:G.S.gems,txt:document.getElementById('panel').innerText};});
-  T('guilde créée : 50 gemmes débitées côté serveur',r.gems===30&&DB.players[idA].state.gems===30&&DB.guilds.g0&&DB.guilds.g0.leader===idA);
+  T('guilde créée : 100 gemmes débitées côté serveur',r.gems===30&&DB.players[idA].state.gems===30&&DB.guilds.g0&&DB.guilds.g0.leader===idA);
   T('vue guilde : nom, code, jauge, paliers, quêtes, membres',/Les Prismes/.test(r.txt)&&/CODE00/.test(r.txt)&&/Jauge hebdo/.test(r.txt)&&/0 \/ 6 000|0 \/ 6000/.test(r.txt.replace(/ | /g,' '))&&/Quêtes du jour/.test(r.txt)&&/1 \/ 30 membres/.test(r.txt));
   // --- B rejoint par code (minuscule), C via la liste
   txt=await toGuild(B);
@@ -118,8 +118,8 @@ const toGuild=async p=>{await ev(p,()=>{const G=window.__G;G.guildCache=null;G.g
   await ev(B,async()=>{document.getElementById('gdLeave').click();await new Promise(z=>setTimeout(z,150));document.getElementById('gdLeaveOk').click();await new Promise(z=>setTimeout(z,500));});
   T('dernier membre parti → guilde dissoute',DB.guilds.g0.dissolved===true);
   r=await ev(A,async()=>{const G=window.__G;G.guildCache=null;G.setTab('clan');await new Promise(z=>setTimeout(z,300));document.getElementById('gdName').value='Les Prismes';document.getElementById('gdCreate').click();await new Promise(z=>setTimeout(z,700));return {gems:G.S.gems,dis:document.getElementById('gdCreate').disabled};});
-  T('35 gemmes < 50 → bouton désactivé, rien créé',r.gems===35&&r.dis&&Object.keys(DB.guilds).length===1);
-  DB.players[idA].state.gems=100;await ev(A,()=>window.__G.actAsync('hello'));
+  T('35 gemmes < 100 → bouton désactivé, rien créé',r.gems===35&&r.dis&&Object.keys(DB.guilds).length===1);
+  DB.players[idA].state.gems=150;await ev(A,()=>window.__G.actAsync('hello'));
   r=await ev(A,async()=>{const G=window.__G;G.guildCache=null;G.setTab('clan');await new Promise(z=>setTimeout(z,300));document.getElementById('gdName').value='Les Prismes';document.getElementById('gdCreate').click();await new Promise(z=>setTimeout(z,700));return {gems:G.S.gems,txt:document.getElementById('panel').innerText};});
   T('recréation avec le même nom OK (dissoute)',r.gems===50&&Object.keys(DB.guilds).length===2&&/Les Prismes/.test(r.txt));
   // --- accessibilité / mise en page du volet guilde

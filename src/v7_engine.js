@@ -11,15 +11,15 @@ const CFG={
   refr:{reset:['atk','grid','eco'],memCost:0.5,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
-  build:{gemSec:300,adCut:1800,slotGems:[200,500],jslotGems:[150,350]},
+  build:{gemSec:300,adCut:1800,slotGems:[300,600],jslotGems:[200,400]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45},
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
-  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200}}, // pubs = minutes de production, avec un minimum en étincelles
+  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
-  guild:{size:30,create:50,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
-  sparkShop:{packs:[{g:15,min:30},{g:40,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
+  guild:{size:30,create:100,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
+  sparkShop:{packs:[{g:20,min:30},{g:50,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
 const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.assign(w,{get n(){return t('w'+i)}}));
@@ -86,14 +86,14 @@ const ARMUP=[
   {id:'aura',g:'arm',get t(){return t('u_aura')},d:k=>t('u_aura_d',{n:25+10*(k+1)}),c:k=>1200*Math.pow(1.6,k),time:T(300,1.3),max:Infinity,req:16},
 ];
 UPG.push(...ARMUP);
-const JOKERS=[['chameleon',8,1500,50,14,l=>t('j_chameleon_d',{p:l>=4?t('j_two'):t('j_one'),n:1+l})],['magnet',12,4000,80,22,l=>t('j_magnet_d',{n:2+l})],['surge',16,9000,110,20,l=>t('j_surge_d',{n:6+2*l})],['frost',22,20000,140,18,l=>t('j_frost_d',{n:8+2*l})],['prism',28,45000,170,22,l=>t('j_prism_d',{n:2+l})],['meteor',35,100000,200,28,l=>t('j_meteor_d',{x:l>1?', ×'+dec(1+0.5*(l-1),1):''})],['breaker',45,250000,240,16,l=>t('j_breaker_d',{n:8+3*l})]].map(([id,lvl,sh,gm,base,d])=>({id,lvl,sh,gm,base,d,get t(){return t('j_'+id)}}));
+const JOKERS=[['chameleon',8,1500,50,14,l=>t('j_chameleon_d',{p:l>=4?t('j_two'):t('j_one'),n:1+l})],['magnet',12,4000,100,22,l=>t('j_magnet_d',{n:2+l})],['surge',16,9000,100,20,l=>t('j_surge_d',{n:6+2*l})],['frost',22,20000,150,18,l=>t('j_frost_d',{n:8+2*l})],['prism',28,45000,200,22,l=>t('j_prism_d',{n:2+l})],['meteor',35,100000,200,28,l=>t('j_meteor_d',{x:l>1?', ×'+dec(1+0.5*(l-1),1):''})],['breaker',45,250000,250,16,l=>t('j_breaker_d',{n:8+3*l})]].map(([id,lvl,sh,gm,base,d])=>({id,lvl,sh,gm,base,d,get t(){return t('j_'+id)}}));
 const JUPG=JOKERS.map(j=>({id:'j_'+j.id,g:'jok',joker:j.id,get t(){return j.t},d:k=>j.d(k+1),c:k=>j.sh*0.8*Math.pow(2.2,k-1),time:k=>Math.min(86400,Math.round(1200*Math.pow(2.5,k-1))),max:5}));
 const ALLUP=UPG.concat(JUPG);
 const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,k),1)})},birth:{i:'gem',c:'s4',n:k=>t('tb_birth_n',{n:1+k})},auto:{i:'link',c:'s6',n:k=>k?t('tb_auto_n',{n:dec(0.12*k*(1+0.3*S.up.au_merge),2)}):t('tb_auto_0')},power:{i:'swords',c:'s1',n:k=>t('tb_power_n',{n:dec(Math.pow(1.12,k),1)})},spark:{i:'spark',c:'s3',n:k=>t('tb_spark_n',{n:dec(Math.pow(1.08,k),2)})}};
 for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k)}});Object.defineProperty(TBDEF[k],'d',{get(){return t('tb_'+k+'_d')}});}
 
 /* ================= état du joueur ================= */
-const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:40,c:'#ff3ec8'},{id:'or',price:80,c:'#ffd23e'},{id:'prisme',price:150,c:'rainbow'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
+const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
 function fresh(){
   const now=Date.now();
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
@@ -528,24 +528,24 @@ function standings(){
 const myRank=()=>standings().findIndex(r=>r.me)+1;
 
 /* ================= pseudo, boutique ================= */
-const RENAME=30;
+const RENAME=50;
 function rename(raw){const c=checkName(raw);if(!c.ok)return c;if(S.nameChanges>0){if(S.gems<RENAME)return {ok:false,msg:t('name_cost',{n:RENAME})};S.gems-=RENAME;}S.nameChanges++;S.name=c.name;S.flagged=0;return {ok:true};}
 function reportMe(){S.flagged++;if(S.flagged>=3){S.name=randomName();S.flagged=0;return 'reset';}return 'noted';}
 const OFFERS=[
-  {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:150,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
-  {id:'loot',price:4.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
-  {id:'noads',price:3.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
-  {id:'g80',price:0.99,n:80,give(){S.gems+=80;},get t(){return t('of_gems',{n:grp(80)})},get d(){return t('of_small')}},
-  {id:'g500',price:4.99,n:500,give(){S.gems+=500;},get t(){return t('of_gems',{n:grp(500)})},get d(){return t('of_more',{n:25})}},
-  {id:'g1200',price:9.99,n:1200,give(){S.gems+=1200;},get t(){return t('of_gems',{n:grp(1200)})},get d(){return t('of_more',{n:50})}},
-  {id:'g2600',price:19.99,n:2600,give(){S.gems+=2600;},get t(){return t('of_gems',{n:grp(2600)})},get d(){return t('of_more',{n:60})}},
-  {id:'g7000',price:49.99,n:7000,give(){S.gems+=7000;},get t(){return t('of_gems',{n:grp(7000)})},get d(){return t('of_more',{n:75})}},
-  {id:'g15000',price:99.99,n:15000,give(){S.gems+=15000;},get t(){return t('of_gems',{n:grp(15000)})},get d(){return t('of_big')}},
-];
+  {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:300,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
+  {id:'loot',price:7.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
+  {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
+].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=n;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
+/* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
+const GEM_REF={n:100,price:0.99};
+const packBonus=o=>Math.floor(100*((o.n/o.price)/(GEM_REF.n/GEM_REF.price))-100+1e-9);
+const adLeft=k=>Math.max(0,CFG.ads.cap[k]-((S.day.adk||{})[k]|0));
+function adUse(k){S.day.adk=Object.assign({},S.day.adk);S.day.adk[k]=(S.day.adk[k]|0)+1;}
 /* prix affichés : devise locale de démonstration (dans l'app réelle, le store fournit le prix) */
 const CUR={fr:'EUR',de:'EUR',es:'EUR',it:'EUR',pt:'EUR',en:'USD',ja:'JPY',ko:'KRW',zh:'CNY',ru:'RUB',tr:'TRY',pl:'PLN',id:'IDR',hi:'INR',ar:'USD',nl:'EUR',sv:'SEK'};
 const RATE={EUR:1,USD:1,JPY:150,KRW:1400,CNY:7.5,RUB:100,TRY:35,PLN:4.3,IDR:16000,INR:85,SEK:11.5};
 function priceOf(o){const cur=CUR[LANG]||'USD',v=o.price*(RATE[cur]||1);try{return new Intl.NumberFormat(LANG,{style:'currency',currency:cur,maximumFractionDigits:cur==='JPY'||cur==='KRW'||cur==='IDR'?0:2}).format(cur==='JPY'||cur==='KRW'||cur==='IDR'?Math.round(v/10)*10-1:v);}catch(e){return o.price+' €';}}
+const eurOf=g=>'≈ '+priceOf({price:g*GEM_REF.price/GEM_REF.n}); // équivalent en monnaie réelle d'un prix en gemmes
 function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once()))return false;o.give();return true;}
 function buyGemItem(id){
   if(id==='boost'){if(S.gems<CFG.boost.gemsPrice)return false;S.gems-=CFG.boost.gemsPrice;give({b:CFG.boost.gemsH});return true;}

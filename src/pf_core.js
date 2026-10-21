@@ -5,7 +5,7 @@
    Aucune dépendance au DOM ni à Supabase : utilisable dans Node (tests), Deno (Edge) et Playwright. */
 const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
-fresh,migrate,roll,give,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
+fresh,migrate,roll,give,adLeft,adUse,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
 jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
 offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
@@ -98,7 +98,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'build':{const r=G.startBuild(String(p.id),nowMs);res.ok=r==='ok';if(!res.ok)res.err=r;break;}
     case 'restore':{const n=G.restoreAll(nowMs);res.ok=n>0;res.n=n;if(!res.ok)res.err='poor';break;}
     case 'rush':res.ok=G.rushBuild(String(p.id),nowMs);if(!res.ok)res.err='rush';break;
-    case 'adbuild':if(need(pfAdOK(S,'build',nowMs,15),'cooldown')){res.ok=G.adBuild(String(p.id),nowMs);S.day.ads=(S.day.ads|0)+1;}break;
+    case 'adbuild':if(need(G.adLeft('build')>0,'cap')&&need(pfAdOK(S,'build',nowMs,15),'cooldown')){res.ok=G.adBuild(String(p.id),nowMs);if(res.ok)G.adUse('build');S.day.ads=(S.day.ads|0)+1;}break;
     case 'slot':res.ok=G.buySlot();if(!res.ok)res.err='slot';break;
     case 'jslot':res.ok=G.buyJSlot();if(!res.ok)res.err='jslot';break;
     case 'wp':{const i=pfInt(p.i,0,7,-1);res.ok=i>=0&&G.buyWP(i);if(!res.ok)res.err='pp';break;}
@@ -112,8 +112,8 @@ function pfApply(src,stateIn,body,nowMs,trusted){
       const g=G.giftRoll();S.gift={k:g.k,v:g.v,at:nowMs};S.giftAt=nowMs+(C.every[0]+Math.random()*(C.every[1]-C.every[0]))*1000;res.gift=S.gift;break;}
     case 'ad':{const kind=String(p.kind);
       if(kind==='gift'){if(need(S.gift&&nowMs-S.gift.at<(G.CFG.gift.show+150)*1000,'nogift')){const gf=S.gift;S.gift=null;G.giftTake(gf);res.gift=gf;}}
-      else if(kind==='shop'){if(need(pfAdOK(S,'shop',nowMs,40),'cooldown')){const v=G.adSparks('shop');S.run.sparks+=v;S.day.ads=(S.day.ads|0)+1;res.sparks=v;}}
-      else if(kind==='boost'){if(need(pfAdOK(S,'boost',nowMs,40),'cooldown')){G.give({b:G.CFG.boost.adH});S.day.ads=(S.day.ads|0)+1;}}
+      else if(kind==='shop'){if(need(G.adLeft('shop')>0,'cap')&&need(pfAdOK(S,'shop',nowMs,40),'cooldown')){G.adUse('shop');const v=G.adSparks('shop');S.run.sparks+=v;S.day.ads=(S.day.ads|0)+1;res.sparks=v;}}
+      else if(kind==='boost'){if(need(G.adLeft('boost')>0,'cap')&&need(pfAdOK(S,'boost',nowMs,40),'cooldown')){G.adUse('boost');G.give({b:G.CFG.boost.adH});S.day.ads=(S.day.ads|0)+1;}}
       else if(kind==='titan'){res.ok=G.titanAdTicket();if(res.ok)S.day.ads=(S.day.ads|0)+1;else res.err='ticket';}
       else if(kind==='offline'){if(need(S.pendingOff&&nowMs-S.pendingOff.at<600e3,'nooff')){S.run.sparks+=S.pendingOff.sparks;res.sparks=S.pendingOff.sparks;S.pendingOff=null;S.day.ads=(S.day.ads|0)+1;}}
       else{res.ok=false;res.err='kind';}
