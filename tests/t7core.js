@@ -73,7 +73,8 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'claim',payload:{kind:'o',i:0}},now+230000);T('quête non remplie refusée',r.result.err==='claim');
  S.st.manual=10;r=pfApply(src2,S,{action:'claim',payload:{kind:'o',i:0},sim:{st:{manual:10,merges:10}}},now+230000);T('quête remplie : +10 gemmes',r.result.ok&&r.state.gems===S.gems+10);S=r.state;
  r=pfApply(src2,S,{action:'claim',payload:{kind:'o',i:0}},now+230000);T('quête déjà réclamée',r.result.err==='claim');
- r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : jour 1',r.result.ok);S=r.state;r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : une fois par jour',r.result.err==='claimed');
+ { const c0=S.chest|0;S.st.manual=10; }
+ r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : jour 1',r.result.ok);S=r.state;T('serveur : le calendrier remplit le coffre',(S.chest|0)>0);r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : une fois par jour',r.result.err==='claimed');
  r=pfApply(src2,S,{action:'hack'},now+230000);T('action inconnue refusée',r.result.err==='action');
  S.lastSeen=now+230000;S.run.srate=3;r=pfApply(src2,S,{action:'hello',sim:{run:{sparks:S.run.sparks}}},now+230000+5*3600e3);T('hors-ligne : 2 h max, ×0,3, débit mémorisé',r.result.offline&&r.result.offline.sparks===Math.floor(3*7200*0.3)&&r.state.run.sparks>=S.run.sparks+6000);S=r.state;
  r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+10000);T('pub hors-ligne : doublé une fois',r.result.ok&&r.result.sparks===6480);S=r.state;r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+20000);T('…pas deux',r.result.err==='nooff');

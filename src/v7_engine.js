@@ -14,7 +14,8 @@ const CFG={
   build:{gemSec:300,adCut:1800,slotGems:[300,600],jslotGems:[200,400]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
-  gift:{every:[150,300],show:45},
+  gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
+  chest:{cap:600,open:300,price:2.99}, // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
@@ -121,7 +122,7 @@ const boosted=()=>Date.now()<S.boostUntil;
 function giftRoll(){
   const r=Math.random(),st=Math.max(S.bestStage,1);
   if(r<0.6)return {k:'sp',v:adSparks('gift')};
-  if(r<0.85)return {k:'g',v:5+Math.floor(Math.random()*6)};
+  if(r<0.85){const left=CFG.gift.gemCap-(S.day.gg|0);if(left>=5)return {k:'g',v:Math.min(left,5+Math.floor(Math.random()*6))};return {k:'sp',v:adSparks('gift')};}
   return {k:'b',v:0.5};
 }
 function giftOK(){roll();return true;}
@@ -130,7 +131,10 @@ const rateMin=()=>(S.run.brate||0)*60; // étincelles par minute, référence de
 const adSparks=kind=>Math.max(CFG.ads.floor[kind],Math.floor(rateMin()*CFG.ads[kind+'Min']));
 const packSparks=p=>Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*p.min));
 function buyPack(i){roll();const p=CFG.sparkShop.packs[i];if(!p||S.gems<p.g)return false;if((S.day.spMin||0)+p.min>CFG.sparkShop.capMin)return 'cap';S.gems-=p.g;S.day.spMin=(S.day.spMin||0)+p.min;S.run.sparks+=packSparks(p);return true;}
-function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.st.gifts=(S.st.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g')S.gems+=gf.v;else give({b:gf.v});}
+function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.st.gifts=(S.st.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g'){const v=Math.max(0,Math.min(gf.v,CFG.gift.gemCap-(S.day.gg|0)));S.gems+=v;S.day.gg=(S.day.gg|0)+v;chestFill(v);}else give({b:gf.v});}
+/* coffre de gemmes : se remplit d'une gemme pour deux gemmes gratuites gagnées (jamais avec les gemmes achetées) */
+const chestG=()=>Math.min(CFG.chest.cap,Math.floor((S.chest|0)/2));
+function chestFill(g){if(g>0)S.chest=Math.min(2*CFG.chest.cap,(S.chest|0)+g);}
 
 /* ================= calendrier de connexion ================= */
 const LOGIN=[{g:10},{b:2},{s:300},{g:20},{b:4},{s:2000},{joker:true}];
@@ -138,7 +142,7 @@ function loginState(){roll();const today=dayKey();if(S.login.last===today)return
   const consecutive=S.login.last===dayKey(Date.now()-86400e3);
   S.login.streak=consecutive?(S.login.streak%7)+1:1;S.login.last=today;return {day:S.login.streak,claimedToday:false};}
 function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.login.claimed=dayKey();const r=LOGIN[st.day-1];
-  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else S.gems+=50;}else give(r);return true;}
+  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else{S.gems+=50;chestFill(50);}}else{give(r);chestFill(r.g|0);}return true;}
 
 
 /* ================= atelier : chantiers ================= */
@@ -488,7 +492,7 @@ function claim(kind,i){
   roll();const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
   const q=arr[i];if(!q||cl.includes(i)||q.v()<q.n)return false;
   if(kind==='o'){const vis=ONB.map((_,j)=>j).filter(j=>!S.onb.includes(j)).slice(0,3);if(!vis.includes(i))return false;}
-  cl.push(i);give(q.r);return true;
+  cl.push(i);give(q.r);chestFill(q.r.g|0);return true;
 }
 const claimable=()=>{const v=questView();return v.onb.concat(v.d,v.w).some(q=>!q.done&&q.p>=q.n);};
 
@@ -534,6 +538,7 @@ function reportMe(){S.flagged++;if(S.flagged>=3){S.name=randomName();S.flagged=0
 const OFFERS=[
   {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:300,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
   {id:'loot',price:7.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
+  {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
 ].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=n;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
@@ -546,7 +551,7 @@ const CUR={fr:'EUR',de:'EUR',es:'EUR',it:'EUR',pt:'EUR',en:'USD',ja:'JPY',ko:'KR
 const RATE={EUR:1,USD:1,JPY:150,KRW:1400,CNY:7.5,RUB:100,TRY:35,PLN:4.3,IDR:16000,INR:85,SEK:11.5};
 function priceOf(o){const cur=CUR[LANG]||'USD',v=o.price*(RATE[cur]||1);try{return new Intl.NumberFormat(LANG,{style:'currency',currency:cur,maximumFractionDigits:cur==='JPY'||cur==='KRW'||cur==='IDR'?0:2}).format(cur==='JPY'||cur==='KRW'||cur==='IDR'?Math.round(v/10)*10-1:v);}catch(e){return o.price+' €';}}
 const eurOf=g=>'≈ '+priceOf({price:g*GEM_REF.price/GEM_REF.n}); // équivalent en monnaie réelle d'un prix en gemmes
-function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once()))return false;o.give();return true;}
+function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once())||(o.avail&&!o.avail()))return false;o.give();return true;}
 function buyGemItem(id){
   if(id==='boost'){if(S.gems<CFG.boost.gemsPrice)return false;S.gems-=CFG.boost.gemsPrice;give({b:CFG.boost.gemsH});return true;}
   if(id==='titan')return titanGemTicket();

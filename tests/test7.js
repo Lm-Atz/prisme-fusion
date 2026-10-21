@@ -210,6 +210,20 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};const g=G.OFFERS.filter(x=>x
 T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('équivalent en euros (25 gemmes ≈ 0,25 €)',r.eur);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
 await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/0 restante/.test(document.getElementById('adSparks').textContent)));
 await ev(()=>{window.__G.S.day.adk={};window.__G.setTab('home');});
+// v9.8 : plafond des gemmes de cadeaux, coffre de gemmes
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.day.gg=0;const g0=S.gems;
+  G.giftTake({k:'g',v:10});G.giftTake({k:'g',v:10});G.giftTake({k:'g',v:10});G.giftTake({k:'g',v:10});o.cap=S.gems-g0===30&&S.day.gg===30;
+  let rolls=[];for(let i=0;i<300;i++)rolls.push(G.giftRoll().k);o.noGem=!rolls.includes('g');S.day.gg=0;
+  S.chest=0;const c0=G.chestG();G.chestFill(30);o.half=G.chestG()===c0+15;
+  const pre=S.gems;G.purchase('g100');o.paidNoFill=G.chestG()===15;S.gems=pre;
+  o.closed=G.purchase('chest')===false;
+  G.chestFill(5000);o.capped=G.chestG()===600;const gb=S.gems;o.open=G.purchase('chest')&&S.gems===gb+600&&G.chestG()===0;
+  o.again=G.purchase('chest')===false;
+  return o;});
+T('cadeaux : au plus 30 gemmes par jour',r.cap);T('cadeaux : plus de gemmes une fois le plafond atteint',r.noGem);T('coffre : 1 gemme pour 2 gemmes gratuites',r.half);T('coffre : les gemmes achetées ne le remplissent pas',r.paidNoFill);
+T('coffre : fermé sous 300',r.closed);T('coffre : plafonné à 600',r.capped);T('coffre : ouverture = contenu exact, puis vide',r.open&&r.again);
+await ev(()=>{const G=window.__G;G.S.chest=700;G.setTab('shop');});T('boutique : coffre affiché avec son contenu',await ev(()=>/Coffre de gemmes/.test(document.getElementById('panel').innerText)&&/350 gemmes sur 600/.test(document.getElementById('panel').innerText)));
+await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran
