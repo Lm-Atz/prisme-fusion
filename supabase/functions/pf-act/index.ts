@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
   const stateIn = row.data.state ?? (row.data.save && row.data.save.v === 3 ? row.data.save : null); // reprise des anciennes sauvegardes
   const now = Date.now();
 
-  // 3. guilde : création (50 gemmes) et réclamation d'un palier sont verrouillées en base AVANT que le moteur n'accorde quoi que ce soit
+  // 3. guilde : création et réclamation d'un palier sont verrouillées en base AVANT que le moteur n'accorde quoi que ce soit
   let trusted = false;
   // deno-lint-ignore no-explicit-any
   let guildRes: any = null;
