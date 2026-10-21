@@ -1869,7 +1869,10 @@ const netAccount=()=>rpcAuth('pf_account',auth());
 const netRecover=()=>rpcAuth('pf_recover',{});
 /* adopter une identité (récupération de compte ou code de transfert) : la partie de cet appareil est remplacée */
 function adoptIdentity(d){try{localStorage.setItem('prisme-dev',JSON.stringify({id:d.id,s:d.s||d.secret}));localStorage.removeItem(KEY);}catch(e){}location.reload();}
-function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
+/* mesure : les événements sont mis en file et envoyés par paquets (synchro, mise en arrière-plan, ou 40 en attente) */
+let EVQ=[];
+function track(name,props){if(!NET.on)return;EVQ.push({n:String(name).slice(0,40),p:props||{},t:_dateNow()});if(EVQ.length>200)EVQ.splice(0,EVQ.length-200);if(EVQ.length>=40)flushEv();}
+function flushEv(keep){if(!NET.on||!netReady||!EVQ.length)return null;const batch=EVQ.splice(0,60);return rpc('pf_track_batch',Object.assign(auth(),{p_events:batch}),6000,!!keep).catch(()=>{EVQ=batch.concat(EVQ).slice(-200);});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
 const B32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1993,7 +1996,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='9.5 · corrections';
+const VERSION='9.6 · mesure';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2231,7 +2234,7 @@ function showAd(done,label){
   let n=3;modal(`<div class="mart">${ic('tv','ie')}</div><p>${label||t('ad_sim')}</p><div class="ad" id="adn">3</div><p>${t('ad_real')}</p>`);
   const it=setInterval(()=>{n--;const el=$('adn');if(el)el.textContent=n;if(n<=0){clearInterval(it);closeModal();done();}},1000);
 }
-function rewarded(done){showAd(()=>{roll();S.day.ads++;done();save();refresh();});}
+function rewarded(done){track('ad',{at:lastPlace});showAd(()=>{roll();S.day.ads++;done();save();refresh();});}
 function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){S.adCount=0;save();showAd(then,t('ad_between'));}else then();}
 
 function refresh(){
@@ -2309,11 +2312,11 @@ $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;mo
 let tutoStep=0,hpLagV=1,hintT=null;
 function showHint(txt,ms){const h=$('hint');h.textContent=txt;h.hidden=false;clearTimeout(hintT);if(ms)hintT=setTimeout(()=>h.hidden=true,ms);}
 function tutoNext(){
-  if(tutoStep===1){tutoStep=2;S.st.tuto=1;showHint(t('hint2'),4500);}
-  else if(tutoStep===3){tutoStep=4;S.st.tuto=3;$('hint').hidden=true;showHint(t('hint4',{n:CFG.prestige.minStage}),5000);document.querySelectorAll('.tbt.hot').forEach(b=>b.classList.remove('hot'));}
+  if(tutoStep===1){tutoStep=2;S.st.tuto=1;track('tuto',{s:2,sec:Math.round((Date.now()-sessStart)/1000)});showHint(t('hint2'),4500);}
+  else if(tutoStep===3){tutoStep=4;S.st.tuto=3;track('tuto',{s:4,sec:Math.round((Date.now()-sessStart)/1000)});$('hint').hidden=true;showHint(t('hint4',{n:CFG.prestige.minStage}),5000);document.querySelectorAll('.tbt.hot').forEach(b=>b.classList.remove('hot'));}
   save();
 }
-function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;showHint(t('hint3'));renderTB();}}
+function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;track('tuto',{s:3,sec:Math.round((Date.now()-sessStart)/1000)});showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
 let atGroup='start';
 const canStart=u=>!upLocked(u)&&!inBuild(u.id)&&isFinite(upCost(u))&&upAfford(u)&&(upTime(u)<=0||S.build.length<S.slots);
@@ -2500,7 +2503,7 @@ function loginModal(){
   const st=loginState();if(st.claimedToday)return;
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
 }
-function goTab(t){audio();Music.start();tab=t;renderTab();}
+function goTab(t){audio();Music.start();tab=t;if(t!=='home')track('tab',{t});renderTab();}
 document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;goTab(b.dataset.tab);});
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
 $('meBtn').addEventListener('click',()=>goTab('profile'));
@@ -2521,7 +2524,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.grp){atGroup=el.dataset.grp;renderTab();}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
-  else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');if(act('claim',{kind:k,i:+i},()=>claim(k,+i))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
+  else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(act('claim',{kind:k,i:+i},()=>claim(k,+i))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
   else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
   else if(el.id==='gdCreate'){const nm=$('gdName').value.trim();guildBusy=true;renderTab();gdErrMsg='';actAsync('guild_create',{name:nm}).then(d=>{guildBusy=false;if(d&&d.ok){guildCache=null;guildList=null;sfx.win();toast(t('gd_created'));track('guild_create',{});}else gdErrMsg=gdErr(d&&d.err);renderTab();refresh();});}
@@ -2533,7 +2536,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.gkick){const id=el.dataset.gkick,nm=el.dataset.name;modal(`<h2>${t('gd_kick_q',{n:esc(nm)})}</h2><div class="acts"><button class="b b-red" data-gkickok="${id}">${t('gd_kick_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.id==='gdLeave'){modal(`<h2>${t('gd_leave_q')}</h2><p>${t('gd_leave_p')}</p><div class="acts"><button class="b b-red" id="gdLeaveOk">${t('gd_leave')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))act('report',{target:el.dataset.report});}
-  else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+  else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){const id=el.dataset.gem;if(act('gemitem',{id},()=>buyGemItem(id))){sfx.buy();save();refresh();renderTab();}}
   else if(el.id==='adSparks'){rewarded(()=>{const v=adSparks('shop');act('ad',{kind:'shop'},()=>{S.run.sparks+=v;return true;});toast('+'+fmt(v)+' '+t('sparks'));sfx.win();if(R)renderTB();renderTab();});}
   else if(el.dataset.pack){const i=+el.dataset.pack;const r=act('pack',{i},()=>buyPack(i));if(r===true){sfx.buy();save();refresh();if(R)renderTB();renderTab();}else if(r==='cap')toast(t('sh_cap',{h:CFG.sparkShop.capMin/60}));}
@@ -2560,7 +2563,7 @@ $('modal').addEventListener('click',e=>{
   if(el.hasAttribute('data-close'))closeModal();
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
-  else if(el.dataset.confirm){const id=el.dataset.confirm;act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
+  else if(el.dataset.confirm){const id=el.dataset.confirm;track('purchase',{id,demo:true});act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
   else if(el.id==='xferCopy'){const c=$('xferCode').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{});else toast(c);}
   else if(el.id==='acRecoverOk'){closeModal();netRecover().then(d=>{toast(t('pr_recovered'));setTimeout(()=>adoptIdentity(d),300);}).catch(e=>{acctErr=acctMsg(e.code);renderTab();});}
   else if(el.id==='xferGo'){const d=xferParse($('xferIn').value);if(!d){$('xferErr').textContent=t('pr_xfer_bad');return;}if(d.id===DEV.id){closeModal();toast(t('pr_xfer_same'));return;}try{localStorage.setItem('prisme-dev',JSON.stringify(d));localStorage.removeItem(KEY);}catch(e){}location.reload();}
@@ -2593,6 +2596,7 @@ function flyShards(fromEl,toEl,n,onEach){
     requestAnimationFrame(step);}
 }
 function starterModal(){
+  track('offer_view',{id:'starter',auto:true});
   const left=0; /* v9.5 : pas d'échéance fictive */
   const so=OFFERS[0];modal(`<div class="mart">${ic('box','ie')}</div><h2>${so.t}</h2><p>${t('starter_p',{p:priceOf(so)})}</p>${left>0?`<p class="tm" style="color:var(--beam);font-weight:800">${t('starter_left',{t:dur(left/1000)})}</p>`:''}<div class="acts"><button class="b b-gold" data-confirm="starter">${t('starter_btn',{p:priceOf(so)})}</button><button class="b" data-close>${t('starter_no')}</button></div>`);
 }
@@ -2607,7 +2611,7 @@ function applyStatic(){document.querySelectorAll('[data-i18n]').forEach(el=>{el.
 function startRun(){
   newRun();fx.trauma=0;fx.pop={};fx.sq={};bfx.nums=[];bfx.parts=[];hpLagV=1;
   renderStage();renderTB();renderActs();requestAnimationFrame(resize);
-  if(!S.st.tuto){tutoStep=1;showHint(t('hint1'));}
+  if(!S.st.tuto){tutoStep=1;track('tuto',{s:1});showHint(t('hint1'));}
   else if(S.st.tuto<3)tutoStep=2;else tutoStep=0;
 }
 /* ================= boucle ================= */
@@ -2636,7 +2640,7 @@ function frame(now){
   else if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt);
   uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
-  syncT+=dt;if(syncT>90){syncT=0;if(netReady)act('sync');} // 90 s : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
+  syncT+=dt;if(syncT>90){syncT=0;if(netReady){act('sync');flushEv();}} // 90 s : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
   netT+=dt;if(netT>30){netT=0;probeNet();}
   requestAnimationFrame(frame);
 }
@@ -2649,10 +2653,19 @@ window.addEventListener('online',probeNet);window.addEventListener('offline',()=
 $('retryNet').addEventListener('click',probeNet);
 probeNet();
 if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');const h=bw.clientHeight;if(h!==rsz){rsz=h;resize();}}).observe($('bw'));const navH=()=>document.documentElement.style.setProperty('--navh',document.querySelector('.nav').offsetHeight+'px');new ResizeObserver(navH).observe(document.querySelector('.nav'),{box:'border-box'});window.addEventListener('resize',navH);navH();setTimeout(navH,300);setTimeout(navH,1500);}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){save();if(netReady)act('sync',{bye:true});}else{last=performance.now();if(netReady)wake();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();track('session_end',{sec:Math.round((Date.now()-sessStart)/1000),stage:S.run.stage});if(netReady){act('sync',{bye:true});flushEv(true);}}else{sessStart=Date.now();track('session',{stage:S.run.stage,best:S.bestStage});last=performance.now();if(netReady)wake();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
-window.__G={restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+/* ================= mesure (v9.6) : étapes atteintes, boss ratés, Titan, emplacement des pubs ================= */
+const MILESTONES=[2,3,5,6,10,15,20,25,30,35,40,50,60,75,100];
+let sessStart=Date.now(),lastPlace='';
+document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[id],[data-adb]');if(el)lastPlace=el.dataset.adb?'adbuild':el.id;},true);
+{const f=hooks.evolve;hooks.evolve=(...a)=>{f&&f(...a);if(MILESTONES.includes(S.bestStage))track('stage',{n:S.bestStage,min:Math.round((Date.now()-sessStart)/60000)});};}
+{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});};}
+{const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
+try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
+track('session',{stage:S.run.stage,best:S.bestStage});
+window.__G={get EVQ(){return EVQ;},flushEv,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}

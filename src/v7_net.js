@@ -122,7 +122,10 @@ const netAccount=()=>rpcAuth('pf_account',auth());
 const netRecover=()=>rpcAuth('pf_recover',{});
 /* adopter une identité (récupération de compte ou code de transfert) : la partie de cet appareil est remplacée */
 function adoptIdentity(d){try{localStorage.setItem('prisme-dev',JSON.stringify({id:d.id,s:d.s||d.secret}));localStorage.removeItem(KEY);}catch(e){}location.reload();}
-function track(name,props){if(!NET.on||!netReady)return;rpc('pf_track',Object.assign(auth(),{p_name:name,p_props:props||{}}),4000).catch(()=>{});}
+/* mesure : les événements sont mis en file et envoyés par paquets (synchro, mise en arrière-plan, ou 40 en attente) */
+let EVQ=[];
+function track(name,props){if(!NET.on)return;EVQ.push({n:String(name).slice(0,40),p:props||{},t:_dateNow()});if(EVQ.length>200)EVQ.splice(0,EVQ.length-200);if(EVQ.length>=40)flushEv();}
+function flushEv(keep){if(!NET.on||!netReady||!EVQ.length)return null;const batch=EVQ.splice(0,60);return rpc('pf_track_batch',Object.assign(auth(),{p_events:batch}),6000,!!keep).catch(()=>{EVQ=batch.concat(EVQ).slice(-200);});}
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
 const B32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

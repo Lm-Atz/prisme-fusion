@@ -5,12 +5,13 @@ let ok=0,ko=0;const T=(n,c)=>{if(c)ok++;else{ko++;console.log('KO',n);}};
 const html=fs.readFileSync('/home/claude/fusion/wrapped.html');
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html'});s.end(html);}).listen(8766);
 const SKEW=90000;const now=()=>Date.now()+SKEW;
-const DB={players:{},league:[],reports:[],anomalies:[]};let calls=[],down=false,pendingLeague={};
+const DB={players:{},league:[],reports:[],anomalies:[],events:[]};let calls=[],down=false,pendingLeague={};
 function player(id,secret,lang,name){let p=DB.players[id];if(!p){p=DB.players[id]={secret,state:null,ver:0,name,anom:0,banned:false};}return p.secret===secret?p:null;}
 function handle(url,a){
   const fn=url.includes('/rpc/')?url.split('/rpc/')[1]:url.includes('/functions/v1/pf-act')?'act':'?';calls.push(fn);
   if(down)return [503,{message:'down'}];
   if(fn==='pf_time')return [200,{now:now()}];
+  if(fn==='pf_track_batch'){const pl=DB.players[a.p_id];if(!pl||pl.secret!==a.p_secret)return [200,0];for(const e of a.p_events||[])DB.events.push({id:a.p_id,n:e.n,p:e.p});return [200,(a.p_events||[]).length];}
   if(fn==='act'){
     const p=player(a.id,a.secret,a.lang,a.name);if(!p)return [401,{ok:false,err:'auth'}];if(p.banned)return [403,{ok:false,err:'banned'}];
     const r=pfApply(ENGINE,p.state,a,now(),false);
@@ -81,6 +82,16 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   // --- panne serveur → voile ; retour
   down=true;await ev(A,()=>window.__G.probeNet());await A.waitForTimeout(400);r=await ev(A,()=>!window.__G.netOK&&!document.getElementById('offline').hidden);T('serveur HS → pause',r);
   down=false;await A.click('#retryNet');await A.waitForTimeout(400);r=await ev(A,()=>window.__G.netOK);T('retour en ligne',r);
+  // --- mesure (v9.6) : événements groupés, envoyés à la synchro et au passage en arrière-plan
+  await ev(A,()=>{const G=window.__G;G.setTab('shop');G.setTab('home');document.querySelector('.nav [data-tab="quests"]').click();document.querySelector('.nav [data-tab="home"]').click();G.hooks.evolve();G.S.bestStage=10;G.hooks.evolve();G.hooks.bossFled(false);});
+  await ev(A,()=>window.__G.flushEv());await A.waitForTimeout(400);
+  let names=DB.events.filter(e=>e.id===idA).map(e=>e.n);
+  T('mesure : session et ouverture envoyées',names.includes('session')&&names.includes('open'));
+  T('mesure : onglet, étape 10 et boss raté envoyés',names.includes('tab')&&DB.events.some(e=>e.n==='stage'&&e.p.n===10)&&names.includes('boss_fail'));
+  T('mesure : file vidée après envoi',await ev(A,()=>window.__G.EVQ.length===0));
+  await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(500);
+  T('mesure : fin de session envoyée en arrière-plan, avec sa durée',DB.events.some(e=>e.id===idA&&e.n==='session_end'&&e.p.sec>=0));
+  await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(300);
   // --- code de transfert
   const code=await ev(A,()=>window.__G.xferCode());r=await ev(A,c=>{const d=window.__G.xferParse(c);return d&&d.id===window.__G.DEV.id;},code);T('code de transfert cohérent',r);
   T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs.slice(0,5));
