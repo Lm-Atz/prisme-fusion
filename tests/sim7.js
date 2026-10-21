@@ -2,7 +2,7 @@
 const fs=require('fs');
 const sp='/tmp/claude-0/-home-claude/81df6a99-c7ba-558a-9b66-58a3676a4af2/scratchpad/';
 const code=fs.readFileSync('v7_i18n.js','utf8')+'\n'+fs.readFileSync('parts/r_util.js','utf8')+'\n'+fs.readFileSync('v7_engine.js','utf8')+`
-return {get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
+return {restoreAll,memTotal,isPP,get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
 let NOW=Date.UTC(2026,9,5,8,0,0);
 const localStorage={o:{},getItem(k){return this.o[k]||null},setItem(k,v){this.o[k]=v}};
 const G=new Function('Date','localStorage','cell','document','window','navigator',code)(new Proxy(Date,{construct(t,a){return a.length?new t(...a):new t(NOW)},get(t,k){return k==='now'?()=>NOW:t[k]}}),localStorage,60,{documentElement:{}},undefined,{languages:['fr']});
@@ -20,8 +20,14 @@ const log=[];const day=()=>Math.floor((NOW-Date.UTC(2026,9,5))/86400e3)+1;
 let manualCount=0,titanRuns=0,fledEvents=0,stuck=0;
 function mergeOnce(){const R=G.R;const seen={};const cells=R.cells.map((c,i)=>[c,i]).filter(x=>x[0]&&x[0].l&&!x[0].fog).sort((a,b)=>b[0].l-a[0].l);for(const [c,i] of cells){if(seen[c.l]!=null){G.runMove(seen[c.l],i,true);manualCount++;return true;}seen[c.l]=i;}return false;}
 function buyBoosters(){let n=0;const floor=S().run.sparks*0.5;for(let k=0;k<20;k++){if(S().run.sparks<floor)break;const keys=['cad','birth','auto','power','spark'];let best=null,bc=Infinity;for(const key of keys){const c=G.tbCost(key);const w={cad:1,birth:0.8,auto:0.9,power:0.9,spark:1}[key];if(c*w<bc){bc=c*w;best=key;}}if(best&&G.buyTB(best))n++;else break;}return n;}
-function research(){G.tickBuild(NOW);while(S().build.length<S().slots){let best=null,bs=0;for(const u of G.ALLUP){if(G.upLocked(u)||G.inBuild(u.id))continue;const c=G.upCost(u);if(!isFinite(c)||c>S().run.sparks)continue;const pr=(PRIO[u.id]||3)/(1+G.lvlOf(u)*0.15);const sc=pr/Math.pow(c/Math.max(1,S().run.sparks),0.3);if(sc>bs){bs=sc;best=u;}}if(!best)break;G.startBuild(best.id,NOW);}
+function research(){G.tickBuild(NOW);G.restoreAll(NOW);let guard=0;while(S().build.length<S().slots&&guard++<200){let best=null,bs=0;for(const u of G.ALLUP){if(G.upLocked(u)||G.inBuild(u.id)||G.isPP(u))continue;const c=G.upCost(u);if(!isFinite(c)||c>S().run.sparks)continue;const pr=(PRIO[u.id]||3)/(1+G.lvlOf(u)*0.15);const sc=pr/Math.pow(c/Math.max(1,S().run.sparks),0.3);if(sc>bs){bs=sc;best=u;}}if(!best)break;G.startBuild(best.id,NOW);}
   for(const j of G.JOKERS)if(G.jokerAvail(j)&&!S().jk[j.id]&&S().run.sparks>=j.sh*2)G.unlockJoker(j.id,'s');}
+const AUTO_ORDER=['au_merge','au_buy','au_boss','au_exped','au_prestige','au_joker','au_titan'];let autoSpent=0,wpSpent=0;
+function spendPP(){for(let k=0;k<40;k++){const pp=S().pp||0;if(pp<=0)break;
+  const au=AUTO_ORDER.map(id=>G.upById(id)).find(u=>!G.upLocked(u)&&isFinite(G.upCost(u))&&G.upCost(u)<=pp);
+  let best=-1,bc=99;for(let i=0;i<8;i++){const c=G.wpCost(i);if(c<bc){bc=c;best=i;}}
+  if(au&&(autoSpent<=wpSpent||bc>pp)){const c=G.upCost(au);if(G.startBuild(au.id,NOW)==='ok'){autoSpent+=c;continue;}}
+  if(bc<=pp&&G.buyWP(best)){wpSpent+=bc;continue;}break;}}
 function claimAll(){const v=G.questView();for(const q of v.onb.concat(v.d,v.w))if(q.p>=q.n&&!q.done)G.claim(q.kind,q.i);}
 function session(sec){
   const o=G.offlineGains(NOW);if(o)G.applyOffline(o,PROF.ads?2:1);
@@ -37,7 +43,7 @@ function session(sec){
     if(S().bestStage>=15&&G.titanReady()&&G.R.mode==='farm'){G.startTitan();titanRuns++;}
     if(S().run.stage!==lastStage){lastStage=S().run.stage;noProg=0;}else noProg+=dt;
     const g=G.prestigeGain();
-    if(g>0&&(noProg>240||G.R.t>1800)){G.doPrestige();noProg=0;for(let k=0;k<8;k++){let best=-1,bc=99;for(let i=0;i<8;i++){const c=G.wpCost(i);if(c<bc){bc=c;best=i;}}if(!G.buyWP(best))break;}}
+    if(g>0&&(noProg>240||G.R.t>1800)){G.doPrestige();noProg=0;spendPP();research();}
     if(Math.random()<dt*0.05){research();claimAll();}
     if(args.dbg&&day()==+args.dbg&&Math.floor(t)%20==0&&t%1<dt){const R=G.R,s=S();console.log(`   t${t.toFixed(0)} étape ${s.run.stage} mode ${R.mode} fled ${s.run.fled} hp ${(R.E.hp/R.E.max*100).toFixed(0)}% shield ${R.E.shieldL} gem ${Math.max(0,...R.cells.filter(c=>c&&c.l).map(c=>c.l))} spawnL ${G.spawnInterval().toFixed(2)}s lvl ${1+G.tbLvl('birth')} auto ${G.autoRate().toFixed(2)} cells ${R.cells.filter(Boolean).length} sparks ${fmtN(s.run.sparks)} pm ${fmtN(G.powerMult())}`);}
   }

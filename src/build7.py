@@ -31,4 +31,6 @@ def _min(code,extra=''):
 _edge=rd('edge_pf_act.ts')
 open('pf_server.js','w',encoding='utf8').write(_min(rd('pf_core.js'))+'\nmodule.exports.ENGINE_SRC='+_json.dumps(_min(_engine),ensure_ascii=False)+';\n')
 import os as _os
-_os.makedirs('edge/pf-act',exist_ok=True);open('edge/pf-act/index.ts','w',encoding='utf8').write(_edge)
+# la fonction à déployer vit dans le dépôt : supabase/functions/pf-act/index.ts (le dossier src/ est à côté de supabase/)
+_root=_os.path.dirname(_os.path.dirname(_os.path.realpath('edge_pf_act.ts')))
+_dst=_os.path.join(_root,'supabase','functions','pf-act');_os.makedirs(_dst,exist_ok=True);open(_os.path.join(_dst,'index.ts'),'w',encoding='utf8').write(_edge)

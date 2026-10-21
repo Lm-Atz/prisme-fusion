@@ -44,6 +44,7 @@ async function actNow(action,payload,snap,sent,retry=1){
   let d=null;
   try{const r=await fetch(`${NET.url}/functions/v1/pf-act`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+NET.key,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal,keepalive:action==='sync'&&!!payload&&payload.bye===true});
     if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1);}
+    if(r.status===429){srvLast=_dateNow();return null;} // trop d'appels : on attend la prochaine synchro, sans alarme
     d=await r.json();}
   catch(e){srvErr++;return null;}
   finally{clearTimeout(to);}
@@ -78,9 +79,11 @@ const netGuildJoin=code=>netGuildCall('pf_guild_join',{p_code:code});
 const netGuildLeave=()=>netGuildCall('pf_guild_leave',{});
 const netGuildKick=id=>netGuildCall('pf_guild_kick',{p_target:id});
 const netGuildOpen=open=>netGuildCall('pf_guild_open',{p_open:!!open});
-/* ================= compte : e-mail + mot de passe (Supabase Auth) =================
+/* ================= compte : Google / Apple (Supabase Auth, jeton d'identité) =================
    Le compte sert à une chose : lier la partie de cet appareil et la retrouver ailleurs (nouveau téléphone, réinstallation).
-   Aucun e-mail n'est envoyé par le jeu ; la connexion se fait avec les identifiants. */
+   Le jeu reste jouable sans compte. Aucun mot de passe chez nous, aucun e-mail envoyé : Google / Apple garantissent l'adresse.
+   Activation : renseigner OAUTH.google (identifiant client « Web » de Google Cloud) et activer Google dans Supabase Auth. */
+const OAUTH={google:'',googleIos:''};
 let AUTH=null;try{AUTH=JSON.parse(localStorage.getItem('prisme-auth')||'null');}catch(e){}
 function authSave(a){AUTH=a;try{if(a)localStorage.setItem('prisme-auth',JSON.stringify(a));else localStorage.removeItem('prisme-auth');}catch(e){}}
 async function authPost(path,body){
@@ -92,10 +95,24 @@ async function authPost(path,body){
   finally{clearTimeout(to);}
 }
 const authKeep=d=>{if(d&&d.access_token){authSave({at:d.access_token,rt:d.refresh_token,exp:_dateNow()+(d.expires_in||3600)*1000,email:(d.user&&d.user.email)||(AUTH&&AUTH.email)||''});return true;}return false;};
-async function authSignup(email,pw){const d=await authPost('signup',{email,password:pw});if(!authKeep(d)){const e=new Error('confirm');e.code='confirm';throw e;}return d;}
-async function authLogin(email,pw){const d=await authPost('token?grant_type=password',{email,password:pw});authKeep(d);return d;}
+const SLogin=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SocialLogin;
+const capPlatform=()=>{try{return window.Capacitor&&window.Capacitor.getPlatform?window.Capacitor.getPlatform():'web';}catch(e){return 'web';}};
+/* fournisseurs proposés sur cet appareil : Google sur Android/iOS (si configuré), Apple sur iOS (exigé par Apple dès qu'on propose Google) */
+function authProviders(){const p=capPlatform(),o=[];if(!SLogin())return o;if(OAUTH.google&&(p==='android'||p==='ios'))o.push('google');if(p==='ios')o.push('apple');return o;}
+const hexRand=n=>{const u=new Uint8Array(n);crypto.getRandomValues(u);return [...u].map(b=>b.toString(16).padStart(2,'0')).join('');};
+async function sha256hex(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+let slReady=false;
+async function authWith(provider){
+  const sl=SLogin();if(!sl||!authProviders().includes(provider)){const e=new Error('unavailable');e.code='unavailable';throw e;}
+  if(!slReady){const cfg={};if(OAUTH.google)cfg.google={webClientId:OAUTH.google,iOSClientId:OAUTH.googleIos||undefined,iOSServerClientId:OAUTH.google};if(capPlatform()==='ios')cfg.apple={};await sl.initialize(cfg);slReady=true;}
+  const raw=hexRand(16),hashed=await sha256hex(raw); // Google/Apple signent le hash ; Supabase vérifie avec la valeur brute
+  let res;try{res=await sl.login({provider,options:provider==='google'?{scopes:['email','profile'],nonce:hashed}:{scopes:['email'],nonce:hashed}});}
+  catch(x){const e=new Error('cancel');e.code='cancel';throw e;}
+  const tok=res&&res.result&&res.result.idToken;if(!tok){const e=new Error('cancel');e.code='cancel';throw e;}
+  const d=await authPost('token?grant_type=id_token',{provider,id_token:tok,nonce:raw});authKeep(d);return d;
+}
 async function authToken(){if(!AUTH)return null;if(_dateNow()<AUTH.exp-60e3)return AUTH.at;try{const d=await authPost('token?grant_type=refresh_token',{refresh_token:AUTH.rt});authKeep(d);return AUTH.at;}catch(e){if(e.code!=='server')authSave(null);return null;}}
-const authLogout=()=>authSave(null);
+const authLogout=()=>{authSave(null);try{const sl=SLogin();if(sl&&slReady)sl.logout({provider:'google'}).catch(()=>{});}catch(e){}};
 const authEmail=()=>AUTH&&AUTH.email||'';
 async function rpcAuth(fn,args){const tok=await authToken();if(!tok){const e=new Error('login');e.code='login';throw e;}
   const r=await fetch(`${NET.url}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(args||{})});

@@ -52,7 +52,7 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   // --- réfraction : le serveur recalcule points et trésor
   {const st=DB.players[idA].state;st.run.stage=31;st.run.max=31;st.bestStage=31;st.maxStage=31;}
   r=await ev(A,async()=>{const G=window.__G;await G.actAsync('hello');document.getElementById('veil').hidden=true;G.renderActs();document.getElementById('prest').click();await new Promise(z=>setTimeout(z,100));document.getElementById('doPrest').click();await new Promise(z=>setTimeout(z,400));await G.actAsync('sync');return {p:G.S.prestiges,pp:G.S.pp,stage:G.S.run.stage,sp:G.S.run.sparks};});
-  T('réfraction validée par le serveur',r.p===1&&r.pp===1&&r.stage===1&&DB.players[idA].state.prestiges===1);T('trésor de départ crédité',r.sp>=600);
+  T('réfraction validée par le serveur (1 point + 2 offerts)',r.p===1&&r.pp===3&&r.stage===1&&DB.players[idA].state.prestiges===1);T('trésor de départ crédité',r.sp>=600);
   // --- Titan (jour forcé) → ticket serveur → score serveur → ligue réelle
   r=await ev(A,async()=>{const G=window.__G;G.CFG.titan.days=[0,1,2,3,4,5,6];await G.actAsync('sync');document.getElementById('veil').hidden=true;const d=await G.actAsync('titan_start');G.R.titanDmg=12345;G.endTitan();await new Promise(z=>setTimeout(z,300));await G.actAsync('sync');return {start:d&&d.result&&d.result.ok,best:G.S.week.best};});
   T('titan : ticket serveur + score accepté',r.start&&r.best===12345&&DB.league[0]&&DB.league[0].score===12345);

@@ -1,4 +1,4 @@
-const VERSION='9.3 · compte';
+const VERSION='9.4 · réfraction';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -190,7 +190,7 @@ function refresh(){
   $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
   $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
-  const canBuild=(S.build.length<S.slots&&ALLUP.some(u=>!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u)))||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
+  const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
   document.querySelectorAll('[data-ring]').forEach(el=>{const b=inBuild(el.dataset.ring);if(b)el.style.setProperty('--p',(100*Math.min(1,1-(b.until-Date.now())/1000/b.dur))+'%');});
@@ -239,7 +239,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='prest')prestigeModal();
   else if(b.id==='titan')titanModal();
 });
-function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('spark')}${t('pre_mult',{a:dec(m0,1),b:dec(m1,1)})}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp})}</p><p style="font-weight:700">${t('pre_pot',{n:fmt(g)})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1);modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="loot">${ic('spark')}${t('pre_mult',{a:dec(m0,1),b:dec(m1,1)})}</div><p style="color:var(--beam);font-weight:800">${t('pre_pp',{n:pp+(S.prestiges?0:CFG.prestige.first)})}</p>${S.prestiges?'':`<p style="font-weight:700">${t('pre_first',{n:CFG.prestige.first})}</p>`}<p style="font-weight:700">${t('pre_pot',{n:fmt(g)})}</p><p>${t('pre_p')}</p><p style="color:var(--mist);font-size:13px">${t('pre_note')}</p><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(act('titan_start',{},()=>startTitan())){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -267,7 +267,12 @@ function tutoNext(){
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
 let atGroup='start';
-const grpReady=g=>S.build.length<S.slots&&ALLUP.some(u=>u.g===g&&!upLocked(u)&&!inBuild(u.id)&&S.run.sparks>=upCost(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh));
+const canStart=u=>!upLocked(u)&&!inBuild(u.id)&&isFinite(upCost(u))&&upAfford(u)&&(upTime(u)<=0||S.build.length<S.slots);
+const grpReady=g=>ALLUP.some(u=>u.g===g&&canStart(u))||(g==='jok'&&JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh));
+/* bouton d'achat d'une recherche : étincelles + durée, mémoire (instantané, moitié prix) ou points de réfraction */
+function buyBtn(u,free,big){const c=upCost(u),pp=isPP(u),mem=inMem(u),off=!upAfford(u)||(!pp&&!mem&&free<1);
+  if(pp)return `<button class="b b-gold ${big?'':'sm'}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('prism')}${big?t('at_pp',{c}):c}</span>${big?'':`<small>${t('at_now')}</small>`}</button>`;
+  return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+dur(upTime(u))}</small>`}</button>`;}
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
   return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${S.day.buildAds>=CFG.build.adPerDay?'disabled':''}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
@@ -276,8 +281,9 @@ function tileHtml(u,free){
   if(lock)foot=`<div class="tstate">${ic('lock')}${t('at_lock',{n:upReq(u)})}</div>`;
   else if(b)foot=`<div class="tstate run">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></div>`;
   else if(max)foot=`<div class="tstate">${ic('check')}${t('at_maxed')}</div>`;
-  else foot=`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${fmt(c)}</span><small>${ic('clock')}${dur(upTime(u))}</small></button>`;
-  return `<div class="tile slab ${lock?'locked':''}" data-g="${u.g}"><button class="tile-top" data-updetail="${u.id}" aria-label="${t('at_detail',{t:u.t})}"><span class="tico">${ic(upIcon(u))}</span><span class="tname">${u.t}</span><span class="tlvl">${isFinite(u.max)?t('at_k',{k,m:u.max}):t('lvl',{n:k})}</span></button>${isFinite(u.max)?`<div class="pips"><i style="width:${100*k/u.max}%"></i></div>`:'<div class="pips inf"></div>'}${foot}</div>`;
+  else foot=buyBtn(u,free);
+  const ml=memLvl(u.id);
+  return `<div class="tile slab ${lock?'locked':''} ${inMem(u)?'inmem':''}" data-g="${u.g}"><button class="tile-top" data-updetail="${u.id}" aria-label="${t('at_detail',{t:u.t})}"><span class="tico">${ic(upIcon(u))}</span><span class="tname">${u.t}</span><span class="tlvl">${isFinite(u.max)?t('at_k',{k,m:u.max}):t('lvl',{n:k})}${ml>k?` <em class="tmem">${ic('bolt')}${ml}</em>`:''}</span></button>${isFinite(u.max)?`<div class="pips"><i style="width:${100*k/u.max}%"></i></div>`:'<div class="pips inf"></div>'}${foot}</div>`;
 }
 function upDetail(id){
   const u=upById(id),k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id),free=S.slots-S.build.length;
@@ -285,7 +291,9 @@ function upDetail(id){
   if(lock)act=`<p>${t('at_locked',{n:upReq(u)})}</p>`;
   else if(b)act=`<p>${t('at_inprog',{t:`<b data-until="${b.until}">${dur((b.until-Date.now())/1000)}</b>`})}</p>`;
   else if(max)act=`<p>${t('at_ismax')}</p>`;
-  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p><div class="acts"><button class="b b-spark" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${ic('spark')}${t('at_buy',{c:fmt(c)})}</button>${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
+  else if(isPP(u))act=`<p>${t('at_pp_p')}</p><div class="acts">${buyBtn(u,free,true)}</div>`;
+  else if(inMem(u))act=`<p>${ic('bolt')} ${t('at_mem_p',{n:memLvl(u.id)})}</p><div class="acts">${buyBtn(u,free,true)}</div>`;
+  else act=`<p>${ic('clock')} ${t('at_dur',{t:dur(upTime(u))})}</p>${CFG.refr.reset.includes(u.g)?`<p class="note">${t('at_reset_p')}</p>`:''}<div class="acts">${buyBtn(u,free,true)}${free<1?'<p>'+t('at_full')+'</p>':''}</div>`;
   modal(`<div class="mart" style="color:var(--beam)">${ic(upIcon(u))}</div><h2>${u.t}</h2><p>${isFinite(u.max)?t('at_lvl',{k,m:u.max}):t('lvl',{n:k})}</p><p style="color:var(--light)">${max?'':t('at_next',{d:u.d(k)})}</p>${act}<div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
 }
 /* ----- volet Guilde : jauge hebdomadaire, paliers, quêtes du jour, membres ----- */
@@ -321,13 +329,16 @@ function guildHtml(){
   h+=`<div class="acts" style="margin-top:14px">${isLeader?`<button class="b sm" id="gdToggle" data-open="${G.open?0:1}">${G.open?t('gd_set_closed'):t('gd_set_open')}</button>`:''}<button class="b b-red sm" id="gdLeave">${t('gd_leave')}</button></div>`;
   return h;
 }
-/* ----- compte (e-mail + mot de passe) : lier la partie, la retrouver ailleurs ----- */
+/* ----- compte (Google / Apple) : lier la partie, la retrouver ailleurs ----- */
 let acct=null,acctBusy=false,acctErr='';
 const acctMsg=c=>{const k='pr_acct_err_'+String(c||'server');return I18N.fr[k]?t(k):t('pr_acct_err_server');};
 function accountHtml(){
   let h=`<h2 class="sec">${t('pr_acct')}</h2>`;
   if(!AUTH){
-    h+=`<p class="sub" style="margin:-4px 0 8px">${t('pr_acct_p')}</p><div class="list" style="gap:8px"><input id="acEmail" class="xin" type="email" autocomplete="email" autocapitalize="off" placeholder="${t('pr_email')}"><input id="acPw" class="xin" type="password" autocomplete="current-password" minlength="8" placeholder="${t('pr_pw')}"></div><p class="err" id="acErr" style="min-height:1.2em">${esc(acctErr)}</p><div class="row"><button class="b b-gold" style="flex:1" id="acSignup" ${acctBusy?'disabled':''}>${t('pr_signup')}</button><button class="b" style="flex:1" id="acLogin" ${acctBusy?'disabled':''}>${t('pr_login')}</button></div>`;
+    const pv=authProviders();
+    h+=`<p class="sub" style="margin:-4px 0 8px">${t('pr_acct_p')}</p>`;
+    if(!pv.length){h+=`<p class="note">${t('pr_acct_soon')}</p>`;return h;}
+    h+=`<div class="list" style="gap:8px">${pv.map(p=>`<button class="b ${p==='google'?'b-gold':''}" data-oauth="${p}" ${acctBusy?'disabled':''}>${t('pr_with_'+p)}</button>`).join('')}</div><p class="err" id="acErr" style="min-height:1.2em">${esc(acctErr)}</p>`;
     return h;
   }
   if(!acct){if(netReady)netAccount().then(a=>{acct=a;if(tab==='profile')renderTab();}).catch(e=>{if(e.code==='login'){authLogout();if(tab==='profile')renderTab();}});h+=`<p class="note">${t('loading')}</p>`;return h;}
@@ -357,7 +368,9 @@ function renderTab(){
     h+=head(t('at_title'),t('at_sub'))+`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
     h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
     h+=`<div class="grp" role="group" aria-label="${t('at_title')}">${GROUPS.map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpReady(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
+    const mn=memList().length;if(mn){const mc=memTotal();h+=`<div class="slotbuy membar"><span>${ic('bolt')} ${t('at_mem_bar',{n:mn})}</span><button class="b b-spark sm" id="restoreAll" ${S.run.sparks<Math.min(...memList().map(upCost))?'disabled':''}>${t('at_restore')} ${ic('spark')}${fmt(mc)}</button></div>`;}
     h+=`<p class="note">${GROUPS.find(g=>g.id===atGroup).d}</p>`;
+    if(atGroup==='auto')h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('pp_n',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span></div>`;
     if(atGroup==='jok'){
       const nj=CFG.build.jslotGems[S.jslots-1];
       h+=`<div class="slotbuy"><span>${t('j_slots',{n:S.equip.length,m:S.jslots})}</span>${nj!=null?`<button class="b b-gem sm" id="buyJSlot" ${S.gems<nj?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nj}</button>`:''}</div><div class="list" style="margin-top:10px">`;
@@ -443,7 +456,7 @@ document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.clo
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
 $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
-function doBuild(id){const r=act('build',{id},()=>startBuild(id));if(r==='ok'){sfx.buy();toast(t('at_started',{t:upById(id).t}));}else if(r==='slots')toast(t('at_busy'));save();refresh();renderTab();return r;}
+function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));}}else if(r==='slots')toast(t('at_busy'));save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
@@ -453,6 +466,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.updetail)upDetail(el.dataset.updetail);
   else if(el.dataset.rush){const id=el.dataset.rush;if(act('rush',{id},()=>rushBuild(id))){sfx.chord();}else toast(t('no_gems'));save();refresh();renderTab();}
   else if(el.dataset.adb){const id=el.dataset.adb;rewarded(()=>{act('adbuild',{id},()=>adBuild(id));toast(t('at_rushed'));renderTab();});}
+  else if(el.id==='restoreAll'){const n=act('restore',{},()=>restoreAll()||false);if(n){sfx.chord();toast(t('at_restored',{n}));if(R)renderTB();}save();refresh();renderTab();}
   else if(el.id==='buySlot'){if(act('slot',{},()=>buySlot())){sfx.chord();toast(t('at_newslot'));}save();refresh();renderTab();}
   else if(el.id==='buyJSlot'){if(act('jslot',{},()=>buyJSlot())){sfx.chord();toast(t('at_newjslot'));}save();refresh();renderTab();}
   else if(el.dataset.grp){atGroup=el.dataset.grp;renderTab();}
@@ -477,7 +491,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='adBoost'){rewarded(()=>{act('ad',{kind:'boost'},()=>{give({b:CFG.boost.adH});return true;});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
   else if(el.dataset.skin){const id=el.dataset.skin;if(!act('skin',{id},()=>buySkin(id)))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
   else if(el.id==='nameBtn'){const nm=$('nameIn').value;const r=act('rename',{name:nm},()=>{const x=rename(nm);return x.ok?x:false;});if(r&&r.ok){toast(t('name_updated'));save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
-  else if(el.id==='acSignup'||el.id==='acLogin'){const em=$('acEmail').value.trim(),pw=$('acPw').value;if(pw.length<8){$('acErr').textContent=t('pr_acct_err_weak_password');return;}acctBusy=true;acctErr='';renderTab();(el.id==='acSignup'?authSignup(em,pw):authLogin(em,pw)).then(afterLogin).catch(e=>{acctBusy=false;acctErr=acctMsg(e.code);renderTab();});}
+  else if(el.dataset.oauth){acctBusy=true;acctErr='';renderTab();authWith(el.dataset.oauth).then(afterLogin).catch(e=>{acctBusy=false;acctErr=e.code==='cancel'?'':acctMsg(e.code);renderTab();});}
   else if(el.id==='acLink'){acctBusy=true;renderTab();afterLogin();}
   else if(el.id==='acRecover')recoverModal();
   else if(el.id==='acLogout'){authLogout();acct=null;acctErr='';renderTab();}
@@ -573,7 +587,7 @@ function frame(now){
   else if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt);
   uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
-  syncT+=dt;if(syncT>30){syncT=0;if(netReady)act('sync');}
+  syncT+=dt;if(syncT>90){syncT=0;if(netReady)act('sync');} // 90 s : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
   netT+=dt;if(netT>30){netT=0;probeNet();}
   requestAnimationFrame(frame);
 }
@@ -589,8 +603,8 @@ if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');con
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();if(netReady)act('sync',{bye:true});}else{last=performance.now();if(netReady)wake();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
-window.__G={isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
-  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authSignup,authLogin,authLogout,authEmail,netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
+window.__G={restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+  setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);

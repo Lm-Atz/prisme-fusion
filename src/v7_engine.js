@@ -7,7 +7,8 @@ const CFG={
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
-  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n))},
+  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
+  refr:{reset:['atk','grid','eco'],memCost:0.5,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
   build:{gemSec:300,adCut:1800,slotGems:[200,500],jslotGems:[150,350]},
@@ -31,7 +32,7 @@ const WEAPONS=[['tri',0.55,0.45,'94,200,255'],['sq',1.2,1,'157,123,255'],['pen',
 const weaponOf=l=>WEAPONS[(l-1)%8];
 const rankOf=l=>Math.floor((l-1)/8);
 /* points de réfraction : gagnés à chaque réfraction, dépensés librement dans les armes */
-const ppGain=n=>n<CFG.prestige.minStage?0:Math.max(1,Math.floor((1+(n-CFG.prestige.minStage)/10)*(1+0.1*(S.up.eveil||0))));
+const ppGain=n=>n<CFG.prestige.minStage?0:Math.max(1,Math.floor(CFG.prestige.ppX*(1+(n-CFG.prestige.minStage)/10)*(1+0.1*(S.up.eveil||0))));
 const wpLvl=i=>(S.wp&&S.wp[i])||0;
 const wpCost=i=>1+wpLvl(i);
 function buyWP(i){const c=wpCost(i);if(S.pp<c)return false;S.pp-=c;S.wp=S.wp||{};S.wp[i]=wpLvl(i)+1;return true;}
@@ -50,12 +51,12 @@ const UPG=[
   {id:'st_spark',g:'start',get t(){return t('u_st_spark')},d:k=>t('u_st_spark_d',{n:k+1}),c:k=>200*Math.pow(1.4,k),time:T(60,1.25),max:Infinity,req:8},
   {id:'st_bank',g:'start',get t(){return t('u_st_bank')},d:k=>t('u_st_bank_d',{n:fmt(50*Math.pow(2.2,k))}),c:k=>90*Math.pow(1.6,k),time:T(30,1.3),max:Infinity},
   // Automatisation
-  {id:'au_merge',g:'auto',get t(){return t('u_au_merge')},d:k=>t('u_au_merge_d',{n:30*(k+1)}),c:k=>300*Math.pow(1.35,k),time:T(60,1.25),max:Infinity,req:5},
+  {id:'au_merge',g:'auto',get t(){return t('u_au_merge')},d:k=>t('u_au_merge_d',{n:30*(k+1)}),c:k=>300*Math.pow(1.35,k),time:T(60,1.25),max:12,req:5},
   {id:'au_buy',g:'auto',get t(){return t('u_au_buy')},d:k=>k?t('u_au_buy_d',{n:Math.max(1,10-k)}):t('u_au_buy_d0'),c:k=>2500*Math.pow(1.4,k),time:T(900,1.25),max:9,req:15},
   {id:'au_joker',g:'auto',get t(){return t('u_au_joker')},d:()=>t('u_au_joker_d'),c:()=>8000,time:()=>7200,max:1,req:20},
   {id:'au_boss',g:'auto',get t(){return t('u_au_boss')},d:k=>t('u_au_boss_d',{n:Math.max(10,60-10*(k+1))}),c:k=>4000*Math.pow(1.45,k),time:T(1800,1.3),max:5,req:20},
   {id:'au_prestige',g:'auto',get t(){return t('u_au_prestige')},d:k=>t('u_au_prestige_d',{n:[100,50,25,10,5][Math.min(k,4)]}),c:k=>30000*Math.pow(1.6,k),time:T(14400,1.3),max:5,req:30},
-  {id:'au_exped',g:'auto',get t(){return t('u_au_exped')},d:k=>t('u_au_exped_d',{n:2*(k+1)}),c:k=>15000*Math.pow(1.7,k),time:T(7200,1.3),max:Infinity,req:25},
+  {id:'au_exped',g:'auto',get t(){return t('u_au_exped')},d:k=>t('u_au_exped_d',{n:2*(k+1)}),c:k=>15000*Math.pow(1.7,k),time:T(7200,1.3),max:10,req:25},
   {id:'au_titan',g:'auto',get t(){return t('u_au_titan')},d:k=>t('u_au_titan_d',{n:k+1}),c:k=>20000*Math.pow(1.55,k),time:T(10800,1.3),max:5,req:35},
   // Attaque
   {id:'power',g:'atk',get t(){return t('u_power')},d:k=>t('u_power_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>80*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
@@ -98,7 +99,7 @@ function fresh(){
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
-    pp:0,wp:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
+    pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
@@ -109,7 +110,8 @@ let S=fresh();
 const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
-function migrate(m){delete m.idle;if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&u.g==='auto'){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return true;}); // v9.4 : automatisation en cours = acquise
+  if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]};S.league=null;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
@@ -141,10 +143,14 @@ function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.lo
 
 /* ================= atelier : chantiers ================= */
 const upById=id=>ALLUP.find(x=>x.id===id);
-const lvlOf=u=>u.joker?(S.jk[u.joker]||0):S.up[u.id];
-const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:u.c(lvlOf(u));
-const upTime=u=>u.time(lvlOf(u));
-const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u.id)):u.req;
+const lvlOf=u=>u.joker?(S.jk[u.joker]||0):(S.up[u.id]||0);
+const isPP=u=>u.g==='auto'; // automatisations : points de réfraction, sans délai, permanentes
+const memLvl=id=>(S.mem&&S.mem[id])||0;
+const inMem=u=>!u.joker&&CFG.refr.reset.includes(u.g)&&lvlOf(u)<memLvl(u.id); // niveau déjà atteint avant une Réfraction
+const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:isPP(u)?CFG.refr.ppAuto(lvlOf(u)):u.c(lvlOf(u))*(inMem(u)?CFG.refr.memCost:1);
+const upTime=u=>isPP(u)||inMem(u)?0:u.time(lvlOf(u));
+const upAfford=u=>isPP(u)?(S.pp||0)>=upCost(u):S.run.sparks>=upCost(u);
+const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
 const inBuild=id=>S.build.find(b=>b.id===id);
 function applyUp(id){const u=upById(id);if(u.joker)S.jk[u.joker]=(S.jk[u.joker]||0)+1;else S.up[u.id]++;S.st.bought++;if(u.id==='board')growBoard();}
@@ -154,9 +160,16 @@ function startBuild(id,now=Date.now()){
   tickBuild(now);const u=upById(id);if(!u)return 'none';
   if(upLocked(u))return 'locked';if(inBuild(id))return 'busy';
   const c=upCost(u);if(!isFinite(c))return 'max';
-  if(S.build.length>=S.slots)return 'slots';if(S.run.sparks<c)return 'poor';
-  S.run.sparks-=c;S.st.started++;S.day.started=(S.day.started|0)+1;const d=upTime(u);S.build.push({id,until:now+d*1000,dur:d});return 'ok';
+  const d=upTime(u);
+  if(d>0&&S.build.length>=S.slots)return 'slots';if(!upAfford(u))return 'poor';
+  if(isPP(u))S.pp-=c;else S.run.sparks-=c;S.st.started++;S.day.started=(S.day.started|0)+1;
+  if(d<=0){applyUp(id);return 'ok';} // instantané : n'occupe pas d'emplacement
+  S.build.push({id,until:now+d*1000,dur:d});return 'ok';
 }
+/* « Tout restaurer » : rachète les niveaux en mémoire, les moins chers d'abord, tant qu'il y a des étincelles */
+const memList=()=>UPG.filter(u=>inMem(u)&&!upLocked(u)&&!inBuild(u.id));
+const memTotal=()=>memList().reduce((a,u)=>{let c=0;for(let k=lvlOf(u);k<Math.min(memLvl(u.id),u.max);k++)c+=u.c(k)*CFG.refr.memCost;return a+c;},0);
+function restoreAll(now=Date.now()){let n=0;for(let i=0;i<2000;i++){let best=null,bc=Infinity;for(const u of memList()){const c=upCost(u);if(c<bc){bc=c;best=u;}}if(!best||S.run.sparks<bc)break;if(startBuild(best.id,now)!=='ok')break;n++;}return n;}
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
 function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
 function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
@@ -344,9 +357,14 @@ function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.tita
 const prestigeGain=()=>S.run.max>=CFG.prestige.minStage?Math.floor(CFG.prestige.shards(S.run.max)*lootMult()):0;
 function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
-  S.prestiges++;S.pp=(S.pp||0)+ppGain(S.run.max);roll();S.day.prestiges++;S.week.prestiges++;
+  S.pp=(S.pp||0)+ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first);S.prestiges++;roll();S.day.prestiges++;S.week.prestiges++;
+  // Attaque, Plateau, Économie : remis à zéro, mais mémorisés (une recherche en cours compte comme acquise)
+  S.mem=S.mem||{};const reset=u=>!u.joker&&CFG.refr.reset.includes(u.g);
+  for(const b of S.build){const u=upById(b.id);if(u&&reset(u))S.mem[u.id]=Math.max(S.mem[u.id]||0,lvlOf(u)+1);}
+  S.build=S.build.filter(b=>{const u=upById(b.id);return !(u&&reset(u));});
+  for(const u of UPG)if(reset(u)){S.mem[u.id]=Math.max(S.mem[u.id]||0,S.up[u.id]||0);S.up[u.id]=0;}
   S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
-  S.run.cells=null;if(R){R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
+  S.run.cells=null;if(R){const N=boardN();if(R.N!==N){R.N=N;R.cells=Array(N*N).fill(null);hooks.grow&&hooks.grow(N);}R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
 function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}

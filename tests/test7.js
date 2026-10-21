@@ -85,7 +85,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.stage=9;S.run.fled=fal
 T('boss à l\'étape 10 avec chrono',r.boss&&r.bossT>55&&r.bossT<=60);T('boss fuit, retour à l\'étape 9',r.fled);T('redéfier le boss',r.chal);T('bouclier phase 2',r.shield);T('petite gemme bloquée',r.blocked);T('grosse gemme passe',r.pass);T('le carré perce le bouclier',r.sqPass);T('verrous expirent',r.lockGone);T('boss vaincu → étape 11',r.after);
 // --- prestige, offline, titan, jokers
 r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};
-  S.run.max=25;o.noPrestige=G.prestigeGain()===0;S.run.max=30;o.gain=G.prestigeGain();const sh=S.run.sparks;S.run.tb.cad=7;const pp0=S.pp||0;const g=G.doPrestige();o.ppAfter=S.pp===pp0+1;o.prest=g===o.gain&&S.run.sparks===g+(S.up.st_bank?50*Math.pow(2.2,S.up.st_bank):0)&&S.run.stage===1&&G.refMult()===1.2&&S.run.tb.cad===0&&S.prestiges===1&&R.E.stage===1;
+  S.run.max=25;o.noPrestige=G.prestigeGain()===0;S.run.max=30;o.gain=G.prestigeGain();const sh=S.run.sparks;S.run.tb.cad=7;const pp0=S.pp||0,first=!S.prestiges;const g=G.doPrestige();o.ppAfter=S.pp===pp0+1+(first?2:0);o.prest=g===o.gain&&S.run.sparks===g+(S.up.st_bank?50*Math.pow(2.2,S.up.st_bank):0)&&S.run.stage===1&&G.refMult()===1.2&&S.run.tb.cad===0&&S.prestiges===1&&R.E.stage===1;
   S.up.st_cad=3;o.startLvl=G.tbLvl('cad')===3;
   // hors-ligne
   S.run.srate=10;S.run.krate=0;S.lastSeen=Date.now()-3600e3;const off=G.offlineGains();o.off=off&&off.sparks===Math.floor(10*3600*G.CFG.offline.factor);
@@ -104,7 +104,7 @@ T('titan prêt',r.tReady);T('titan démarre',r.tStart);T('dégâts titan compté
 // --- armes
 r=await ev(()=>{const G=window.__G,S=G.S;G.startRun();const R=G.R;const o={};R.cells.fill(null);
   o.w=G.WEAPONS.length===8&&G.weaponOf(1).id==='tri'&&G.weaponOf(9).id==='tri'&&G.weaponOf(3).id==='pen';o.rank=G.rankOf(9)===1&&G.rankOf(8)===0;
-  o.pp=G.ppGain(20)===0&&G.ppGain(30)===1&&G.ppGain(50)===3;S.pp=3;o.buy=G.buyWP(2)&&S.pp===2&&G.wpLvl(2)===1&&G.wpCost(2)===2;o.pow=G.effectPow(3)>G.effectPow(4);o.buy2=G.buyWP(2)&&S.pp===0;o.poor=G.buyWP(2)===false;S.gems=100;o.reset=G.resetWP()&&S.pp===3&&G.wpLvl(2)===0&&S.gems===50;
+  o.pp=G.ppGain(20)===0&&G.ppGain(30)===1&&G.ppGain(40)===3&&G.ppGain(50)===4;S.pp=3;o.buy=G.buyWP(2)&&S.pp===2&&G.wpLvl(2)===1&&G.wpCost(2)===2;o.pow=G.effectPow(3)>G.effectPow(4);o.buy2=G.buyWP(2)&&S.pp===0;o.poor=G.buyWP(2)===false;S.gems=100;o.reset=G.resetWP()&&S.pp===3&&G.wpLvl(2)===0&&S.gems===50;
   // brûlure
   R.cells[0]={l:3};for(let i=0;i<20;i++)G.runTick(0.1);o.burn=!!(R.burn&&R.burn.dps>0);
   // gel : rallonge le chrono
@@ -167,6 +167,37 @@ await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S
 T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=999;const ok=G.giftOK();G.S.day.gifts=0;return ok;}));
 // secousses : pas de cumul
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));
+// v9.4 Réfraction : Attaque/Plateau/Économie remis à zéro et mémorisés, automatisations en points, rachat instantané
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.bestStage=60;S.run.max=45;S.pp=0;S.gems=500;S.build=[];S.slots=1;
+  S.up.power=5;S.up.board=1;S.up.spark=4;S.up.loot=2;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.mem={};
+  S.build.push({id:'crit',until:Date.now()+9e6,dur:9e6});S.up.crit=1;
+  G.growBoard&&G.growBoard();o.N0=G.R.N;
+  const pp0=G.ppGain(45);o.ppGain=pp0===Math.floor(1.5*2.5);
+  o.g=G.doPrestige()>0;
+  o.reset=S.up.power===0&&S.up.board===0&&S.up.spark===0&&S.up.loot===0&&S.up.crit===0;
+  o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1;
+  o.mem=S.mem.power===5&&S.mem.board===1&&S.mem.spark===4&&S.mem.crit===2; // la recherche en cours compte comme acquise
+  o.buildGone=!S.build.length;o.shrunk=G.R.N===4&&G.R.cells.length===16;
+  const u=G.upById('power');o.memTag=G.inMem(u);o.half=Math.abs(G.upCost(u)-u.c(0)*0.5)<1e-9;o.instant=G.upTime(u)===0;
+  S.run.sparks=1e9;S.slots=1;S.build=[{id:'lucky',until:Date.now()+9e6,dur:9e6}]; // emplacement occupé : le rachat en mémoire passe quand même
+  o.buyMem=G.startBuild('power')==='ok'&&S.up.power===1&&S.build.length===1;
+  const sp=S.run.sparks;o.n=G.restoreAll();o.all=S.up.power===5&&S.up.board===1&&S.up.spark===4&&S.up.loot===2&&S.up.crit===2&&G.R.N===5;o.paid=S.run.sparks<sp;
+  o.noMem=!G.inMem(u)&&G.upTime(u)>0;
+  // automatisations : points de réfraction, sans délai
+  const a=G.upById('au_buy');S.pp=0;o.ppCost=G.isPP(a)&&G.upCost(a)===1&&G.upTime(a)===0;o.poor=G.startBuild('au_buy')==='poor';S.pp=2;o.auto=G.startBuild('au_buy')==='ok'&&S.up.au_buy===1&&S.pp===1;
+  S.up.au_buy=6;o.cost3=G.upCost(a)===3;S.up.au_buy=1;
+  // migration : une automatisation en cours de recherche (ancien système) devient acquise
+  const m=G.migrate({up:{au_boss:1},build:[{id:'au_boss',until:1,dur:1},{id:'power',until:1,dur:1}],day:{gq:[]}});o.conv=m.up.au_boss===2&&m.build.length===1&&m.build[0].id==='power'&&m.mem&&typeof m.mem==='object';
+  return o;});
+T('Réfraction : +50 % de points',r.ppGain);T('Réfraction effectuée',r.g);T('Attaque/Plateau/Économie remis à zéro',r.reset);T('Départ, Armes, Automatisation gardés',r.kept);T('niveaux mémorisés (recherche en cours comprise)',r.mem);T('recherches remises à zéro retirées des emplacements',r.buildGone);T('le plateau rétrécit avec la recherche Plateau',r.shrunk);
+T('mémoire : moitié prix',r.memTag&&r.half);T('mémoire : instantané',r.instant);T('mémoire : sans emplacement libre',r.buyMem);T('Tout restaurer : tous les niveaux revenus',r.n>0&&r.all&&r.paid);T('au-delà de la mémoire : prix et durée normaux',r.noMem);
+T('automatisation : 1 point, immédiat',r.ppCost&&r.poor&&r.auto);T('automatisation : 3 points au plus',r.cost3);T('migration : automatisation en cours acquise',r.conv);
+await ev(()=>{const G=window.__G;G.S.up.power=0;G.S.mem.power=3;G.setTab('atelier');document.querySelector('[data-grp="atk"]').click();});
+r=await ev(()=>({bar:!!document.getElementById('restoreAll'),tag:!!document.querySelector('.tile.inmem .tmem'),txt:document.getElementById('panel').innerText}));
+T('Atelier : barre « Tout restaurer » et repère mémoire',r.bar&&r.tag&&/en mémoire/.test(r.txt));
+await ev(()=>document.getElementById('restoreAll').click());T('bouton Tout restaurer',await ev(()=>window.__G.S.up.power===3));
+await ev(()=>document.querySelector('[data-grp="auto"]').click());T('onglet Automatisation : solde de points',await ev(()=>/point/.test(document.getElementById('panel').innerText)&&!!document.querySelector('[data-build="au_merge"] .i')));
+await ev(()=>window.__G.setTab('home'));
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran

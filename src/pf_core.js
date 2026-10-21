@@ -5,7 +5,7 @@
    Aucune dépendance au DOM ni à Supabase : utilisable dans Node (tests), Deno (Edge) et Playwright. */
 const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
-fresh,migrate,roll,give,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
+fresh,migrate,roll,give,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
 jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
 offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
@@ -73,7 +73,7 @@ function pfMergeSim(G,sim,dt,anomalies){
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -96,6 +96,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
   switch(action){
     case 'hello':case 'sync':break;
     case 'build':{const r=G.startBuild(String(p.id),nowMs);res.ok=r==='ok';if(!res.ok)res.err=r;break;}
+    case 'restore':{const n=G.restoreAll(nowMs);res.ok=n>0;res.n=n;if(!res.ok)res.err='poor';break;}
     case 'rush':res.ok=G.rushBuild(String(p.id),nowMs);if(!res.ok)res.err='rush';break;
     case 'adbuild':if(need(pfAdOK(S,'build',nowMs,15),'cooldown')){res.ok=G.adBuild(String(p.id),nowMs);S.day.ads=(S.day.ads|0)+1;}break;
     case 'slot':res.ok=G.buySlot();if(!res.ok)res.err='slot';break;
