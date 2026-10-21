@@ -17,6 +17,10 @@
       "style": "DARK",
       "insetsHandling": "css",
       "initialViewportFitValueHint": "cover"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_prism",
+      "iconColor": "#3ef2ff"
     }
   }
 }

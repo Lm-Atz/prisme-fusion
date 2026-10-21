@@ -126,11 +126,12 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=5
   o.q=G.questView();o.onb3=o.q.onb.length===3;o.onbTotal=G.ONB.length;o.daily=o.q.d.length===4;o.week=o.q.w.length===4;
   S.st.manual=10;const g=S.gems;o.claim=G.claim('o',0)&&S.gems===g+10;o.claimTwice=G.claim('o',0)===false;
   o.login=G.loginState().day===1;o.claimL=G.claimLogin()&&!G.claimLogin();
+  o.noAge=G.purchase('starter')===false&&!S.starter;S.settings.age='t';o.minor=G.purchase('starter')===false;S.settings.age='a';
   o.buy=G.purchase('starter')&&S.starter&&S.boostUntil>Date.now();o.boostx2=G.powerMult()>=2;
   o.gemBoost=G.buyGemItem('boost');o.skin=G.buySkin('rose')&&S.skin==='rose';
   return o;});
 T('recherche lancée',r.start==='ok');T('un seul emplacement',r.busy==='slots');T('2e emplacement',r.two==='ok');T('recherche verrouillée par étape',r.locked==='locked');T('accélérer en gemmes',r.rush&&r.rushed);T('pub −30 min',r.ad);
-T('≥ 40 recherches',r.n>=40);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
+T('≥ 40 recherches',r.n>=40);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('v10 : achat refusé sans âge, puis refusé pour un mineur',r.noAge&&r.minor);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
 // --- interface
 await ev(()=>{document.getElementById('veil').hidden=true;const G=window.__G;G.S.st.tuto=3;G.tutoStep=0;document.getElementById('hint').hidden=true;G.S.st.namePrompted=true;G.startRun();G.refresh();G.renderTB();});
 T('pas d\'énergie',await ev(()=>!document.getElementById('cE')));
@@ -145,7 +146,12 @@ await p.locator('#panel .quit').click();T('fermer le panneau',await ev(()=>docum
 await p.locator('.nav [data-tab="atelier"]').click();await p.waitForTimeout(100);T('7 boutons de famille',await p.locator('.grp button').count()===7);
 await p.locator('[data-updetail="st_power"]').click();T('détail recherche',await ev(()=>!document.getElementById('veil').hidden&&document.getElementById('modal').textContent.includes('Force de départ')));
 await p.locator('#modal [data-close]').click();await p.locator('#panel .quit').click();
+await ev(()=>{delete window.__G.S.settings.age;});
 await p.locator('#pillG').click();T('gemmes → boutique',await ev(()=>window.__G.tab==='shop'));
+T('v10 : écran d\'âge neutre à la première ouverture de la boutique',await ev(()=>!document.getElementById('veil').hidden&&!!document.getElementById('ageY')&&document.getElementById('ageY').value===''&&document.getElementById('ageM').value===''));
+await p.locator('#ageOk').click();T('v10 : âge obligatoire',await ev(()=>/Choisis/.test(document.getElementById('ageErr').textContent)));
+{const y=new Date().getFullYear()-30;await p.selectOption('#ageM','1');await p.selectOption('#ageY',String(y));}await p.locator('#ageOk').click();
+T('v10 : âge déclaré adulte, seule la tranche est gardée',await ev(()=>window.__G.S.settings.age==='a'&&document.getElementById('veil').hidden&&!JSON.stringify(window.__G.S).includes(String(new Date().getFullYear()-30))));
 await p.locator('#panel .quit').click();await p.locator('#meBtn').click();T('avatar → profil',await ev(()=>window.__G.tab==='profile'));
 await p.locator('.nav [data-tab="home"]').click();
 await ev(()=>{const G=window.__G;G.S.run.max=30;G.renderActs();});T('bouton prestige',await p.locator('#prest').count()===1);
@@ -224,6 +230,64 @@ T('cadeaux : au plus 30 gemmes par jour',r.cap);T('cadeaux : plus de gemmes une 
 T('coffre : fermé sous 300',r.closed);T('coffre : plafonné à 600',r.capped);T('coffre : ouverture = contenu exact, puis vide',r.open&&r.again);
 await ev(()=>{const G=window.__G;G.S.chest=700;G.setTab('shop');});T('boutique : coffre affiché avec son contenu',await ev(()=>/Coffre de gemmes/.test(document.getElementById('panel').innerText)&&/350 gemmes sur 600/.test(document.getElementById('panel').innerText)));
 await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
+// ===== v10 : boutique, pass de saison, achats encadrés, notifications, offres contextuelles, confidentialité =====
+await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.setTab('shop');});
+r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');o.order=pn.innerHTML.indexOf('shopGift')<pn.innerHTML.indexOf('data-passbuy')&&pn.innerHTML.indexOf('data-passbuy')<pn.innerHTML.indexOf('data-offer="g100"');
+  o.tiers=pn.querySelectorAll('.pt:not(.ph)').length;o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2').length===6;o.locked=[...pn.querySelectorAll('[data-pass]')].every(b=>b.disabled||b.classList.contains('lock'));return o;});
+T('v10 : boutique : cadeau, puis pass, puis gemmes',r.order);T('v10 : pass : 20 paliers',r.tiers===20);T('v10 : ×2 affiché sur les 6 packs',r.x2);
+r=await ev(()=>{const G=window.__G;const g=G.S.gems;document.getElementById('shopGift').click();const a=G.S.gems===g+5&&document.getElementById('shopGift').disabled;return a;});T('v10 : cadeau du jour +5, puis bouton désactivé',r);
+await ev(()=>{const G=window.__G;G.passXP(120);G.setTab('shop');});
+r=await ev(()=>{const G=window.__G;const o={};o.tier=G.passTier()===2;const s=G.S.run.sparks;document.querySelector('[data-pass="1"][data-track="f"]').click();o.free=G.S.run.sparks>s&&G.passState().cf.includes(1);
+  o.lock3=document.querySelector('[data-pass="3"][data-track="f"]').disabled;document.querySelector('[data-pass="1"][data-track="p"]').click();o.modal=!!document.querySelector('#modal [data-confirm="pass"]');return o;});
+T('v10 : pass : 120 points = palier 2',r.tier);T('v10 : palier gratuit récupéré',r.free);T('v10 : palier non atteint désactivé',r.lock3);T('v10 : piste premium → proposition du pass',r.modal);
+await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);
+r=await ev(()=>{const G=window.__G;const g=G.S.gems;const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();return G.passState().prem&&G.S.gems===g+60&&G.S.spend.eur===4.99;});T('v10 : pass acheté, palier premium 1 = 60 gemmes, dépense notée',r);
+await ev(()=>window.__G.setTab('shop'));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
+r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
+await ev(()=>{const G=window.__G;G.S.spend.eur=24;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
+await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-confirm="g600"]').click();
+T('v10 : alerte de dépenses au-delà de 25 €',await ev(()=>/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&/24,00/.test(document.getElementById('modal').innerText))&&await ev(g=>window.__G.S.gems===g,gA));
+await p.locator('#modal [data-over="1"]').click();await p.waitForTimeout(100);T('v10 : achat confirmé malgré l\'alerte',await ev(g=>window.__G.S.gems===g+600,gA));
+await ev(()=>{const G=window.__G;G.S.settings.age='t';G.setTab('shop');});await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();
+T('v10 : mineur : achat bloqué avec explication',await ev(()=>/Achats indisponibles/.test(document.getElementById('modal').innerText)));
+await ev(()=>{document.querySelector('#modal [data-close]').click();window.__G.S.settings.age='a';});
+T('v10 : couleur Saison : non achetable, marquée pass',await ev(()=>{const G=window.__G;G.S.skins=G.S.skins.filter(s=>s!=='saison');G.setTab('shop');const b=document.querySelector('[data-skin="saison"]');const g=G.S.gems;b.click();return /Pass de saison/.test(b.innerText)&&!G.S.skins.includes('saison')&&G.S.gems===g;}));
+// profil : plafond, confidentialité, âge
+await ev(()=>window.__G.setTab('profile'));
+T('v10 : profil : plafond réglable, âge affiché, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!!document.getElementById('setCap')&&/adulte/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
+await p.selectOption('#setCap','50');T('v10 : plafond enregistré',await ev(()=>window.__G.S.settings.cap===50));
+await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/24 mois/.test(x);}));
+await p.locator('#modal [data-close]').click();
+// notifications (faux plugin Capacitor)
+await ev(()=>{window.__notif={sched:[],cancel:0};window.Capacitor={Plugins:{LocalNotifications:{async requestPermissions(){return {display:'granted'};},async schedule(o){window.__notif.sched=o.notifications;},async cancel(){window.__notif.cancel++;}}}};localStorage.removeItem('prisme-nlog');});
+r=await ev(()=>{const G=window.__G,o={};const d=new Date();d.setHours(10,0,0,0);const now=d.getTime();
+  G.S.build=[{id:'st_cad',until:now+3600e3,dur:3600}];G.S.up.off=0;G.S.bestStage=40;
+  const pl=G.notifPlan(now);o.max2=pl.length<=2;o.res=pl.some(n=>n.k==='n_res'&&n.at===now+3600e3);o.full=pl.some(n=>n.k==='n_full');o.sorted=pl.every((n,i)=>!i||n.at>=pl[i-1].at);
+  const ln=new Date();ln.setHours(21,30,0,0);const sh=G.notifShift(ln.getTime()+3600e3);o.quiet=new Date(sh).getHours()===9;
+  localStorage.setItem('prisme-nlog',JSON.stringify([now-3600e3,now-7200e3]));o.budget=G.notifPlan(now).length===0;localStorage.removeItem('prisme-nlog');
+  G.S.build=[];return o;});
+T('v10 : notifications : 2 au plus, triées',r.max2&&r.sorted);T('v10 : notification de fin de recherche',r.res);T('v10 : notification de réserve pleine',r.full);T('v10 : jamais la nuit (22 h → 9 h)',r.quiet);T('v10 : 2 déjà envoyées en 24 h → aucune',r.budget);
+await ev(()=>{const G=window.__G;delete G.S.settings.notif;G.notifPrompt();});T('v10 : demande de permission dans le jeu',await ev(()=>/Te prévenir/.test(document.getElementById('modal').innerText)));
+await p.locator('#notifYes').click();await p.waitForTimeout(100);T('v10 : permission accordée → activées',await ev(()=>window.__G.S.settings.notif===true));
+r=await ev(async()=>{const G=window.__G;G.S.build=[{id:'st_cad',until:Date.now()+3*3600e3,dur:3600}];const pl=await G.notifSchedule();const n=window.__notif.sched;return n.length===pl.length&&n.length>=1&&n.length<=2&&n.every(x=>x.title==='Prisme Fusion'&&x.body&&x.schedule.at instanceof Date);});T('v10 : notifications programmées en quittant',r);
+r=await ev(async()=>{const c=window.__notif.cancel;await window.__G.notifCancel();return window.__notif.cancel===c+1;});T('v10 : annulées au retour',r);
+await ev(()=>window.__G.setTab('profile'));T('v10 : interrupteur de notifications sur téléphone',await ev(()=>document.getElementById('setNotif')&&document.getElementById('setNotif').checked));
+await p.locator('#setNotif').uncheck();T('v10 : notifications coupées dans Profil',await ev(()=>window.__G.S.settings.notif===false));
+r=await ev(async()=>{window.__notif.sched=[];await window.__G.notifSchedule();return window.__notif.sched.length===0;});T('v10 : coupées → rien de programmé',r);
+await ev(()=>{delete window.Capacitor;window.__G.S.build=[];window.__G.setTab('home');});
+// offre contextuelle : boss raté 3 fois
+await ev(()=>{localStorage.removeItem('prisme-ctx-boss');const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);
+T('v10 : boss raté 3 fois → conseil (Atelier, boost), sans compte à rebours',await ev(()=>/Ce boss résiste/.test(document.getElementById('modal').innerText)&&!/\d+:\d\d/.test(document.getElementById('modal').innerText)));
+await p.locator('#modal [data-go="atelier"]').click();T('v10 : conseil → Atelier',await ev(()=>window.__G.tab==='atelier'));
+await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);T('v10 : une seule fois par jour',await ev(()=>document.getElementById('veil').hidden));
+await ev(()=>window.__G.setTab('home'));
+// v9.9 : premières minutes
+r=await ev(()=>{const G=window.__G,S=G.S,o={};const sv={b:S.bestStage,p:S.prestiges,m:S.run.max,st:S.st.nav};S.bestStage=1;S.prestiges=0;S.run.max=1;G.refresh();
+  const hid=k=>document.querySelector(`.nav [data-tab="${k}"]`).hidden;o.start=hid('atelier')&&hid('quests')&&hid('shop')&&hid('clan');
+  S.bestStage=3;G.refresh();o.s3=!hid('atelier')&&hid('quests');S.bestStage=8;G.refresh();o.s8=!hid('shop')&&hid('clan');S.bestStage=10;G.refresh();o.s10=!hid('clan');
+  S.bestStage=15;S.run.max=15;G.refresh();const rg=document.getElementById('refrG');o.gauge=!rg.hidden&&/15 \/ 30/.test(rg.textContent);S.run.max=30;G.refresh();o.gaugeOff=rg.hidden;
+  S.bestStage=sv.b;S.prestiges=sv.p;S.run.max=sv.m;G.refresh();return o;});
+T('v9.9 : onglets cachés au départ',r.start);T('v9.9 : Atelier à l\'étape 3',r.s3);T('v9.9 : Boutique à l\'étape 8',r.s8);T('v9.9 : Clan à l\'étape 10',r.s10);T('v9.9 : jauge de Réfraction 10–29',r.gauge&&r.gaugeOff);
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran

@@ -130,7 +130,7 @@ body{margin:0}
 .gauge span{position:absolute;inset:0;display:grid;place-items:center;font:800 13px var(--body);color:var(--light);text-shadow:0 1px 2px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
 .lg.lgt{grid-template-columns:56px 1fr 1.4fr auto;min-height:46px}
 .lg.lgt .b{min-height:40px}
-.lg.lgg{grid-template-columns:1fr auto auto auto;min-height:48px}
+.lg.lgg{grid-template-columns:1fr auto auto auto auto;min-height:48px}
 .lg.lgm .nm .i{width:16px;height:16px;vertical-align:-2px;margin-right:4px}
 /* ----- profil : rangée de boutons, compte ----- */
 #panel .row{display:flex;gap:8px;margin-top:8px}
@@ -141,3 +141,17 @@ body{margin:0}
 .membar{border:1px solid rgba(127,226,255,.35);border-radius:14px;padding:8px 10px;margin:8px 0}
 .membar>span{display:inline-flex;align-items:center;gap:6px;color:var(--shard);font-weight:800}
 .b small.eur,.skin small.eur{display:block;font-size:12px;font-weight:600;opacity:.8;margin-left:4px}
+#refrG{display:block;color:var(--shard);font-weight:700;font-size:12px}
+/* v10 : boutique (cadeau, pass, ×2), politique de confidentialité */
+.offer.feat{box-shadow:inset 0 0 0 2px var(--beam)}
+.offer.sgift{margin-bottom:8px}
+.x2{display:inline-block;font-size:11px;font-weight:900;padding:1px 6px;border-radius:8px;background:var(--beam);color:var(--night);vertical-align:middle}
+.pass{padding:12px;display:flex;flex-direction:column;gap:8px}
+.pbar{height:10px;border-radius:5px;background:var(--edge);box-shadow:inset 0 0 0 2px var(--line);overflow:hidden}.pbar i{display:block;height:100%;background:var(--gem)}
+.ptrack{display:flex;flex-direction:column;gap:4px;max-height:320px;overflow-y:auto}
+.pt{display:grid;grid-template-columns:28px 1fr 1fr;gap:6px;align-items:center}.pt .rk{font-weight:900;text-align:center;opacity:.6}.pt.ok .rk{opacity:1;color:var(--beam)}
+.pt.ph{font-size:12px;font-weight:800;opacity:.8}.pt.ph span{display:flex;align-items:center;gap:4px;justify-content:center}
+.pr{min-height:40px;border:0;border-radius:10px;background:var(--night-2);box-shadow:inset 0 0 0 2px var(--line);color:var(--light);font:700 13px/1.2 inherit;display:flex;align-items:center;justify-content:center;gap:4px;padding:4px}
+.pr:not(:disabled){box-shadow:inset 0 0 0 2px var(--beam);cursor:pointer}.pr.lock:not(:disabled){box-shadow:inset 0 0 0 2px var(--line)}.pr:disabled{opacity:.5}.pr.done{opacity:.4}
+.priv{max-height:55vh;overflow-y:auto;text-align:left;font-size:13px;line-height:1.45}.priv p{margin:0 0 8px}
+.lg.bot .nm{font-style:italic;opacity:.75}

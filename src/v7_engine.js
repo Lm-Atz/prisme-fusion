@@ -4,7 +4,8 @@ const CFG={
   dmg:{base:2.6,combo:0.12,manual:1.6},
   shards:{kill:(n,type)=>type==='boss'?4*n:type==='mini'?n:n/25}, // éclats hors Réfraction : surtout les boss
   sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
-  enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1),bossTime:60,bossRetry:60,atkEvery:9,windup:3},
+  enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
+   bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
   prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
@@ -15,7 +16,10 @@ const CFG={
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
-  chest:{cap:600,open:300,price:2.99}, // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
+  chest:{cap:600,open:300,price:2.99},
+  pass:{price:4.99,tiers:20,xp:50,q:{o:10,d:10,w:30,login:10},dupe:150}, // v10 : pass de saison de 4 semaines (le même contenu revient à chaque saison)
+  shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
+  spend:{caps:[0,10,25,50,100],def:25}, // v10 : alerte de dépenses mensuelles (0 = désactivée) // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
@@ -94,13 +98,13 @@ const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0
 for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k)}});Object.defineProperty(TBDEF[k],'d',{get(){return t('tb_'+k+'_d')}});}
 
 /* ================= état du joueur ================= */
-const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
+const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'},{id:'saison',price:0,pass:true,c:'#7dff6a'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
 function fresh(){
   const now=Date.now();
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
-    pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,
+    pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
@@ -142,7 +146,7 @@ function loginState(){roll();const today=dayKey();if(S.login.last===today)return
   const consecutive=S.login.last===dayKey(Date.now()-86400e3);
   S.login.streak=consecutive?(S.login.streak%7)+1:1;S.login.last=today;return {day:S.login.streak,claimedToday:false};}
 function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.login.claimed=dayKey();const r=LOGIN[st.day-1];
-  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else{S.gems+=50;chestFill(50);}}else{give(r);chestFill(r.g|0);}return true;}
+  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else{S.gems+=50;chestFill(50);}}else{give(r);chestFill(r.g|0);}passXP(CFG.pass.q.login);return true;}
 
 
 /* ================= atelier : chantiers ================= */
@@ -492,7 +496,7 @@ function claim(kind,i){
   roll();const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
   const q=arr[i];if(!q||cl.includes(i)||q.v()<q.n)return false;
   if(kind==='o'){const vis=ONB.map((_,j)=>j).filter(j=>!S.onb.includes(j)).slice(0,3);if(!vis.includes(i))return false;}
-  cl.push(i);give(q.r);chestFill(q.r.g|0);return true;
+  cl.push(i);give(q.r);chestFill(q.r.g|0);passXP(CFG.pass.q[kind]||0);return true;
 }
 const claimable=()=>{const v=questView();return v.onb.concat(v.d,v.w).some(q=>!q.done&&q.p>=q.n);};
 
@@ -539,8 +543,9 @@ const OFFERS=[
   {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:300,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
   {id:'loot',price:7.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
   {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
+  {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+x.p.g,0)),d:seasonLeft()})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
-].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=n;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
+].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
 const GEM_REF={n:100,price:0.99};
 const packBonus=o=>Math.floor(100*((o.n/o.price)/(GEM_REF.n/GEM_REF.price))-100+1e-9);
@@ -551,10 +556,33 @@ const CUR={fr:'EUR',de:'EUR',es:'EUR',it:'EUR',pt:'EUR',en:'USD',ja:'JPY',ko:'KR
 const RATE={EUR:1,USD:1,JPY:150,KRW:1400,CNY:7.5,RUB:100,TRY:35,PLN:4.3,IDR:16000,INR:85,SEK:11.5};
 function priceOf(o){const cur=CUR[LANG]||'USD',v=o.price*(RATE[cur]||1);try{return new Intl.NumberFormat(LANG,{style:'currency',currency:cur,maximumFractionDigits:cur==='JPY'||cur==='KRW'||cur==='IDR'?0:2}).format(cur==='JPY'||cur==='KRW'||cur==='IDR'?Math.round(v/10)*10-1:v);}catch(e){return o.price+' €';}}
 const eurOf=g=>'≈ '+priceOf({price:g*GEM_REF.price/GEM_REF.n}); // équivalent en monnaie réelle d'un prix en gemmes
-function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once())||(o.avail&&!o.avail()))return false;o.give();return true;}
+function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once())||(o.avail&&!o.avail())||!canPay())return false;o.give();addSpend(o.price);return true;}
+/* v10 : achats réels réservés aux adultes déclarés (écran d'âge neutre) ; suivi des dépenses du mois pour l'alerte */
+const canPay=()=>S.settings.age==='a';
+const monthKey=(t=Date.now())=>{const [y,m]=dparts(t);return y+'-'+(m+1);};
+function spendNow(){const m=monthKey();if(!S.spend||S.spend.m!==m)S.spend={m,eur:0};return S.spend;}
+function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
+const spendCap=()=>S.settings.cap==null?CFG.spend.def:S.settings.cap;
+const overCap=p=>spendCap()>0&&spendNow().eur+p>spendCap();
+/* v10 : pass de saison */
+const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:15}:{g:10},p:Object.assign({g:60},n%5===0?{b:4}:{},n===CFG.pass.tiers?{skin:'saison'}:{})};});
+const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
+function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
+const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
+const seasonLeft=(t=Date.now())=>28-((seasonDay(t)%28)+28)%28; // jours restants, aujourd'hui compris
+function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k)S.pass={k,xp:0,prem:false,cf:[],cp:[]};return S.pass;}
+function passXP(n){if(!n)return;const p=passState();p.xp=Math.min(CFG.pass.tiers*CFG.pass.xp,p.xp+n);}
+const passTier=()=>Math.floor(passState().xp/CFG.pass.xp);
+function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(n<1||n>CFG.pass.tiers||passTier()<n||(prem&&!p.prem))return false;const cl=prem?p.cp:p.cf;if(cl.includes(n))return false;cl.push(n);const r=PASS[n-1][prem?'p':'f'];
+  if(r.skin){if(S.skins.includes(r.skin))S.gems+=CFG.pass.dupe;else S.skins.push(r.skin);}
+  if(r.m)S.run.sparks+=Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*r.m));
+  give({g:r.g,b:r.b});if(!prem)chestFill(r.g|0);return true;}
+const passClaimable=()=>{const p=passState(),n=passTier();for(let i=1;i<=n;i++){if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;}return false;};
+/* v10 : cadeau gratuit quotidien de la boutique */
+function shopGift(){roll();if(S.day.sgift)return false;S.day.sgift=1;S.gems+=CFG.shopGift.g;chestFill(CFG.shopGift.g);return true;}
 function buyGemItem(id){
   if(id==='boost'){if(S.gems<CFG.boost.gemsPrice)return false;S.gems-=CFG.boost.gemsPrice;give({b:CFG.boost.gemsH});return true;}
   if(id==='titan')return titanGemTicket();
   return false;
 }
-function buySkin(id){const k=SKINS.find(s=>s.id===id);if(S.skins.includes(id)){S.skin=id;return true;}if(S.gems<k.price)return false;S.gems-=k.price;S.skins.push(id);S.skin=id;return true;}
+function buySkin(id){const k=SKINS.find(s=>s.id===id);if(!k)return false;if(S.skins.includes(id)){S.skin=id;return true;}if(k.pass||S.gems<k.price)return false;S.gems-=k.price;S.skins.push(id);S.skin=id;return true;}

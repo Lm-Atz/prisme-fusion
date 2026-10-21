@@ -1,4 +1,4 @@
-const VERSION='9.8 · coffre';
+const VERSION='10.0 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -87,7 +87,7 @@ function drawBoard(dt,now){
   if(tutoStep===1){const pair=findPair();if(pair){const [ax,ay]=fx.at(pair[0]),[bx,by]=fx.at(pair[1]);const k=(now*0.8)%1;c.save();c.setTransform(dpr,0,0,dpr,0,0);c.strokeStyle='#ffc857';c.lineWidth=4;c.setLineDash([10,9]);c.lineDashOffset=-now*30;c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.stroke();c.setLineDash([]);c.fillStyle='#fff6e4';c.beginPath();c.arc(ax+(bx-ax)*k,ay+(by-ay)*k,10,0,7);c.fill();c.restore();}}
 }
 function findPair(){const seen={};for(let i=0;i<R.cells.length;i++){const c=R.cells[i];if(c&&c.l){if(seen[c.l]!=null)return [seen[c.l],i];seen[c.l]=i;}}return null;}
-function skinHue(t){const k=SKINS.find(s=>s.id===S.skin)||SKINS[0];return {cyan:192,rose:322,or:44,prisme:(t*50)%360}[k.id];}
+function skinHue(t){const k=SKINS.find(s=>s.id===S.skin)||SKINS[0];return {cyan:192,rose:322,or:44,saison:110,prisme:(t*50)%360}[k.id];}
 function skinColor(t){return `hsl(${skinHue(t)} 100% 70%)`;}
 
 /* ================= ennemis de cristal ================= */
@@ -185,9 +185,14 @@ function showAd(done,label){
 function rewarded(done){track('ad',{at:lastPlace});showAd(()=>{roll();S.day.ads++;done();save();refresh();});}
 function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){S.adCount=0;save();showAd(then,t('ad_between'));}else then();}
 
+/* v9.9 : onglets débloqués au fil de la progression (premières minutes plus lisibles) */
+const NAV_AT={atelier:3,quests:5,shop:8,clan:10};
+function navUnlock(){S.st.nav=S.st.nav||[];for(const k in NAV_AT){const b=document.querySelector(`.nav [data-tab="${k}"]`);if(!b)continue;const on=S.bestStage>=NAV_AT[k]||S.prestiges>0;b.hidden=!on;if(on&&!S.st.nav.includes(k)){S.st.nav.push(k);if(S.bestStage>1&&S.bestStage<20)toast(t('nav_new',{t:t('nav_'+k)}));}}}
 function refresh(){
   roll();
-  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=t('rate_min',{n:fmt(Math.round(rateMin()))});
+  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
+  navUnlock();
+  const rg=$('refrG');if(rg){const on=!S.prestiges&&S.bestStage>=10&&S.run.max<CFG.prestige.minStage;rg.hidden=!on;if(on)rg.textContent=t('refr_gauge',{n:S.run.max,m:CFG.prestige.minStage});}
   $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
@@ -309,7 +314,7 @@ function guildHtml(){
     h+=`<h2 class="sec">${t('gd_open_list')}</h2>`;
     if(!guildList){netGuildList().then(r=>{guildList=r.ok?r.data.rows:[];if(tab==='clan'&&clanPane==='guild')renderTab();});h+=`<p class="note">${t('loading')}</p>`;}
     else if(!guildList.length)h+=`<p class="note">${t('gd_empty_list')}</p>`;
-    else h+=`<div class="list" style="gap:4px">${guildList.map(r=>`<div class="lg lgg"><span class="nm">${esc(r.name)}</span><span class="sc">${r.n}/${C.size}</span><span class="sc">${fmt(r.pts)} ${t('gd_pts_short')}</span><button class="b b-gold sm" data-gjoin="${esc(r.code)}" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`).join('')}</div>`;
+    else h+=`<div class="list" style="gap:4px">${guildList.map(r=>`<div class="lg lgg"><span class="nm">${esc(r.name)}</span><span class="sc">${r.n}/${C.size}</span><span class="sc">${fmt(r.pts)} ${t('gd_pts_short')}</span><button class="b b-gold sm" data-gjoin="${esc(r.code)}" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button><button class="rep" data-greport="${esc(r.id)}" aria-label="${t('gd_report',{n:esc(r.name)})}">${ic('flag')}</button></div>`).join('')}</div>`;
     return h;
   }
   const G=g.guild,total=g.total|0,tiers=g.tiers||C.tiers,maxT=tiers[tiers.length-1],me=g.members.find(m=>m.me)||{},isLeader=G.leader===(DEV&&DEV.id),recent=(g.now-g.since)<86400e3;
@@ -397,21 +402,24 @@ function renderTab(){
     if(clanPane==='guild')h+=guildHtml();
     else{
     const live=netReady&&boardCache&&boardCache.joined&&boardCache.rows.length>0;
-    const rows=live?boardCache.rows.map(r=>({id:r.id,name:r.name,score:r.score,sides:tierOf(r.best||1).sides,hue:idHue(r.id),me:r.me})):standings();
+    const rows=live?boardCache.rows.map(r=>r.bot?{bot:true,name:t('lg_bot',{n:r.k}),score:+r.score,sides:tierOf(r.best||1).sides,hue:idHue('bot-'+r.k)}:{id:r.id,name:r.name,score:+r.score,sides:tierOf(r.best||1).sides,hue:idHue(r.id),me:r.me}):standings().map(r=>r.me?r:Object.assign({},r,{bot:true}));
+    const DIVS=['div_bronze','div_silver','div_gold','div_plat','div_diam'];
     if(netReady&&!boardCache)netBoard().then(b=>{if(b&&tab==='clan')renderTab();});
-    h+=`<h2 class="sec">${t('lg_title',{d:t('div_bronze')})}</h2><p class="note">${t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))})}</p>`;
+    h+=`<h2 class="sec">${t('lg_title',{d:t(DIVS[live&&boardCache.tier?Math.min(4,boardCache.tier|0):0])})}</h2><p class="note">${t(live?'lg_sub_live':'lg_sub',{days:t('lg_days')+' · '+(isTitanDay()?t('lg_today'):t('lg_next',{d:nextTitanDay()}))})}${rows.some(r=>r.bot)?' '+t('lg_bots_p'):''}</p>`;
     const pod=rows.slice(0,3);while(pod.length<3)pod.push({name:'—',score:0,sides:3,hue:200});
     h+=`<div class="podium">${[1,0,2].map(i=>{const r=pod[i];return `<div class="pod p${i+1}"><canvas width="80" height="80" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><div class="blk">${i+1}</div></div>`;}).join('')}</div><div class="list" style="gap:4px">`;
     rows.forEach((r,i)=>{if(i===5&&rows.length>6)h+=`<div class="zone upz">${t('lg_up')}</div>`;if(i===25)h+=`<div class="zone downz">${t('lg_down')}</div>`;
-      const cls=(r.me?' me':'')+(i<5?' up':i>=25?' down':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><span class="sc">${fmt(r.score)}</span>${r.me?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
+      const cls=(r.me?' me':'')+(r.bot?' bot':'')+(i<5?' up':i>=25?' down':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${esc(r.name)}</span><span class="sc">${fmt(r.score)}</span>${r.me||r.bot?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
     h+='</div>';
     h+=`<h2 class="sec">${t('lg_rewards')}<small>${t('lg_rewards_sub')}</small></h2><div class="list" style="gap:4px">${CFG.league.tiers.map(([a,b])=>`<div class="lg lgr"><span class="rk">${a===b?a:a+'–'+b}</span><span class="sc">${ic('gem','ig')}${CFG.league.gems(a)}</span><span class="sc">${ic('spark','ie')}${dur(CFG.league.minutes(a)*60)}</span></div>`).join('')}</div>`;
     }
   }else if(tab==='shop'){
     h+=head(t('sh_title'),`${ic('tv')}${t('sh_demo')}`);
     const OART={starter:['box','ie'],loot:['shard','is'],chest:['box','ig'],noads:['tv','ie'],g100:['gem','ig'],g600:['gem','ig'],g1300:['gem','ig'],g2800:['box','ig'],g7500:['box','ig'],g16000:['crown','ig']};
-    h+=`<p class="note">${t('sh_rate',{p:priceOf(GEM_REF)})}</p>`;
-    h+=`<div class="list">${OFFERS.map(o=>{const own=o.once&&o.once();const left=0; /* v9.5 : plus de compte à rebours (l'offre ne disparaît pas, une échéance serait trompeuse) */return `<div class="offer slab"><span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span><div style="min-width:0"><b>${o.t}</b><p>${o.d}${left>0?` <span style="color:var(--beam)">${t('starter_left',{t:dur(left/1000)})}</span>`:''}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;}).join('')}</div>`;
+    h+=shopTop();
+    const offerRow=o=>{const own=o.once&&o.once();return `<div class="offer slab${o.id==='starter'&&!own?' feat':''}"><span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span><div style="min-width:0"><b>${o.t}${/^g\d/.test(o.id)&&!S.firstX2?` <span class="x2">${t('sh_x2')}</span>`:''}</b><p>${o.d}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;};
+    h+=`<h2 class="sec">${t('sh_gems')}${!S.firstX2?`<small>${t('sh_x2_p')}</small>`:''}</h2><div class="list">${OFFERS.filter(o=>/^g\d/.test(o.id)).map(offerRow).join('')}</div>`;
+    h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&o.id!=='pass').map(offerRow).join('')}</div>`;
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gold sm" id="adBoost" ${adLeft('boost')?'':'disabled'}>${ic('tv')}${t('sh_watch')}<small class="eur">${t('ad_left',{n:adLeft('boost')})}</small></button></div>`;
     h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}<small class="eur">${eurOf(CFG.boost.gemsPrice)}</small></button></div></div>`;
@@ -420,8 +428,9 @@ function renderTab(){
     h+=CFG.sparkShop.packs.map((p,i)=>`<div class="gitem slab"><span class="oart">${ic('spark','ie')}</span><b>${t('sh_pack',{t:dur(p.min*60)})}</b><p>${t('sh_now',{n:fmt(packSparks(p))})}</p><button class="b b-gem sm" data-pack="${i}" ${S.gems<p.g||capLeft<p.min?'disabled':''}>${ic('gem')}${p.g}<small class="eur">${eurOf(p.g)}</small></button></div>`).join('')+`</div>`;
     if(capLeft<CFG.sparkShop.packs[0].min)h+=`<p class="sub">${t('sh_cap',{h:CFG.sparkShop.capMin/60})}</p>`;
     h+=`<h2 class="sec">${t('sh_skin')}</h2><div class="skins">`;
-    SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):t('sh_price',{n:k.price})+' '+eurOf(k.price)}</span></button>`;});
+    SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44,saison:110}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):k.pass?t('ps_title'):t('sh_price',{n:k.price})+' '+eurOf(k.price)}</span></button>`;});
     h+='</div>';
+    h+=`<p class="note">${t('sh_rate',{p:priceOf(GEM_REF)})} ${t('sh_spent',{e:priceOf({price:spendNow().eur})})}${spendCap()>0?' '+t('sh_cap_is',{c:priceOf({price:spendCap()})}):''}</p>`;
   }else if(tab==='profile'){
     const tr=tierOf(S.bestStage),L=layers();
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
@@ -431,7 +440,8 @@ function renderTab(){
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
     h+=`<label class="switch slab">${t('pr_music')}<input type="checkbox" id="setMusic" ${S.settings.music?'checked':''}></label>`;
     h+=`<label class="switch slab">${t('pr_sound')}<input type="checkbox" id="setSound" ${S.settings.sound?'checked':''}></label>`;
-    h+=`<label class="switch slab">${t('pr_fx')}<input type="checkbox" id="setFx" ${S.settings.fx?'checked':''}></label><label class="switch slab">${t('pr_stats')}<input type="checkbox" id="setStats" ${S.settings.stats!==false?'checked':''}></label></div><p class="note">${t('pr_stats_p')}</p>`;
+    h+=`<label class="switch slab">${t('pr_fx')}<input type="checkbox" id="setFx" ${S.settings.fx?'checked':''}></label><label class="switch slab">${t('pr_stats')}<input type="checkbox" id="setStats" ${S.settings.stats!==false?'checked':''}></label>${LN()?`<label class="switch slab">${t('pr_notif')}<input type="checkbox" id="setNotif" ${S.settings.notif?'checked':''}></label>`:''}<label class="switch slab">${t('pr_cap')}<select id="setCap" class="sel">${CFG.spend.caps.map(c=>`<option value="${c}" ${c===spendCap()?'selected':''}>${c?priceOf({price:c}):t('pr_cap_off')}</option>`).join('')}</select></label></div><p class="note">${t('pr_stats_p')} ${t('pr_cap_p',{e:priceOf({price:spendNow().eur})})}</p>`;
+    h+=`<p class="note">${S.settings.age?t('pr_age_'+(S.settings.age==='a'?'a':'m')):t('pr_age_none')}</p><button class="b" style="width:100%;margin-bottom:8px" id="privBtn">${ic('shield')}${t('pv_title')}</button>`;
     h+=`<h2 class="sec">${t('pr_stats')}</h2><div class="stats"><div class="stat slab"><b>${S.bestStage}</b><span>${t('pr_best')}</span></div><div class="stat slab"><b>${S.prestiges}</b><span>${t('pr_pres')}</span></div><div class="stat slab"><b>${fmt(S.st.merges)}</b><span>${t('pr_merges',{n:fmt(S.st.manual)})}</span></div><div class="stat slab"><b>${fmt(S.st.kills)}</b><span>${t('pr_kills',{n:S.st.bosses})}</span></div><div class="stat slab"><b>${fmt(S.st.titanBest)}</b><span>${t('pr_titan')}</span></div><div class="stat slab"><b>${S.st.bought}</b><span>${t('pr_res')}</span></div></div>`;
     const bk=Object.keys(S.bestiary).map(Number).sort((a,b)=>a-b);
     h+=`<h2 class="sec">${t('pr_bestiary')}<small>${t('pr_beaten',{n:bk.length})}</small></h2><div class="list" style="gap:4px">${bk.length?bk.map(n=>{const e=enemyFor(n);return `<div class="best"><canvas width="88" height="88" style="width:44px;height:44px" data-foe="${n}"></canvas><span>${t('pr_stage',{n:e.name,s:n})}</span><span>${e.type==='boss'?t('pr_in',{n:S.bestiary[n]}):t('pr_guard')}</span></div>`;}).join(''):'<p class="note">'+t('pr_bestiary_empty')+'</p>'}</div>`;
@@ -452,12 +462,12 @@ function loginModal(){
   const st=loginState();if(st.claimedToday)return;
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
 }
-function goTab(t){audio();Music.start();tab=t;if(t!=='home')track('tab',{t});renderTab();}
+function goTab(t){audio();Music.start();tab=t;if(t!=='home')track('tab',{t});renderTab();if(t==='clan')homeMoments();if(t==='shop'&&!S.settings.age)ageModal();}
 document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;goTab(b.dataset.tab);});
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
 $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
-function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));}}else if(r==='slots')toast(t('at_busy'));save();refresh();renderTab();return r;}
+function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));if(LN()&&S.settings.notif==null)setTimeout(notifPrompt,900);}}else if(r==='slots'){if(S.slots-1<CFG.build.slotGems.length&&ctxOnce('slots'))ctxSlots();else toast(t('at_busy'));}save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
@@ -484,13 +494,18 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='gdToggle'){netGuildOpen(el.dataset.open==='1').then(()=>renderTab());}
   else if(el.dataset.gkick){const id=el.dataset.gkick,nm=el.dataset.name;modal(`<h2>${t('gd_kick_q',{n:esc(nm)})}</h2><div class="acts"><button class="b b-red" data-gkickok="${id}">${t('gd_kick_ok')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.id==='gdLeave'){modal(`<h2>${t('gd_leave_q')}</h2><p>${t('gd_leave_p')}</p><div class="acts"><button class="b b-red" id="gdLeaveOk">${t('gd_leave')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+  else if(el.id==='shopGift'){if(act('shop_gift',{},()=>shopGift())){sfx.chord();toast(t('sg_got',{n:CFG.shopGift.g}));}save();refresh();renderTab();}
+  else if(el.dataset.pass){const n=+el.dataset.pass,tr=el.dataset.track;if(tr==='p'&&!passState().prem){el.blur();const o=OFFERS.find(x=>x.id==='pass');track('offer_view',{id:'pass',ctx:'track'});modal(`<div class="mart">${ic('crown','ig')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="pass">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}else if(act('pass_claim',{n,track:tr},()=>passClaim(n,tr))){sfx.chord();toast(t('ps_got'));save();refresh();renderTab();}}
+  else if(el.dataset.passbuy){const o=OFFERS.find(x=>x.id==='pass');track('offer_view',{id:'pass'});modal(`<div class="mart">${ic('crown','ig')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="pass">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+  else if(el.id==='privBtn')privacyModal();
+  else if(el.dataset.greport){const id=el.dataset.greport;el.disabled=true;netGuildReport(id).then(r=>toast(r.ok?t('lg_reported'):gdErr(r.err)));}
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))act('report',{target:el.dataset.report});}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){const id=el.dataset.gem;if(act('gemitem',{id},()=>buyGemItem(id))){sfx.buy();save();refresh();renderTab();}}
   else if(el.id==='adSparks'){rewarded(()=>{const v=adSparks('shop');act('ad',{kind:'shop'},()=>{adUse('shop');S.run.sparks+=v;return true;});toast('+'+fmt(v)+' '+t('sparks'));sfx.win();if(R)renderTB();renderTab();});}
   else if(el.dataset.pack){const i=+el.dataset.pack;const r=act('pack',{i},()=>buyPack(i));if(r===true){sfx.buy();save();refresh();if(R)renderTB();renderTab();}else if(r==='cap')toast(t('sh_cap',{h:CFG.sparkShop.capMin/60}));}
   else if(el.id==='adBoost'){rewarded(()=>{act('ad',{kind:'boost'},()=>{adUse('boost');give({b:CFG.boost.adH});return true;});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
-  else if(el.dataset.skin){const id=el.dataset.skin;if(!act('skin',{id},()=>buySkin(id)))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
+  else if(el.dataset.skin){const id=el.dataset.skin;const sk=SKINS.find(s=>s.id===id);if(sk&&sk.pass&&!S.skins.includes(id)){toast(t('ps_skin'));return;}if(!act('skin',{id},()=>buySkin(id)))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
   else if(el.id==='nameBtn'){const nm=$('nameIn').value;const r=act('rename',{name:nm},()=>{const x=rename(nm);return x.ok?x:false;});if(r&&r.ok){toast(t('name_updated'));save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
   else if(el.dataset.oauth){acctBusy=true;acctErr='';renderTab();authWith(el.dataset.oauth).then(afterLogin).catch(e=>{acctBusy=false;acctErr=e.code==='cancel'?'':acctMsg(e.code);renderTab();});}
   else if(el.id==='acLink'){acctBusy=true;renderTab();afterLogin();}
@@ -506,6 +521,8 @@ $('panel').addEventListener('change',e=>{
   if(e.target.id==='setSound')S.settings.sound=e.target.checked;
   if(e.target.id==='setFx')S.settings.fx=e.target.checked;
   if(e.target.id==='setStats'){S.settings.stats=e.target.checked;if(!S.settings.stats)EVQ.length=0;}
+  if(e.target.id==='setNotif'){if(e.target.checked)notifAsk(true);else{S.settings.notif=false;notifCancel();}}
+  if(e.target.id==='setCap'){S.settings.cap=+e.target.value;renderTab();}
   if(e.target.id==='setLang'){setLang(e.target.value);applyStatic();renderTab();if(R){renderStage();renderTB();renderActs();}}save();
 });
 $('modal').addEventListener('click',e=>{
@@ -513,7 +530,13 @@ $('modal').addEventListener('click',e=>{
   if(el.hasAttribute('data-close'))closeModal();
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
+  else if(el.dataset.confirm&&!payGate(el.dataset.confirm,!!el.dataset.over)){}
   else if(el.dataset.confirm){const id=el.dataset.confirm;track('purchase',{id,demo:true});act('purchase',{id},()=>purchase(id));closeModal();sfx.chord();toast(t('sh_bought'));save();refresh();renderTab();}
+  else if(el.id==='ageOk'){const y=+$('ageY').value,m=+$('ageM').value;if(!y||!m){$('ageErr').textContent=t('age_need');return;}const now=new Date(),age=now.getFullYear()-y-((now.getMonth()+1)<m?1:0);S.settings.age=age>=18?'a':age>=16?'t':'c';track('age',{b:S.settings.age});save();closeModal();const nx=ageNext;ageNext=null;if(nx)setTimeout(nx,150);}
+  else if(el.id==='notifYes'){closeModal();notifAsk(true);}
+  else if(el.id==='notifNo'){S.settings.notif=false;save();closeModal();}
+  else if(el.id==='ctxSlot'){closeModal();if(act('slot',{},()=>buySlot())){sfx.chord();toast(t('at_newslot'));}save();refresh();renderTab();}
+  else if(el.dataset.go){closeModal();goTab(el.dataset.go);}
   else if(el.id==='xferCopy'){const c=$('xferCode').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{});else toast(c);}
   else if(el.id==='acRecoverOk'){closeModal();netRecover().then(d=>{toast(t('pr_recovered'));setTimeout(()=>adoptIdentity(d),300);}).catch(e=>{acctErr=acctMsg(e.code);renderTab();});}
   else if(el.id==='xferGo'){const d=xferParse($('xferIn').value);if(!d){$('xferErr').textContent=t('pr_xfer_bad');return;}if(d.id===DEV.id){closeModal();toast(t('pr_xfer_same'));return;}try{localStorage.setItem('prisme-dev',JSON.stringify(d));localStorage.removeItem(KEY);}catch(e){}location.reload();}
@@ -551,10 +574,67 @@ function starterModal(){
   const so=OFFERS[0];modal(`<div class="mart">${ic('box','ie')}</div><h2>${so.t}</h2><p>${t('starter_p',{p:priceOf(so)})}</p>${left>0?`<p class="tm" style="color:var(--beam);font-weight:800">${t('starter_left',{t:dur(left/1000)})}</p>`:''}<div class="acts"><button class="b b-gold" data-confirm="starter">${t('starter_btn',{p:priceOf(so)})}</button><button class="b" data-close>${t('starter_no')}</button></div>`);
 }
 function homeMoments(){
-  if(S.bestStage>=6&&S.nameChanges===0&&!S.st.namePrompted&&$('veil').hidden){S.st.namePrompted=true;save();
-    modal(`<div class="mart" style="color:var(--gem)">${ic('gem')}</div><h2>${t('name_first')}</h2><p>${t('name_first_p')}</p><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('name_your')}"></div><p class="err" id="nameErr"></p><div class="acts"><button class="b b-gold" id="nameGo">${t('name_keep')}</button><button class="b" data-close>${t('later')}</button></div>`);
+  if(tab==='clan'&&S.nameChanges===0&&!S.st.namePrompted&&$('veil').hidden){S.st.namePrompted=true;save(); // v9.9 : proposé à l'ouverture de la ligue, plus en plein combat
+    modal(`<div class="mart" style="color:var(--gem)">${ic('gem')}</div><h2>${t('name_league')}</h2><p>${t('name_first_p')}</p><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('name_your')}"></div><p class="err" id="nameErr"></p><div class="acts"><button class="b b-gold" id="nameGo">${t('name_keep')}</button><button class="b" data-close>${t('later')}</button></div>`);
     $('nameIn').select();}
 }
+/* ================= v10 : boutique (cadeau du jour, pass de saison), achats encadrés, offres contextuelles ================= */
+const rwHtml=r=>r.skin?`${ic('star','ig')}${t('skin_saison')}`:r.g?`${ic('gem','ig')}${r.g}`:r.m?`${ic('spark','ie')}${dur(r.m*60)}`:'';
+function shopTop(){
+  let h=`<div class="offer slab sgift"><span class="oart">${ic('box','ig')}</span><div style="min-width:0"><b>${t('sg_title')}</b><p>${t('sg_p',{n:CFG.shopGift.g})}</p></div><button class="b b-gem sm" id="shopGift" ${S.day.sgift?'disabled':''}>${S.day.sgift?t('sg_done'):t('claim')}</button></div>`;
+  const p=passState(),n=passTier(),X=CFG.pass.xp,o=OFFERS.find(x=>x.id==='pass');
+  h+=`<h2 class="sec">${t('ps_title')}<small>${t('ps_left',{d:seasonLeft()})}</small></h2><div class="pass slab"><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(CFG.pass.tiers*X))}%"></i></div><p class="sub">${t('ps_lvl',{n,m:CFG.pass.tiers,x:p.xp%X,y:X})} · ${t('ps_how')}</p>`;
+  if(!p.prem)h+=`<button class="b b-gold" style="width:100%" data-passbuy="1">${ic('crown')}${t('ps_buy',{p:priceOf(o)})}</button>`;
+  h+=`<div class="ptrack"><div class="pt ph"><span></span><span>${t('ps_free')}</span><span>${ic('crown','ig')}${t('ps_prem')}</span></div>`;
+  PASS.forEach((r,i)=>{const k=i+1,ok=n>=k,cf=p.cf.includes(k),cp=p.cp.includes(k);
+    const btn=(tr,rw,done,lock)=>`<button class="pr${done?' done':''}${lock?' lock':''}" data-pass="${k}" data-track="${tr}" ${!ok||done?'disabled':''} aria-label="${t('ps_tier',{n:k})}">${rwHtml(rw)}${rw.b?` ${ic('bolt','ie')}${rw.b} h`:''}${done?' ✓':lock?' '+ic('lock'):''}</button>`;
+    h+=`<div class="pt${ok?' ok':''}"><span class="rk">${k}</span>${btn('f',r.f,cf,false)}${btn('p',r.p,cp,!p.prem)}</div>`;});
+  h+=`</div><p class="sub">${t('ps_note',{g:CFG.pass.dupe})}</p></div>`;
+  return h;
+}
+let ageNext=null;
+function ageModal(next){ageNext=next||null;const Y=new Date().getFullYear();
+  modal(`<div class="mart">${ic('shield','ie')}</div><h2>${t('age_title')}</h2><p>${t('age_p')}</p><div class="row"><select id="ageM" class="sel" style="flex:1" aria-label="${t('age_m')}"><option value="">${t('age_m')}</option>${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select><select id="ageY" class="sel" style="flex:1" aria-label="${t('age_y')}"><option value="">${t('age_y')}</option>${Array.from({length:100},(_,i)=>`<option value="${Y-i}">${Y-i}</option>`).join('')}</select></div><p class="err" id="ageErr"></p><div class="acts"><button class="b b-gold" id="ageOk">${t('v_ok')}</button></div><p class="sub">${t('age_why')}</p>`);}
+function payGate(id,over){const o=OFFERS.find(x=>x.id===id);if(!o)return false;
+  if(!S.settings.age){ageModal(()=>payGate(id,over)&&modal(`<h2>${o.t}</h2><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="${id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`));return false;}
+  if(!canPay()){closeModal();track('pay_block',{id});modal(`<div class="mart">${ic('shield','ie')}</div><h2>${t('pay_minor')}</h2><p>${t('pay_minor_p')}</p><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);return false;}
+  if(!over&&overCap(o.price)){closeModal();track('spend_alert',{id});modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('sp_title')}</h2><p>${t('sp_p',{e:priceOf({price:spendNow().eur}),c:priceOf({price:spendCap()}),p:priceOf(o)})}</p><div class="acts"><button class="b b-gold" data-confirm="${id}" data-over="1">${t('sp_go')}</button><button class="b" data-close>${t('cancel')}</button></div><p class="sub">${t('sp_sub')}</p>`);return false;}
+  return true;}
+let bossFails=0;
+function ctxOnce(k){const key='prisme-ctx-'+k;try{if(localStorage.getItem(key)===dayKey())return false;localStorage.setItem(key,dayKey());}catch(e){}return true;}
+function ctxBoss(){if(!$('veil').hidden)return;track('offer_view',{id:'ctx_boss'});
+  modal(`<div class="mart">${ic('bolt','ie')}</div><h2>${t('cx_boss')}</h2><p>${t('cx_boss_p',{g:CFG.boost.gemsPrice,h:CFG.boost.gemsH})}</p><div class="acts"><button class="b b-gold" data-go="atelier">${t('cx_atelier')}</button><button class="b" data-go="shop">${t('cx_shop')}</button><button class="b" data-close>${t('later')}</button></div>`);}
+function ctxSlots(){const g=CFG.build.slotGems[S.slots-1];track('offer_view',{id:'ctx_slot'});
+  modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('cx_slots')}</h2><p>${t('cx_slots_p',{g})}</p><div class="acts"><button class="b b-gem" id="ctxSlot" ${S.gems<g?'disabled':''}>${ic('gem')}${g}<small class="eur">${eurOf(g)}</small></button><button class="b" data-close>${t('later')}</button></div>`);}
+function privacyModal(){modal(`<h2>${t('pv_title')}</h2><div class="priv">${t('pv_body').split('\n').map(p=>`<p>${p}</p>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);}
+/* ================= v10 : notifications locales (au plus 2 par 24 h, annulées au retour dans le jeu) ================= */
+const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
+const NOTIF={max:2,quiet:[22,9],ids:[101,102]};
+function notifLog(){try{return JSON.parse(localStorage.getItem('prisme-nlog')||'[]');}catch(e){return [];}}
+function notifLogSet(a){try{localStorage.setItem('prisme-nlog',JSON.stringify(a));}catch(e){}}
+function notifShift(at){const d=new Date(at),h=d.getHours();if(h>=NOTIF.quiet[0]){d.setDate(d.getDate()+1);d.setHours(NOTIF.quiet[1],0,0,0);}else if(h<NOTIF.quiet[1])d.setHours(NOTIF.quiet[1],0,0,0);return d.getTime();}
+function notifPlan(now=Date.now()){
+  const H=3600e3,c=[];
+  c.push({k:'n_full',at:now+(2+S.up.off)*H});
+  if(S.build.length){const b=S.build.reduce((m,x)=>x.until<m.until?x:m);c.push({k:'n_res',at:b.until,v:{t:upById(b.id).t}});}
+  for(let d=0;d<=1;d++){const x=new Date(now);x.setDate(x.getDate()+d);x.setHours(18,0,0,0);const at=x.getTime();if(at<=now+15*60e3)continue;
+    if(isTitanDay(at)&&S.bestStage>=10)c.push({k:'n_titan',at});
+    if(x.getDay()===0&&S.bestStage>=10)c.push({k:'n_league',at});}
+  const sent=notifLog().filter(t=>t>now-24*H&&t<=now).length;
+  let left=Math.max(0,NOTIF.max-sent);const out=[];
+  c.map(n=>Object.assign(n,{at:notifShift(n.at)})).filter(n=>n.at>now+15*60e3&&n.at<now+24*H).sort((a,b)=>a.at-b.at).forEach(n=>{if(left>0&&!out.some(o=>Math.abs(o.at-n.at)<3*H)){out.push(n);left--;}});
+  return out;
+}
+async function notifSchedule(){const P=LN();if(!P||!S.settings.notif)return [];
+  const plan=notifPlan();try{await P.cancel({notifications:NOTIF.ids.map(id=>({id}))});}catch(e){}
+  if(!plan.length)return plan;
+  try{await P.schedule({notifications:plan.map((n,i)=>({id:NOTIF.ids[i],title:'Prisme Fusion',body:t(n.k,n.v||{}),schedule:{at:new Date(n.at),allowWhileIdle:true}}))});
+    notifLogSet(notifLog().filter(t=>t>Date.now()-24*3600e3).concat(plan.map(n=>n.at)));}catch(e){}
+  return plan;}
+async function notifCancel(){const P=LN();if(!P)return;try{await P.cancel({notifications:NOTIF.ids.map(id=>({id}))});}catch(e){}const now=Date.now();notifLogSet(notifLog().filter(t=>t<=now&&t>now-24*3600e3));}
+function notifPrompt(){if(!$('veil').hidden||S.settings.notif!=null)return;track('notif_ask',{});
+  modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_title')}</h2><p>${t('nt_p')}</p><div class="acts"><button class="b b-gold" id="notifYes">${t('nt_yes')}</button><button class="b" id="notifNo">${t('nt_no')}</button></div>`);}
+async function notifAsk(){const P=LN();if(!P)return false;let ok=false;try{const r=await P.requestPermissions();ok=r&&r.display==='granted';}catch(e){}S.settings.notif=ok;track('notif',{on:ok});save();if(!ok)toast(t('nt_denied'));if(tab==='profile')renderTab();return ok;}
 /* ----- textes statiques (nav, aria, hors-ligne) ----- */
 function applyStatic(){document.querySelectorAll('[data-i18n]').forEach(el=>{el.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent=t(el.dataset.i18n);});});document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAria)));document.title='Prisme Fusion';}
 /* ----- lancement de la partie continue ----- */
@@ -603,6 +683,7 @@ window.addEventListener('online',probeNet);window.addEventListener('offline',()=
 $('retryNet').addEventListener('click',probeNet);
 probeNet();
 if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');const h=bw.clientHeight;if(h!==rsz){rsz=h;resize();}}).observe($('bw'));const navH=()=>document.documentElement.style.setProperty('--navh',document.querySelector('.nav').offsetHeight+'px');new ResizeObserver(navH).observe(document.querySelector('.nav'),{box:'border-box'});window.addEventListener('resize',navH);navH();setTimeout(navH,300);setTimeout(navH,1500);}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)notifSchedule();else notifCancel();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();track('session_end',{sec:Math.round((Date.now()-sessStart)/1000),stage:S.run.stage});if(netReady){act('sync',{bye:true});flushEv(true);}}else{sessStart=Date.now();track('session',{stage:S.run.stage,best:S.bestStage});last=performance.now();if(netReady)wake();}});
 document.addEventListener('pointerdown',()=>{audio();Music.start();},{once:true});
 
@@ -611,11 +692,11 @@ const MILESTONES=[2,3,5,6,10,15,20,25,30,35,40,50,60,75,100];
 let sessStart=Date.now(),lastPlace='';
 document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[id],[data-adb]');if(el)lastPlace=el.dataset.adb?'adbuild':el.id;},true);
 {const f=hooks.evolve;hooks.evolve=(...a)=>{f&&f(...a);if(MILESTONES.includes(S.bestStage))track('stage',{n:S.bestStage,min:Math.round((Date.now()-sessStart)/60000)});};}
-{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});};}
+{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});if(!v){bossFails++;if(bossFails>=3&&ctxOnce('boss')){bossFails=0;setTimeout(ctxBoss,2800);}}};}
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,overCap,payGate,seasonLeft,seasonKey,ctxOnce,ageModal,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}

@@ -45,7 +45,11 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'build',payload:{id:'st_power'}},now+61000);T('un seul emplacement',r.result.err==='slots');
  r=pfApply(src2,S,{action:'wp',payload:{i:0}},now+61000);T('arme sans point refusée',r.result.err==='pp');
  r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'}},now+61000);T('achat non certifié refusé',r.result.err==='store');
- r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('achat démo accepté (100 gemmes)',r.result.ok&&r.state.gems===120);S=r.state;
+ r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('v10 : achat refusé sans âge déclaré',!r.result.ok&&r.state.gems===20);
+ r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'a',cap:50,stats:false,notif:true}}},now+61000);S=r.state;T('v10 : âge, plafond, stats, notifs enregistrés',S.settings.age==='a'&&S.settings.cap===50&&S.settings.stats===false&&S.settings.notif===true);
+ r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'c',cap:7}}},now+61000);T('v10 : âge figé, plafond hors liste ignoré',r.state.settings.age==='a'&&r.state.settings.cap===50);S=r.state;
+ r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('achat démo accepté : premier pack doublé (200 gemmes), dépense notée',r.result.ok&&r.state.gems===220&&r.state.firstX2===true&&r.state.spend.eur===0.99);S=r.state;
+ r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('v10 : ×2 une seule fois',r.result.ok&&r.state.gems===320&&r.state.spend.eur===1.98);S=r.state;S.gems=120;
  r=pfApply(src2,S,{action:'gift_offer'},now+62000);T('cadeau tiré par le serveur',r.result.gift&&r.state.gift);S=r.state;
  r=pfApply(src2,S,{action:'gift_offer'},now+63000);T('même cadeau tant qu\'il est affiché',r.result.gift&&r.result.gift.at===S.gift.at);
  r=pfApply(src2,S,{action:'ad',payload:{kind:'gift'}},now+70000);T('pub cadeau : accordée',r.result.ok&&!r.state.gift);S=r.state;
@@ -77,6 +81,18 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : jour 1',r.result.ok);S=r.state;T('serveur : le calendrier remplit le coffre',(S.chest|0)>0);r=pfApply(src2,S,{action:'login'},now+230000);T('calendrier : une fois par jour',r.result.err==='claimed');
  r=pfApply(src2,S,{action:'hack'},now+230000);T('action inconnue refusée',r.result.err==='action');
  S.lastSeen=now+230000;S.run.srate=3;r=pfApply(src2,S,{action:'hello',sim:{run:{sparks:S.run.sparks}}},now+230000+5*3600e3);T('hors-ligne : 2 h max, ×0,3, débit mémorisé',r.result.offline&&r.result.offline.sparks===Math.floor(3*7200*0.3)&&r.state.run.sparks>=S.run.sparks+6000);S=r.state;
+ /* v10 : cadeau du jour, pass de saison, couleur Saison */
+ {let t0=now+230000+5*3600e3+30000;let g0=S.gems;r=pfApply(src2,S,{action:'shop_gift'},t0);T('v10 : cadeau du jour +5 gemmes',r.result.ok&&r.state.gems===g0+5);let S2=r.state;r=pfApply(src2,S2,{action:'shop_gift'},t0+1000);T('v10 : cadeau du jour une fois',r.result.err==='claimed');
+  r=pfApply(src2,S2,{action:'skin',payload:{id:'saison'}},t0);T('v10 : couleur Saison non achetable',!r.result.ok);
+  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:1,track:'f'}},t0);T('v10 : palier non atteint refusé',r.result.err==='pass');
+  S2.pass={k:r.state.pass?r.state.pass.k:0,xp:1000,prem:false,cf:[],cp:[]};r=pfApply(src2,S2,{action:'sync'},t0);const k0=r.state.pass.k;S2=r.state;S2.pass={k:k0,xp:1000,prem:false,cf:[],cp:[]};
+  g0=S2.gems;r=pfApply(src2,S2,{action:'pass_claim',payload:{n:2,track:'f'}},t0);T('v10 : palier gratuit 2 = 10 gemmes',r.result.ok&&r.state.gems===g0+10);S2=r.state;
+  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:2,track:'p'}},t0);T('v10 : piste premium verrouillée sans pass',r.result.err==='pass');
+  r=pfApply(src2,S2,{action:'purchase',payload:{id:'pass'},demo:true},t0);T('v10 : achat du pass',r.result.ok&&r.state.pass.prem);S2=r.state;g0=S2.gems;
+  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:20,track:'p'}},t0);T('v10 : palier 20 premium : 60 gemmes, boost 4 h, couleur',r.result.ok&&r.state.gems===g0+60&&r.state.skins.includes('saison')&&r.state.boostUntil>=t0+4*3600e3-1000);S2=r.state;
+  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:20,track:'p'}},t0);T('v10 : pas deux fois le même palier',r.result.err==='pass');
+  r=pfApply(src2,S2,{action:'purchase',payload:{id:'pass'},demo:true},t0);T('v10 : pass non rachetable dans la saison',!r.result.ok);
+  r=pfApply(src2,S2,{action:'sync'},t0+29*864e5);T('v10 : nouvelle saison : pass remis à zéro au premier usage',(()=>{const G=pfMakeEngine(src2,t0+29*864e5);G.S=r.state;return G.passState().prem===false&&G.passTier()===0;})());}
  r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+10000);T('pub hors-ligne : doublé une fois',r.result.ok&&r.result.sparks===6480);S=r.state;r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+20000);T('…pas deux',r.result.err==='nooff');
 }
 console.log(`t7core : ${ok} OK, ${ko} KO`);

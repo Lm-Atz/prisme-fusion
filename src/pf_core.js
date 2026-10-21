@@ -7,7 +7,7 @@ const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,adLeft,adUse,chestFill,chestG,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
 jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
-offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
+offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
   const code=src+'\n'+PF_TAIL;
@@ -68,12 +68,14 @@ function pfMergeSim(G,sim,dt,anomalies){
   up(S.day,'tb',d.tb,(S.day.tb|0)+Object.values(S.run.tb).reduce((a,b)=>a+b,0)+5);up(S.day,'jokers',d.jokers,(S.day.jokers|0)+dt/5+5);if(Number.isInteger(d.combo))S.day.combo=Math.min(30,Math.max(S.day.combo|0,d.combo));
   up(S.week,'kills',w.kills,(S.week.kills|0)+dt/1.5+10);
   if(sim.bestiary&&typeof sim.bestiary==='object'&&Object.keys(sim.bestiary).length<=300){const b={};for(const k in sim.bestiary){if(/^\d+$/.test(k)&&Number.isInteger(sim.bestiary[k]))b[k]=sim.bestiary[k];}S.bestiary=Object.assign(S.bestiary||{},b);}
-  if(sim.settings&&typeof sim.settings==='object')for(const k of ['music','sound','fx'])if(typeof sim.settings[k]==='boolean')S.settings[k]=sim.settings[k];
+  if(sim.settings&&typeof sim.settings==='object')for(const k of ['music','sound','fx','stats','notif'])if(typeof sim.settings[k]==='boolean')S.settings[k]=sim.settings[k];
+  if(sim.settings&&typeof sim.settings==='object'){if(!S.settings.age&&['a','t','c'].includes(sim.settings.age))S.settings.age=sim.settings.age; /* v10 : l'âge déclaré ne se change plus ensuite */
+    if(G.CFG.spend.caps.includes(sim.settings.cap))S.settings.cap=sim.settings.cap;}
   if(sim.league&&typeof sim.league==='object'&&!S.league)S.league=sim.league; // classement simulé (hors ligne) : décoratif
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','pass_claim','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -128,6 +130,8 @@ function pfApply(src,stateIn,body,nowMs,trusted){
       if(need(S.titanRun&&nowMs-S.titanRun.at<(G.CFG.titan.time+90)*1000,'norun')&&need(sc>=0&&sc<=cap,'implausible')){S.titanRun=null;S.week.best=(S.week.best|0)+sc;if(sc>(S.st.titanBest|0))S.st.titanBest=sc;res.effects=[{titan:sc,best:S.bestStage}];}
       if(res.err==='implausible'){anomalies.push('titan');S.titanRun=null;}break;}
     case 'purchase':if(need(trusted||body.demo===true,'store')){res.ok=G.purchase(String(p.id));if(!res.ok)res.err='owned';}break;
+    case 'pass_claim':res.ok=G.passClaim(pfInt(p.n,1,99,0),p.track==='p'?'p':'f');if(!res.ok)res.err='pass';break;
+    case 'shop_gift':res.ok=G.shopGift();if(!res.ok)res.err='claimed';break;
     case 'gemitem':res.ok=G.buyGemItem(String(p.id));if(!res.ok)res.err='gems';break;
     case 'skin':res.ok=G.buySkin(String(p.id));if(!res.ok)res.err='gems';break;
     case 'rename':{const r=G.rename(String(p.name||''));res.ok=!!r.ok;if(!r.ok)res.err=r.msg||'name';else res.effects=[{name:S.name}];break;}

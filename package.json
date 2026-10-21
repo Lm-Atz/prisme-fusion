@@ -1,6 +1,6 @@
 {
   "name": "prisme-fusion",
-  "version": "8.1.0",
+  "version": "10.0.0",
   "private": true,
   "description": "Prisme Fusion — jeu mobile idle de fusion",
   "scripts": {
@@ -15,6 +15,7 @@
     "@capacitor/core": "^8.5.2",
     "@capacitor/splash-screen": "^8.0.2",
     "@capacitor/status-bar": "^8.0.3",
-    "@capgo/capacitor-social-login": "^8.7.5"
+    "@capgo/capacitor-social-login": "^8.7.5",
+    "@capacitor/local-notifications": "^8.3.1"
   }
 }

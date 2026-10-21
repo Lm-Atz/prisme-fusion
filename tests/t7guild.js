@@ -17,6 +17,7 @@ function guildRpc(fn,a,p){
   if(fn==='pf_guild'){const m=mem(a.p_id);if(!m)return [200,{guild:null,tiers:TIERS,now:now()}];const g=DB.guilds[m.gid];
     const members=Object.entries(DB.members).filter(([,x])=>x.active&&x.gid===m.gid).map(([id,x])=>({id,name:DB.players[id].name,best:1,pts:DB.points[m.gid+':'+id]||0,leader:g.leader===id,me:id===a.p_id,since:x.joined,seen:now()})).sort((x,y)=>y.pts-x.pts);
     return [200,{guild:{id:g.id,name:g.name,code:g.code,open:g.open,leader:g.leader,n:nActive(g.id),max:SIZE},week:'w',total:total(g.id),tiers:TIERS,claims:DB.claims.filter(c=>c.id===a.p_id&&c.gid===g.id).map(c=>c.tier),members,since:m.joined,now:now()}];}
+  if(fn==='pf_guild_report'){DB.greports=(DB.greports||[]).concat([[a.p_id,a.p_guild]]);return [200,{ok:true,count:DB.greports.length}];}
   if(fn==='pf_guild_list')return [200,{rows:Object.values(DB.guilds).filter(g=>g.open&&!g.dissolved&&nActive(g.id)>0&&nActive(g.id)<SIZE).map(g=>({id:g.id,name:g.name,code:g.code,n:nActive(g.id),pts:total(g.id)}))}];
   if(fn==='pf_guild_create'){if(mem(a.p_id))return err('in_guild');const n=String(a.p_name||'').trim();if(n.length<3||n.length>20)return err('bad_name');if(Object.values(DB.guilds).some(g=>!g.dissolved&&g.name.toLowerCase()===n.toLowerCase()))return err('name_taken');
     const id='g'+Object.keys(DB.guilds).length,code='CODE'+String(Object.keys(DB.guilds).length).padStart(2,'0');DB.guilds[id]={id,name:n,code,leader:a.p_id,open:true,dissolved:false};DB.members[a.p_id]={gid:id,joined:now(),active:true};return [200,{ok:true,id,code,name:n}];}
@@ -74,6 +75,8 @@ const toGuild=async p=>{await ev(p,()=>{const G=window.__G;G.guildCache=null;G.g
   r=await ev(B,async()=>{document.getElementById('gdCode').value='code00';document.getElementById('gdJoin').click();await new Promise(z=>setTimeout(z,700));return document.getElementById('panel').innerText;});
   T('B rejoint par code',/Les Prismes/.test(r)&&/2 \/ 30 membres/.test(r)&&mem(idB)&&mem(idB).gid==='g0');
   txt=await toGuild(C);T('C voit la guilde ouverte dans la liste',/Les Prismes/.test(txt)&&/2\/30/.test(txt));
+  r=await ev(C,async()=>{const f=document.querySelector('[data-greport]');const ok=!!f&&/Signaler le nom/.test(f.getAttribute('aria-label'));f.click();await new Promise(z=>setTimeout(z,500));return ok&&f.disabled;});
+  T('v10 : nom de guilde signalable depuis la liste',r&&DB.greports&&DB.greports.length===1&&DB.greports[0][1]==='g0');
   r=await ev(C,async()=>{document.querySelector('[data-gjoin]').click();await new Promise(z=>setTimeout(z,700));return document.getElementById('panel').innerText;});
   T('C rejoint via la liste',/3 \/ 30 membres/.test(r));
   r=await ev(C,async()=>{const G=window.__G;const x=await G.actAsync('sync');const j=await (async()=>{try{return await fetch('https://atmrbzkcneotleuoapdp.supabase.co/rest/v1/rpc/pf_guild_join',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({p_id:G.DEV.id,p_secret:G.DEV.s,p_code:'CODE00'})}).then(r=>r.json());}catch(e){return null;}})();return j&&j.message;});
