@@ -30,7 +30,7 @@ jobs:
             echo "::error title=gradle::$msg"
             exit 1
           fi
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: prisme-fusion-apk
           path: android/app/build/outputs/apk/release/app-release.apk
