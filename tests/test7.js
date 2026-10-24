@@ -151,7 +151,7 @@ await p.locator('#pillG').click();T('gemmes → boutique',await ev(()=>window.__
 T('v10 : écran d\'âge neutre à la première ouverture de la boutique',await ev(()=>!document.getElementById('veil').hidden&&!!document.getElementById('ageY')&&document.getElementById('ageY').value===''&&document.getElementById('ageM').value===''));
 await p.locator('#ageOk').click();T('v10 : âge obligatoire',await ev(()=>/Choisis/.test(document.getElementById('ageErr').textContent)));
 {const y=new Date().getFullYear()-30;await p.selectOption('#ageM','1');await p.selectOption('#ageY',String(y));}await p.locator('#ageOk').click();
-T('v10 : âge déclaré adulte, seule la tranche est gardée',await ev(()=>window.__G.S.settings.age==='a'&&document.getElementById('veil').hidden&&!JSON.stringify(window.__G.S).includes(String(new Date().getFullYear()-30))));
+T('v10 : âge déclaré adulte, seule la tranche est gardée',await ev(()=>window.__G.S.settings.age==='a'&&document.getElementById('veil').hidden&&!JSON.stringify(window.__G.S.settings).includes(String(new Date().getFullYear()-30))));
 await p.locator('#panel .quit').click();await p.locator('#meBtn').click();T('avatar → profil',await ev(()=>window.__G.tab==='profile'));
 await p.locator('.nav [data-tab="home"]').click();
 await ev(()=>{const G=window.__G;G.S.run.max=30;G.renderActs();});T('bouton prestige',await p.locator('#prest').count()===1);
@@ -256,16 +256,16 @@ T('v10 : couleur Saison : non achetable, marquée pass',await ev(()=>{const G=wi
 await ev(()=>window.__G.setTab('profile'));
 T('v10 : profil : plafond réglable, âge affiché, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!!document.getElementById('setCap')&&/adulte/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
 await p.selectOption('#setCap','50');T('v10 : plafond enregistré',await ev(()=>window.__G.S.settings.cap===50));
-await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/24 mois/.test(x);}));
+await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/suppression/.test(x)&&!/24 mois/.test(x);}));
 await p.locator('#modal [data-close]').click();
 // notifications (faux plugin Capacitor)
 await ev(()=>{window.__notif={sched:[],cancel:0};window.Capacitor={Plugins:{LocalNotifications:{async requestPermissions(){return {display:'granted'};},async schedule(o){window.__notif.sched=o.notifications;},async cancel(){window.__notif.cancel++;}}}};localStorage.removeItem('prisme-nlog');});
 r=await ev(()=>{const G=window.__G,o={};const d=new Date();d.setHours(10,0,0,0);const now=d.getTime();
-  G.S.build=[{id:'st_cad',until:now+3600e3,dur:3600}];G.S.up.off=0;G.S.bestStage=40;
+  G.S.build=[{id:'st_cad',until:now+3600e3,dur:3600}];const off0=G.S.up.off;G.S.up.off=4;G.S.bestStage=40;
   const pl=G.notifPlan(now);o.max2=pl.length<=2;o.res=pl.some(n=>n.k==='n_res'&&n.at===now+3600e3);o.full=pl.some(n=>n.k==='n_full');o.sorted=pl.every((n,i)=>!i||n.at>=pl[i-1].at);
   const ln=new Date();ln.setHours(21,30,0,0);const sh=G.notifShift(ln.getTime()+3600e3);o.quiet=new Date(sh).getHours()===9;
   localStorage.setItem('prisme-nlog',JSON.stringify([now-3600e3,now-7200e3]));o.budget=G.notifPlan(now).length===0;localStorage.removeItem('prisme-nlog');
-  G.S.build=[];return o;});
+  G.S.build=[];G.S.up.off=off0;return o;});
 T('v10 : notifications : 2 au plus, triées',r.max2&&r.sorted);T('v10 : notification de fin de recherche',r.res);T('v10 : notification de réserve pleine',r.full);T('v10 : jamais la nuit (22 h → 9 h)',r.quiet);T('v10 : 2 déjà envoyées en 24 h → aucune',r.budget);
 await ev(()=>{const G=window.__G;delete G.S.settings.notif;G.notifPrompt();});T('v10 : demande de permission dans le jeu',await ev(()=>/Te prévenir/.test(document.getElementById('modal').innerText)));
 await p.locator('#notifYes').click();await p.waitForTimeout(100);T('v10 : permission accordée → activées',await ev(()=>window.__G.S.settings.notif===true));

@@ -6,22 +6,28 @@ create or replace function public.pf_tier(p_best int) returns int language sql i
   select case when p_best < 30 then 0 when p_best < 60 then 1 when p_best < 100 then 2 when p_best < 200 then 3 else 4 end;
 $$;
 
--- 2. Rivaux simulés : complètent une tranche de moins de 20 joueurs réels jusqu'à 20.
---    Déterministes (même semaine + même tranche = mêmes rivaux), calés sur la meilleure étape moyenne de la tranche,
---    leur score progresse au fil de la semaine (complet le dimanche). Ils sont renvoyés avec bot = true et affichés comme tels.
+-- 2. Rivaux simulés : complètent une tranche de moins de 20 joueurs réels jusqu'à 20 (v10.1).
+--    Référence = score médian de la SEMAINE PRÉCÉDENTE des joueurs de la tranche ; rivaux entre 0,25 et 1,5 fois cette référence :
+--    un joueur seul finit 1er s'il fait plus de 1,5 fois son score de la semaine passée, milieu de tableau s'il stagne.
+--    Nouveau joueur sans historique : référence basse (5 % des PV de l'ennemi de sa meilleure étape moyenne).
+--    Déterministes, score qui progresse au fil de la semaine, renvoyés avec bot = true et affichés comme tels.
 create or replace function public.pf_league_bots(p_week text, p_bracket int, p_final boolean default false)
 returns table(k int, score numeric, best int) language plpgsql stable security definer set search_path = public as $$
-declare n int; c int; prog numeric;
+declare n int; c int; prog numeric; pw text; base numeric;
 begin
   select count(*), coalesce(round(avg(best_stage))::int, 1) into n, c from league_members where week = p_week and bracket = p_bracket;
   if n = 0 or n >= 20 then return; end if;
+  pw := to_char(to_date(p_week || '-1', 'IYYY-IW-ID') - 7, 'IYYY-IW');
+  select percentile_cont(0.5) within group (order by p.score)::numeric into base from league_members p
+    where p.week = pw and p.score > 0 and p.player_id in (select m.player_id from league_members m where m.week = p_week and m.bracket = p_bracket);
+  if base is null then base := 0.05 * 400 * power(1.6::numeric, greatest(c, 1) - 1); end if;
   if p_final or p_week <> pf_week() then prog := 1;
   else prog := least(1, greatest(0.05, extract(epoch from ((now() at time zone 'Europe/Paris') - date_trunc('week', now() at time zone 'Europe/Paris'))) / (6 * 86400.0)));
   end if;
   return query
-    select g.k, round(400 * power(1.6::numeric, x.sb - 1) * (0.25 + (abs(hashtext('s:' || p_week || ':' || p_bracket || ':' || g.k)) % 1000) / 1000.0) * prog), x.sb
-    from generate_series(1, 20 - n) g(k)
-    cross join lateral (select greatest(1, c + (abs(hashtext(p_week || ':' || p_bracket || ':' || g.k)) % 7) - 4) as sb) x;
+    select g.k, round(base * (0.25 + 1.25 * (abs(hashtext('s:' || p_week || ':' || p_bracket || ':' || g.k)) % 1000) / 1000.0) * prog),
+           greatest(1, c + (abs(hashtext(p_week || ':' || p_bracket || ':' || g.k)) % 6) - 5)
+    from generate_series(1, 20 - n) g(k);
 end $$;
 revoke all on function public.pf_league_bots(text, int, boolean) from public, anon, authenticated;
 
