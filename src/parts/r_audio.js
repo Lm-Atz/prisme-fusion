@@ -45,6 +45,7 @@ const sfx={
   win(){[0,4,7,12,16,19,24].forEach((s,i)=>tone(mtof(69+Music.key()+s),0.4,'triangle',0.09,i*0.06));},
   low(){tone(80,0.7,'sawtooth',0.12);},
   boom(){tone(60,0.4,'square',0.1);tone(120,0.2,'sawtooth',0.06);},
-  tick(){tone(1200,0.05,'square',0.05);},
+  tick(){tone(mtof(81+Music.key()),0.06,'triangle',0.035);}, // v10.3 : plus de bip carré à 1200 Hz, note douce dans la tonalité
+  pop(){const now=AC?AC.currentTime:0;if(now-(this._pop||-9)<1.6)return;this._pop=now;const k=Music.key(),deg=PENTA[Math.floor(Math.random()*5)];tone(mtof(64+k+deg),0.14,'sine',0.03);}, // v10.3 : ennemi vaincu, discret et au plus toutes les 1,6 s
 };
 function vib(p){if(!S.settings.fx)return;try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}

@@ -281,6 +281,10 @@ T('v10 : boss raté 3 fois → conseil (Atelier, boost), sans compte à rebours'
 await p.locator('#modal [data-go="atelier"]').click();T('v10 : conseil → Atelier',await ev(()=>window.__G.tab==='atelier'));
 await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);T('v10 : une seule fois par jour',await ev(()=>document.getElementById('veil').hidden));
 await ev(()=>window.__G.setTab('home'));
+// v10.3 : son de victoire discret
+r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
+  for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});
+T('v10.3 : ennemi vaincu : un seul son pour 6 victoires rapprochées',r.n1===1);T('v10.3 : plus de bip carré aigu',r.noSquare&&r.maxF<1000);
 // v10.2 : son coupé en arrière-plan
 r=await ev(async()=>{const G=window.__G,o={};G.S.settings.music=true;G.S.settings.sound=true;G.Music.start();await new Promise(z=>setTimeout(z,200));o.ac=!!G.AC;o.on0=G.Music.on;
   Object.defineProperty(document,'hidden',{value:true,configurable:true});Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));await new Promise(z=>setTimeout(z,300));
