@@ -281,6 +281,13 @@ T('v10 : boss raté 3 fois → conseil (Atelier, boost), sans compte à rebours'
 await p.locator('#modal [data-go="atelier"]').click();T('v10 : conseil → Atelier',await ev(()=>window.__G.tab==='atelier'));
 await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);T('v10 : une seule fois par jour',await ev(()=>document.getElementById('veil').hidden));
 await ev(()=>window.__G.setTab('home'));
+// v10.2 : son coupé en arrière-plan
+r=await ev(async()=>{const G=window.__G,o={};G.S.settings.music=true;G.S.settings.sound=true;G.Music.start();await new Promise(z=>setTimeout(z,200));o.ac=!!G.AC;o.on0=G.Music.on;
+  Object.defineProperty(document,'hidden',{value:true,configurable:true});Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));await new Promise(z=>setTimeout(z,300));
+  o.off=G.Music.on===false&&G.AC.state!=='running';
+  Object.defineProperty(document,'hidden',{value:false,configurable:true});Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));await new Promise(z=>setTimeout(z,300));
+  o.back=G.Music.on===true&&G.AC.state==='running';G.S.settings.music=false;G.Music.stop();G.soundBg(false);G.soundBg(true);G.soundBg(false);o.noMusic=G.Music.on===false;return o;});
+T('v10.2 : musique lancée',r.ac&&r.on0);T('v10.2 : arrière-plan → musique arrêtée, son suspendu',r.off);T('v10.2 : retour → musique reprise',r.back);T('v10.2 : musique désactivée → ne reprend pas',r.noMusic);
 // v9.9 : premières minutes
 r=await ev(()=>{const G=window.__G,S=G.S,o={};const sv={b:S.bestStage,p:S.prestiges,m:S.run.max,st:S.st.nav};S.bestStage=1;S.prestiges=0;S.run.max=1;G.refresh();
   const hid=k=>document.querySelector(`.nav [data-tab="${k}"]`).hidden;o.start=hid('atelier')&&hid('quests')&&hid('shop')&&hid('clan');

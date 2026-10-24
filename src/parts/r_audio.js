@@ -2,6 +2,7 @@
 let AC=null,musBus=null,sfxBus=null,delay=null;
 function audio(){
   if(!S.settings.music&&!S.settings.sound)return null;
+  if(document.hidden)return null; // v10.2 : jamais de son quand le jeu est en arrière-plan
   try{
     if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();
       const comp=AC.createDynamicsCompressor();comp.connect(AC.destination);
