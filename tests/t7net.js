@@ -24,7 +24,9 @@ function handle(url,a){
   if(fn==='pf_board'){const me=DB.league.find(x=>x.id===a.p_id);if(!me)return [200,{week:'w',rows:[],joined:false}];const rows=DB.league.map(m=>({id:m.id,name:(DB.players[m.id]||{name:'Bot'}).name,score:m.score,best:m.best,me:m.id===a.p_id})).concat([{bot:true,k:1,score:1,best:12},{bot:true,k:2,score:2,best:11}]).sort((x,y)=>y.score-x.score);return [200,{week:'w',rows,joined:true,bracket:1,tier:1}];}
   return [404,{message:'nofn'}];
 }
+let LAT=0;
 async function mock(ctx){await ctx.route('https://atmrbzkcneotleuoapdp.supabase.co/**',async route=>{const q=route.request();
+  if(LAT&&/pf-act/.test(q.url()))await new Promise(z=>setTimeout(z,LAT));
   const [st,body]=handle(q.url(),q.postDataJSON()||{});await route.fulfill({status:st,contentType:'application/json',body:JSON.stringify(body)});});}
 const ev=(p,f,...a)=>p.evaluate(f,...a);
 (async()=>{const b=await chromium.launch();const errs=[];
@@ -60,6 +62,15 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.boardCache=null;G.clanPane='league';G.S.st.namePrompted=true;G.setTab('clan');await new Promise(z=>setTimeout(z,500));G.setTab('clan');const p=document.getElementById('panel');
     const bots=[...p.querySelectorAll('.lg.bot')];return {n:bots.length,name:bots.every(b=>/Rival simulé/.test(b.innerText)&&!b.querySelector('[data-report]')),div:/Argent/.test(p.innerText),note:/rivaux simulés/.test(p.innerText)};});
   T('v10 : ligue : rivaux simulés marqués, non signalables',r.n===2&&r.name&&r.note);T('v10 : ligue : division selon la puissance',r.div);
+  // --- v10.4 : plusieurs quêtes validées d'affilée, réponses lentes du serveur → aucune ne réapparaît
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.S.st.merges+=25;G.S.st.manual+=20;G.S.st.kills+=20;G.S.day.merges+=40;G.S.day.kills+=20;await G.actAsync('sync');await G.actAsync('sync');G.setTab('quests');return [...document.querySelectorAll('#panel [data-claim]')].map(e=>e.dataset.claim);});
+  const ready=r;LAT=500;
+  r=await ev(A,async(ready)=>{const G=window.__G;const g0=G.S.gems;for(const k of ready){const el=document.querySelector(`#panel [data-claim="${k}"]`);if(el)el.click();await new Promise(z=>setTimeout(z,60));}
+    const seen=[];let flick=false;const t0=Date.now();while(Date.now()-t0<ready.length*700+1500){G.renderTab();const left=ready.filter(k=>document.querySelector(`#panel [data-claim="${k}"]`)).length;if(left>0)flick=true;seen.push(left);await new Promise(z=>setTimeout(z,40));}
+    return {flick,seen:seen.slice(0,30).join(''),pend:G.PEND.length,gl:G.S.gems-g0,left:ready.filter(k=>document.querySelector(`#panel [data-claim="${k}"]`))};},ready);
+  LAT=0;const srvA=DB.players[idA].state;
+  T('v10.4 : '+ready.length+' quêtes validées vite : aucune ne réapparaît pendant les réponses',ready.length>=2&&!r.flick);if(r.flick)console.log(r.seen);
+  T('v10.4 : file vide, serveur et téléphone d\'accord',r.pend===0&&await ev(A,g=>window.__G.S.gems,null)===srvA.gems);
   // --- pseudo
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();await new Promise(z=>setTimeout(z,300));return G.S.name;});
   T('pseudo validé et propagé',r==='Lumen Vif'&&DB.players[idA].name==='Lumen Vif'&&DB.players[idA].state.name==='Lumen Vif');

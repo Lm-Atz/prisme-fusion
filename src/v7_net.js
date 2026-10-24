@@ -29,21 +29,28 @@ function simSnap(){snapBoard();const r=S.run;return {run:{sparks:r.sparks,stage:
   day:{merges:S.day.merges,kills:S.day.kills,bosses:S.day.bosses,tb:S.day.tb||0,jokers:S.day.jokers,combo:S.day.combo||0},week:{kills:S.week.kills},bestiary:S.bestiary,settings:S.settings,league:S.league};}
 let srvQ=Promise.resolve(),srvLast=0,srvErr=0,onServer=()=>{};
 /* act : capture la simulation AVANT l'application locale, exécute l'action locale (retour immédiat), puis confirme auprès du serveur */
+/* v10.4 : actions en attente de réponse. Quand le serveur répond à l'une, son état ne contient pas encore les suivantes :
+   on les rejoue par-dessus (actions qui ne touchent que la partie), sinon une quête validée réapparaissait puis disparaissait. */
+const REPLAY=new Set(['claim','login','pass_claim','shop_gift','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
+let PEND=[];
+const pendDrop=e=>{const i=PEND.indexOf(e);if(i>=0)PEND.splice(i,1);};
+function pendReplay(){for(const p of PEND)if(p.fn){try{p.fn();}catch(e){}}}
 function act(action,payload,localFn){
   const snap=simSnap(),sent=S.run.sparks;let out=true;
   if(localFn){try{out=localFn();}catch(e){out=false;}if(out===false||(typeof out==='string'&&out!=='ok'))return out;}
   if(!NET.on)return out;
-  srvQ=srvQ.then(()=>actNow(action,payload,snap,sent)).catch(()=>null);
+  const ent={action,fn:REPLAY.has(action)&&localFn?localFn:null};PEND.push(ent);
+  srvQ=srvQ.then(()=>actNow(action,payload,snap,sent,1,ent)).catch(()=>null).then(()=>pendDrop(ent));
   return out;
 }
-const actAsync=(action,payload)=>{const snap=simSnap(),sent=S.run.sparks;const p=srvQ.then(()=>actNow(action,payload,snap,sent));srvQ=p.catch(()=>null);return p;};
-async function actNow(action,payload,snap,sent,retry=1){
+const actAsync=(action,payload)=>{const snap=simSnap(),sent=S.run.sparks;const ent={action,fn:null};PEND.push(ent);const p=srvQ.then(()=>actNow(action,payload,snap,sent,1,ent));srvQ=p.catch(()=>null).then(()=>pendDrop(ent));return p;};
+async function actNow(action,payload,snap,sent,retry=1,ent=null){
   if(!NET.on)return null;
   const body={id:DEV.id,secret:DEV.s,action,payload:payload||{},sim:snap,tz:-new Date().getTimezoneOffset(),lang:LANG,name:S.name,demo:true};
   const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);
   let d=null;
   try{const r=await fetch(`${NET.url}/functions/v1/pf-act`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+NET.key,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal,keepalive:action==='sync'&&!!payload&&payload.bye===true});
-    if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1);}
+    if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1,ent);}
     if(r.status===429){srvLast=_dateNow();return null;} // trop d'appels : on attend la prochaine synchro, sans alarme
     d=await r.json();}
   catch(e){srvErr++;return null;}
@@ -51,6 +58,7 @@ async function actNow(action,payload,snap,sent,retry=1){
   if(!d||!d.ok){onServer({action,fail:d&&d.err});return d;}
   srvErr=0;srvLast=_dateNow();netReady=true;syncClock({now:d.now});
   applyServer(d,sent);
+  if(ent)pendDrop(ent);pendReplay();
   onServer({action,d});
   return d;
 }

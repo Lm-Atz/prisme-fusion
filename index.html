@@ -1848,21 +1848,28 @@ function simSnap(){snapBoard();const r=S.run;return {run:{sparks:r.sparks,stage:
   day:{merges:S.day.merges,kills:S.day.kills,bosses:S.day.bosses,tb:S.day.tb||0,jokers:S.day.jokers,combo:S.day.combo||0},week:{kills:S.week.kills},bestiary:S.bestiary,settings:S.settings,league:S.league};}
 let srvQ=Promise.resolve(),srvLast=0,srvErr=0,onServer=()=>{};
 /* act : capture la simulation AVANT l'application locale, exécute l'action locale (retour immédiat), puis confirme auprès du serveur */
+/* v10.4 : actions en attente de réponse. Quand le serveur répond à l'une, son état ne contient pas encore les suivantes :
+   on les rejoue par-dessus (actions qui ne touchent que la partie), sinon une quête validée réapparaissait puis disparaissait. */
+const REPLAY=new Set(['claim','login','pass_claim','shop_gift','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
+let PEND=[];
+const pendDrop=e=>{const i=PEND.indexOf(e);if(i>=0)PEND.splice(i,1);};
+function pendReplay(){for(const p of PEND)if(p.fn){try{p.fn();}catch(e){}}}
 function act(action,payload,localFn){
   const snap=simSnap(),sent=S.run.sparks;let out=true;
   if(localFn){try{out=localFn();}catch(e){out=false;}if(out===false||(typeof out==='string'&&out!=='ok'))return out;}
   if(!NET.on)return out;
-  srvQ=srvQ.then(()=>actNow(action,payload,snap,sent)).catch(()=>null);
+  const ent={action,fn:REPLAY.has(action)&&localFn?localFn:null};PEND.push(ent);
+  srvQ=srvQ.then(()=>actNow(action,payload,snap,sent,1,ent)).catch(()=>null).then(()=>pendDrop(ent));
   return out;
 }
-const actAsync=(action,payload)=>{const snap=simSnap(),sent=S.run.sparks;const p=srvQ.then(()=>actNow(action,payload,snap,sent));srvQ=p.catch(()=>null);return p;};
-async function actNow(action,payload,snap,sent,retry=1){
+const actAsync=(action,payload)=>{const snap=simSnap(),sent=S.run.sparks;const ent={action,fn:null};PEND.push(ent);const p=srvQ.then(()=>actNow(action,payload,snap,sent,1,ent));srvQ=p.catch(()=>null).then(()=>pendDrop(ent));return p;};
+async function actNow(action,payload,snap,sent,retry=1,ent=null){
   if(!NET.on)return null;
   const body={id:DEV.id,secret:DEV.s,action,payload:payload||{},sim:snap,tz:-new Date().getTimezoneOffset(),lang:LANG,name:S.name,demo:true};
   const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);
   let d=null;
   try{const r=await fetch(`${NET.url}/functions/v1/pf-act`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+NET.key,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal,keepalive:action==='sync'&&!!payload&&payload.bye===true});
-    if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1);}
+    if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1,ent);}
     if(r.status===429){srvLast=_dateNow();return null;} // trop d'appels : on attend la prochaine synchro, sans alarme
     d=await r.json();}
   catch(e){srvErr++;return null;}
@@ -1870,6 +1877,7 @@ async function actNow(action,payload,snap,sent,retry=1){
   if(!d||!d.ok){onServer({action,fail:d&&d.err});return d;}
   srvErr=0;srvLast=_dateNow();netReady=true;syncClock({now:d.now});
   applyServer(d,sent);
+  if(ent)pendDrop(ent);pendReplay();
   onServer({action,d});
   return d;
 }
@@ -2072,7 +2080,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='10.3 · saison';
+const VERSION='10.4 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2829,7 +2837,7 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,overCap,payGate,seasonLeft,seasonKey,ctxOnce,ageModal,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={get PEND(){return PEND;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,overCap,payGate,seasonLeft,seasonKey,ctxOnce,ageModal,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
