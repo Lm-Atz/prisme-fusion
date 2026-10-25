@@ -2078,7 +2078,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='10.8 · saison';
+const VERSION='10.9 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2443,7 +2443,7 @@ function guildHtml(){
   const C=CFG.guild;let h='';
   if(!g.guild){
     h+=`<p class="note">${t('gd_none_p',{n:C.size})}</p>`;
-    h+=`<h2 class="sec">${t('gd_create')}</h2><div class="gform"><input id="gdName" class="xin" maxlength="20" placeholder="${t('gd_name_ph')}" autocomplete="off"><button class="b b-gem" id="gdCreate" ${S.gems<C.create||guildBusy?'disabled':''}>${ic('gem')}${C.create}<small class="eur">${eurOf(C.create)}</small></button></div><p id="gdErr" class="note" style="color:var(--danger);min-height:1.2em">${esc(gdErrMsg)}</p>`;
+    h+=`<h2 class="sec">${t('gd_create')}</h2><div class="gform"><input id="gdName" class="xin" maxlength="20" placeholder="${t('gd_name_ph')}" autocomplete="off"><button class="b b-gem" id="gdCreate" ${S.gems<C.create||guildBusy?'disabled':''}>${ic('gem')}${C.create}</button></div><p id="gdErr" class="note" style="color:var(--danger);min-height:1.2em">${esc(gdErrMsg)}</p>`;
     h+=`<h2 class="sec">${t('gd_join')}</h2><div class="gform"><input id="gdCode" class="xin" maxlength="8" placeholder="${t('gd_code_ph')}" autocapitalize="characters" autocomplete="off"><button class="b b-gold" id="gdJoin" ${guildBusy?'disabled':''}>${t('gd_join_btn')}</button></div>`;
     h+=`<h2 class="sec">${t('gd_open_list')}</h2>`;
     if(!guildList){netGuildList().then(r=>{guildList=r.ok?r.data.rows:[];if(tab==='clan'&&clanPane==='guild')renderTab();});h+=`<p class="note">${t('loading')}</p>`;}
@@ -2505,21 +2505,21 @@ function renderTab(){
   if(tab==='atelier'){
     const free=S.slots-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
     h+=head(t('at_title'),t('at_sub'))+`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
-    h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}<small class="eur">${eurOf(nextSlot)}</small></button>`:''}</div>`;
+    h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
     h+=`<div class="grp" role="group" aria-label="${t('at_title')}">${GROUPS.map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpReady(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
     const mn=memList().length;if(mn){const mc=memTotal();h+=`<div class="slotbuy membar"><span>${ic('bolt')} ${t('at_mem_bar',{n:mn})}</span><button class="b b-spark sm" id="restoreAll" ${S.run.sparks<Math.min(...memList().map(upCost))?'disabled':''}>${t('at_restore')} ${ic('spark')}${fmt(mc)}</button></div>`;}
     h+=`<p class="note">${GROUPS.find(g=>g.id===atGroup).d}</p>`;
     if(atGroup==='auto')h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('pp_n',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span></div>`;
     if(atGroup==='jok'){
       const nj=CFG.build.jslotGems[S.jslots-1];
-      h+=`<div class="slotbuy"><span>${t('j_slots',{n:S.equip.length,m:S.jslots})}</span>${nj!=null?`<button class="b b-gem sm" id="buyJSlot" ${S.gems<nj?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nj}<small class="eur">${eurOf(nj)}</small></button>`:''}</div><div class="list" style="margin-top:10px">`;
+      h+=`<div class="slotbuy"><span>${t('j_slots',{n:S.equip.length,m:S.jslots})}</span>${nj!=null?`<button class="b b-gem sm" id="buyJSlot" ${S.gems<nj?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nj}</button>`:''}</div><div class="list" style="margin-top:10px">`;
       JOKERS.forEach(j=>{const l=S.jk[j.id]||0,on=S.equip.includes(j.id),av=jokerAvail(j);let btns='';
-        if(!l&&av)btns=`<button class="b b-spark sm" data-unlock="${j.id}:s" ${S.run.sparks<j.sh?'disabled':''}>${ic('spark')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}<small class="eur">${eurOf(j.gm)}</small></button>`;
+        if(!l&&av)btns=`<button class="b b-spark sm" data-unlock="${j.id}:s" ${S.run.sparks<j.sh?'disabled':''}>${ic('spark')}${fmt(j.sh)}</button><button class="b b-gem sm" data-unlock="${j.id}:g" ${S.gems<j.gm?'disabled':''}>${ic('gem')}${j.gm}</button>`;
         else if(l){const u=upById('j_'+j.id),b=inBuild(u.id),c=upCost(u);btns=`<button class="b sm ${on?'b-gem':''}" data-equip="${j.id}" ${!on&&S.equip.length>=S.jslots?'disabled':''}>${on?t('j_unequip'):t('j_equip')}</button>`+(l<5?(b?`<span class="d">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span>`:`<button class="b b-spark sm" data-build="${u.id}" ${free<1||S.run.sparks<c?'disabled':''}>${t('j_lvlbtn',{n:l+1})} ${ic('spark')}${fmt(c)}</button>`):'<span class="d">'+t('j_max')+'</span>');}
         h+=`<div class="jcard slab ${on?'on':''} ${!av&&!l?'locked':''}"><span class="jart">${ic(JICON[j.id])}</span><div style="min-width:0"><b>${j.t}</b>${l?`<span class="jl">${t('j_lvl',{n:l})}</span>`:''}<p>${av||l?j.d(Math.max(1,l)):t('j_lock',{n:j.lvl})}</p>${l?`<p class="jmeta">${t('j_charge',{n:jokerNeed(j.id)})}</p>`:''}${btns?`<div class="jbtns">${btns}</div>`:''}</div></div>`;});
       h+='</div>';
     }
-    if(atGroup==='arm'){h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('pp_n',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span>${Object.keys(S.wp||{}).length?`<button class="b b-gem sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}<small class="eur">${eurOf(CFG.wpReset)}</small></button>`:''}</div><p class="note">${t('pp_note')}</p><div class="list" style="gap:6px;margin-bottom:12px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><b>${w.t} <span>· ${w.fx}</span>${k?`<em>${t('lvl',{n:k})}</em>`:''}</b><p>${w.d}</p></div><button class="b ${S.pp>=c?'b-gold':''} sm" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}">${ic('plus')}${c}</button></div>`;}).join('')}</div>`;}
+    if(atGroup==='arm'){h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('pp_n',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span>${Object.keys(S.wp||{}).length?`<button class="b b-gem sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button>`:''}</div><p class="note">${t('pp_note')}</p><div class="list" style="gap:6px;margin-bottom:12px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><b>${w.t} <span>· ${w.fx}</span>${k?`<em>${t('lvl',{n:k})}</em>`:''}</b><p>${w.d}</p></div><button class="b ${S.pp>=c?'b-gold':''} sm" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}">${ic('plus')}${c}</button></div>`;}).join('')}</div>`;}
     h+=`<div class="tiles">${UPG.filter(u=>u.g===atGroup).map(u=>tileHtml(u,free)).join('')}</div>`;
   }else if(tab==='quests'){
     const v=questView();
@@ -2556,19 +2556,18 @@ function renderTab(){
     h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&o.id!=='pass').map(offerRow).join('')}</div>`;
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gold sm" id="adBoost" ${adLeft('boost')?'':'disabled'}>${ic('tv')}${t('sh_watch')}<small class="eur">${t('ad_left',{n:adLeft('boost')})}</small></button></div>`;
-    h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}<small class="eur">${eurOf(CFG.boost.gemsPrice)}</small></button></div></div>`;
+    h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><p>${t('sh_boost_d')}</p><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}</button></div></div>`;
     const capLeft=CFG.sparkShop.capMin-(S.day.spMin||0);
     h+=`<h2 class="sec">${t('sh_sparks')}<small>${t('rate_min',{n:fmt(Math.round(rateMin()))})}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adsparks',{t:dur(CFG.ads.shopMin*60)})}</b><p>${t('sh_now',{n:fmt(adSparks('shop'))})}</p><button class="b b-gold sm" id="adSparks" ${adLeft('shop')?'':'disabled'}>${ic('tv')}${t('sh_watch')}<small class="eur">${t('ad_left',{n:adLeft('shop')})}</small></button></div>`;
-    h+=CFG.sparkShop.packs.map((p,i)=>`<div class="gitem slab"><span class="oart">${ic('spark','ie')}</span><b>${t('sh_pack',{t:dur(p.min*60)})}</b><p>${t('sh_now',{n:fmt(packSparks(p))})}</p><button class="b b-gem sm" data-pack="${i}" ${S.gems<p.g||capLeft<p.min?'disabled':''}>${ic('gem')}${p.g}<small class="eur">${eurOf(p.g)}</small></button></div>`).join('')+`</div>`;
+    h+=CFG.sparkShop.packs.map((p,i)=>`<div class="gitem slab"><span class="oart">${ic('spark','ie')}</span><b>${t('sh_pack',{t:dur(p.min*60)})}</b><p>${t('sh_now',{n:fmt(packSparks(p))})}</p><button class="b b-gem sm" data-pack="${i}" ${S.gems<p.g||capLeft<p.min?'disabled':''}>${ic('gem')}${p.g}</button></div>`).join('')+`</div>`;
     if(capLeft<CFG.sparkShop.packs[0].min)h+=`<p class="sub">${t('sh_cap',{h:CFG.sparkShop.capMin/60})}</p>`;
     h+=`<h2 class="sec">${t('sh_skin')}</h2><div class="skins">`;
-    SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44,saison:110}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):k.pass?t('ps_title'):t('sh_price',{n:k.price})+' '+eurOf(k.price)}</span></button>`;});
+    SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44,saison:110}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):k.pass?t('ps_title'):t('sh_price',{n:k.price})}</span></button>`;});
     h+='</div>';
-    h+=`<p class="note">${t('sh_rate',{p:priceOf(GEM_REF)})}</p>`;
   }else if(tab==='profile'){
     const tr=tierOf(S.bestStage),L=layers();
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
-    h+=`<h2 class="sec">${t('pr_name')}</h2><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('pr_newname')}"><button class="b b-gold sm" id="nameBtn">${S.nameChanges===0?t('pr_change'):t('pr_change')+' '+ic('gem')+RENAME+' <small class="eur">'+eurOf(RENAME)+'</small>'}</button></div><p class="err" id="nameErr"></p>`;
+    h+=`<h2 class="sec">${t('pr_name')}</h2><div class="field"><input id="nameIn" maxlength="16" value="${esc(S.name)}" aria-label="${t('pr_newname')}"><button class="b b-gold sm" id="nameBtn">${S.nameChanges===0?t('pr_change'):t('pr_change')+' '+ic('gem')+RENAME}</button></div><p class="err" id="nameErr"></p>`;
     h+=`<p class="note">${S.nameChanges===0?t('pr_first'):''}${t('pr_note')}</p>`;
     h+=`<h2 class="sec">${t('pr_settings')}</h2><div class="list">`;
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
@@ -2731,7 +2730,7 @@ function ctxOnce(k){const key='prisme-ctx-'+k;try{if(localStorage.getItem(key)==
 function ctxBoss(){if(!$('veil').hidden)return;track('offer_view',{id:'ctx_boss'});
   modal(`<div class="mart">${ic('bolt','ie')}</div><h2>${t('cx_boss')}</h2><p>${t('cx_boss_p',{g:CFG.boost.gemsPrice,h:CFG.boost.gemsH})}</p><div class="acts"><button class="b b-gold" data-go="atelier">${t('cx_atelier')}</button><button class="b" data-go="shop">${t('cx_shop')}</button><button class="b" data-close>${t('later')}</button></div>`);}
 function ctxSlots(){const g=CFG.build.slotGems[S.slots-1];track('offer_view',{id:'ctx_slot'});
-  modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('cx_slots')}</h2><p>${t('cx_slots_p',{g})}</p><div class="acts"><button class="b b-gem" id="ctxSlot" ${S.gems<g?'disabled':''}>${ic('gem')}${g}<small class="eur">${eurOf(g)}</small></button><button class="b" data-close>${t('later')}</button></div>`);}
+  modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('cx_slots')}</h2><p>${t('cx_slots_p',{g})}</p><div class="acts"><button class="b b-gem" id="ctxSlot" ${S.gems<g?'disabled':''}>${ic('gem')}${g}</button><button class="b" data-close>${t('later')}</button></div>`);}
 function privacyModal(){modal(`<h2>${t('pv_title')}</h2><div class="priv">${t('pv_body').split('\n').map(p=>`<p>${p}</p>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);}
 /* ================= v10 : notifications locales (au plus 2 par 24 h, annulées au retour dans le jeu) ================= */
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;

@@ -206,10 +206,9 @@ await ev(()=>window.__G.setTab('home'));
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};const g=G.OFFERS.filter(x=>x.n);o.packs=g.map(x=>x.n).join()==='100,600,1300,2800,7500,16000';
   const per=g.map(x=>x.n/x.price);o.mono=per.every((v,i)=>!i||v>per[i-1]);
   o.bonusTrue=g.slice(1).every(x=>{const real=100*(x.n/x.price)/(100/0.99)-100;const shown=+x.d.match(/\+(\d+)/)[1];return shown<=real&&real-shown<1;});
-  o.eur=/0,25/.test(G.eurOf(25));
   S.day.adk={};const l0=G.adLeft('shop');G.adUse('shop');o.adcap=l0===5&&G.adLeft('shop')===4;S.day.adk={shop:5};o.adzero=G.adLeft('shop')===0;S.day.adk={};
   return o;});
-T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('équivalent en euros (25 gemmes ≈ 0,25 €)',r.eur);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
+T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
 await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/0 restante/.test(document.getElementById('adSparks').textContent)));
 await ev(()=>{window.__G.S.day.adk={};window.__G.setTab('home');});
 // v9.8 : plafond des gemmes de cadeaux, coffre de gemmes
@@ -278,6 +277,8 @@ T('v10 : boss raté 3 fois → conseil (Atelier, boost), sans compte à rebours'
 await p.locator('#modal [data-go="atelier"]').click();T('v10 : conseil → Atelier',await ev(()=>window.__G.tab==='atelier'));
 await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);T('v10 : une seule fois par jour',await ev(()=>document.getElementById('veil').hidden));
 await ev(()=>window.__G.setTab('home'));
+// v10.9 : plus aucun équivalent en euros à côté des prix en gemmes
+T('v10.9 : aucun « ≈ € » en boutique, Atelier et Profil',await ev(()=>{const G=window.__G;let ok=true;for(const tb of ['shop','atelier','profile']){G.setTab(tb);const x=document.getElementById('panel').innerText;if(/≈\s*[\d.,\s\u202f]+\s*(€|\$)/.test(x)||[...document.querySelectorAll('#panel .eur')].some(e=>/€|\$/.test(e.textContent))||/100 gemmes =/.test(x))ok=false;}G.setTab('home');return ok;}));
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});
