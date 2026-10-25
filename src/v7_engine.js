@@ -19,7 +19,7 @@ const CFG={
   chest:{cap:600,open:300,price:2.99},
   pass:{price:4.99,tiers:20,xp:50,q:{o:10,d:10,w:30,login:10},dupe:150}, // v10 : pass de saison de 4 semaines (le même contenu revient à chaque saison)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
-  spend:{caps:[0,10,25,50,100],def:25}, // v10 : alerte de dépenses mensuelles (0 = désactivée) // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
+  // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
@@ -562,8 +562,6 @@ const canPay=()=>true;
 const monthKey=(t=Date.now())=>{const [y,m]=dparts(t);return y+'-'+(m+1);};
 function spendNow(){const m=monthKey();if(!S.spend||S.spend.m!==m)S.spend={m,eur:0};return S.spend;}
 function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
-const spendCap=()=>S.settings.cap==null?CFG.spend.def:S.settings.cap;
-const overCap=p=>spendCap()>0&&spendNow().eur+p>spendCap();
 /* v10 : pass de saison */
 const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:15}:{g:10},p:Object.assign({g:60},n%5===0?{b:4}:{},n===CFG.pass.tiers?{skin:'saison'}:{})};});
 const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines

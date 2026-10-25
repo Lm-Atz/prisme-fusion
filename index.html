@@ -1249,7 +1249,7 @@ const CFG={
   chest:{cap:600,open:300,price:2.99},
   pass:{price:4.99,tiers:20,xp:50,q:{o:10,d:10,w:30,login:10},dupe:150}, // v10 : pass de saison de 4 semaines (le même contenu revient à chaque saison)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
-  spend:{caps:[0,10,25,50,100],def:25}, // v10 : alerte de dépenses mensuelles (0 = désactivée) // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
+  // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
@@ -1792,8 +1792,6 @@ const canPay=()=>true;
 const monthKey=(t=Date.now())=>{const [y,m]=dparts(t);return y+'-'+(m+1);};
 function spendNow(){const m=monthKey();if(!S.spend||S.spend.m!==m)S.spend={m,eur:0};return S.spend;}
 function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
-const spendCap=()=>S.settings.cap==null?CFG.spend.def:S.settings.cap;
-const overCap=p=>spendCap()>0&&spendNow().eur+p>spendCap();
 /* v10 : pass de saison */
 const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:15}:{g:10},p:Object.assign({g:60},n%5===0?{b:4}:{},n===CFG.pass.tiers?{skin:'saison'}:{})};});
 const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
@@ -2080,7 +2078,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='10.5 · saison';
+const VERSION='10.6 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2566,7 +2564,7 @@ function renderTab(){
     h+=`<h2 class="sec">${t('sh_skin')}</h2><div class="skins">`;
     SKINS.forEach(k=>{const has=S.skins.includes(k.id);h+=`<button class="skin" data-skin="${k.id}" aria-pressed="${S.skin===k.id}"><canvas width="80" height="80" data-mini="6" data-hue="${k.id==='prisme'?'prism':{cyan:192,rose:322,or:44,saison:110}[k.id]}"></canvas>${k.label}<span>${has?(S.skin===k.id?t('sh_worn'):t('sh_wear')):k.pass?t('ps_title'):t('sh_price',{n:k.price})+' '+eurOf(k.price)}</span></button>`;});
     h+='</div>';
-    h+=`<p class="note">${t('sh_rate',{p:priceOf(GEM_REF)})} ${t('sh_spent',{e:priceOf({price:spendNow().eur})})}${spendCap()>0?' '+t('sh_cap_is',{c:priceOf({price:spendCap()})}):''}</p>`;
+    h+=`<p class="note">${t('sh_rate',{p:priceOf(GEM_REF)})}</p>`;
   }else if(tab==='profile'){
     const tr=tierOf(S.bestStage),L=layers();
     h+=head(t('pr_title'))+`<div class="stage"><canvas id="me" width="380" height="380" aria-hidden="true"></canvas><div class="ptier">${t('pr_tier',{t:tr.name,n:S.bestStage})}${L?t('pr_worlds',{n:L}):''}</div></div>`;
@@ -2576,7 +2574,7 @@ function renderTab(){
     h+=`<label class="switch slab">${t('pr_lang')}<select id="setLang" class="sel">${LANG_LIST().map(l=>`<option value="${l}" ${l===LANG?'selected':''}>${I18N[l]._name}</option>`).join('')}</select></label>`;
     h+=`<label class="switch slab">${t('pr_music')}<input type="checkbox" id="setMusic" ${S.settings.music?'checked':''}></label>`;
     h+=`<label class="switch slab">${t('pr_sound')}<input type="checkbox" id="setSound" ${S.settings.sound?'checked':''}></label>`;
-    h+=`<label class="switch slab">${t('pr_fx')}<input type="checkbox" id="setFx" ${S.settings.fx?'checked':''}></label><label class="switch slab">${t('pr_stats')}<input type="checkbox" id="setStats" ${S.settings.stats!==false?'checked':''}></label>${LN()?`<label class="switch slab">${t('pr_notif')}<input type="checkbox" id="setNotif" ${S.settings.notif?'checked':''}></label>`:''}<label class="switch slab">${t('pr_cap')}<select id="setCap" class="sel">${CFG.spend.caps.map(c=>`<option value="${c}" ${c===spendCap()?'selected':''}>${c?priceOf({price:c}):t('pr_cap_off')}</option>`).join('')}</select></label></div><p class="note">${t('pr_stats_p')} ${t('pr_cap_p',{e:priceOf({price:spendNow().eur})})}</p>`;
+    h+=`<label class="switch slab">${t('pr_fx')}<input type="checkbox" id="setFx" ${S.settings.fx?'checked':''}></label><label class="switch slab">${t('pr_stats')}<input type="checkbox" id="setStats" ${S.settings.stats!==false?'checked':''}></label>${LN()?`<label class="switch slab">${t('pr_notif')}<input type="checkbox" id="setNotif" ${S.settings.notif?'checked':''}></label>`:''}</div><p class="note">${t('pr_stats_p')}</p>`;
     h+=`<button class="b" style="width:100%;margin-bottom:8px" id="privBtn">${ic('shield')}${t('pv_title')}</button>`;
     h+=`<h2 class="sec">${t('pr_stats')}</h2><div class="stats"><div class="stat slab"><b>${S.bestStage}</b><span>${t('pr_best')}</span></div><div class="stat slab"><b>${S.prestiges}</b><span>${t('pr_pres')}</span></div><div class="stat slab"><b>${fmt(S.st.merges)}</b><span>${t('pr_merges',{n:fmt(S.st.manual)})}</span></div><div class="stat slab"><b>${fmt(S.st.kills)}</b><span>${t('pr_kills',{n:S.st.bosses})}</span></div><div class="stat slab"><b>${fmt(S.st.titanBest)}</b><span>${t('pr_titan')}</span></div><div class="stat slab"><b>${S.st.bought}</b><span>${t('pr_res')}</span></div></div>`;
     const bk=Object.keys(S.bestiary).map(Number).sort((a,b)=>a-b);
@@ -2658,7 +2656,6 @@ $('panel').addEventListener('change',e=>{
   if(e.target.id==='setFx')S.settings.fx=e.target.checked;
   if(e.target.id==='setStats'){S.settings.stats=e.target.checked;if(!S.settings.stats)EVQ.length=0;}
   if(e.target.id==='setNotif'){if(e.target.checked)notifAsk(true);else{S.settings.notif=false;notifCancel();}}
-  if(e.target.id==='setCap'){S.settings.cap=+e.target.value;renderTab();}
   if(e.target.id==='setLang'){setLang(e.target.value);applyStatic();renderTab();if(R){renderStage();renderTB();renderActs();}}save();
 });
 $('modal').addEventListener('click',e=>{
@@ -2728,7 +2725,6 @@ function shopTop(){
   return h;
 }
 function payGate(id,over){const o=OFFERS.find(x=>x.id===id);if(!o)return false;
-  if(!over&&overCap(o.price)){closeModal();track('spend_alert',{id});modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('sp_title')}</h2><p>${t('sp_p',{e:priceOf({price:spendNow().eur}),c:priceOf({price:spendCap()}),p:priceOf(o)})}</p><div class="acts"><button class="b b-gold" data-confirm="${id}" data-over="1">${t('sp_go')}</button><button class="b" data-close>${t('cancel')}</button></div><p class="sub">${t('sp_sub')}</p>`);return false;}
   return true;}
 let bossFails=0;
 function ctxOnce(k){const key='prisme-ctx-'+k;try{if(localStorage.getItem(key)===dayKey())return false;localStorage.setItem(key,dayKey());}catch(e){}return true;}
@@ -2831,7 +2827,7 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={get PEND(){return PEND;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,overCap,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={get PEND(){return PEND;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}

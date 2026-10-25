@@ -240,17 +240,15 @@ await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(1
 r=await ev(()=>{const G=window.__G;const g=G.S.gems;const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();return G.passState().prem&&G.S.gems===g+60&&G.S.spend.eur===4.99;});T('v10 : pass acheté, palier premium 1 = 60 gemmes, dépense notée',r);
 await ev(()=>window.__G.setTab('shop'));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
-await ev(()=>{const G=window.__G;G.S.spend.eur=24;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
-await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-confirm="g600"]').click();
-T('v10 : alerte de dépenses au-delà de 25 €',await ev(()=>/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&/24,00/.test(document.getElementById('modal').innerText))&&await ev(g=>window.__G.S.gems===g,gA));
-await p.locator('#modal [data-over="1"]').click();await p.waitForTimeout(100);T('v10 : achat confirmé malgré l\'alerte',await ev(g=>window.__G.S.gems===g+600,gA));
+await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
+await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-confirm="g600"]').click();await p.waitForTimeout(100);
+T('v10.6 : plus d\'alerte de dépenses, achat direct',await ev(g=>window.__G.S.gems===g+600&&!/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&!/Dépensé ce mois/.test(document.getElementById('panel').innerText),gA));
 await ev(()=>{const G=window.__G;delete G.S.settings.age;G.S.spend=null;G.setTab('shop');});const gB=await ev(()=>window.__G.S.gems);await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 T('v10.5 : achat possible sans âge déclaré (contrôles Google/Apple)',await ev(g=>window.__G.S.gems===g+100&&!/Achats indisponibles/.test(document.getElementById('modal').innerText),gB));
 T('v10 : couleur Saison : non achetable, marquée pass',await ev(()=>{const G=window.__G;G.S.skins=G.S.skins.filter(s=>s!=='saison');G.setTab('shop');const b=document.querySelector('[data-skin="saison"]');const g=G.S.gems;b.click();return /Pass de saison/.test(b.innerText)&&!G.S.skins.includes('saison')&&G.S.gems===g;}));
 // profil : plafond, confidentialité, âge
 await ev(()=>window.__G.setTab('profile'));
-T('v10 : profil : plafond réglable, âge affiché, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!!document.getElementById('setCap')&&!/Âge déclaré/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
-await p.selectOption('#setCap','50');T('v10 : plafond enregistré',await ev(()=>window.__G.S.settings.cap===50));
+T('v10 : profil : plus de plafond, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!document.getElementById('setCap')&&!/Âge déclaré/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
 await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/suppression/.test(x)&&!/24 mois/.test(x)&&/16 ans/.test(x)&&/consentement/.test(x)&&!/tranche d'âge/.test(x);}));
 await p.locator('#modal [data-close]').click();
 // notifications (faux plugin Capacitor)

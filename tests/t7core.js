@@ -46,8 +46,8 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'wp',payload:{i:0}},now+61000);T('arme sans point refusée',r.result.err==='pp');
  r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'}},now+61000);T('achat non certifié refusé',r.result.err==='store');
  r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('v10.5 : achat accepté sans âge déclaré',r.result.ok);
- r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'a',cap:50,stats:false,notif:true}}},now+61000);S=r.state;T('v10.5 : plafond, stats, notifs enregistrés, âge ignoré',S.settings.age===undefined&&S.settings.cap===50&&S.settings.stats===false&&S.settings.notif===true);
- r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'c',cap:7}}},now+61000);T('v10 : plafond hors liste ignoré',r.state.settings.cap===50);S=r.state;
+ r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'a',cap:50,stats:false,notif:true}}},now+61000);S=r.state;T('v10.6 : stats, notifs enregistrés, âge et plafond ignorés',S.settings.age===undefined&&S.settings.cap===undefined&&S.settings.stats===false&&S.settings.notif===true);
+ r=pfApply(src2,S,{action:'sync',sim:{settings:{age:'c',cap:7}}},now+61000);S=r.state;
  r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('achat démo accepté : premier pack doublé (200 gemmes), dépense notée',r.result.ok&&r.state.gems===220&&r.state.firstX2===true&&r.state.spend.eur===0.99);S=r.state;
  r=pfApply(src2,S,{action:'purchase',payload:{id:'g100'},demo:true},now+61000);T('v10 : ×2 une seule fois',r.result.ok&&r.state.gems===320&&r.state.spend.eur===1.98);S=r.state;S.gems=120;
  r=pfApply(src2,S,{action:'gift_offer'},now+62000);T('cadeau tiré par le serveur',r.result.gift&&r.state.gift);S=r.state;

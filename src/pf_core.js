@@ -69,7 +69,6 @@ function pfMergeSim(G,sim,dt,anomalies){
   up(S.week,'kills',w.kills,(S.week.kills|0)+dt/1.5+10);
   if(sim.bestiary&&typeof sim.bestiary==='object'&&Object.keys(sim.bestiary).length<=300){const b={};for(const k in sim.bestiary){if(/^\d+$/.test(k)&&Number.isInteger(sim.bestiary[k]))b[k]=sim.bestiary[k];}S.bestiary=Object.assign(S.bestiary||{},b);}
   if(sim.settings&&typeof sim.settings==='object')for(const k of ['music','sound','fx','stats','notif'])if(typeof sim.settings[k]==='boolean')S.settings[k]=sim.settings[k];
-  if(sim.settings&&typeof sim.settings==='object'){if(G.CFG.spend.caps.includes(sim.settings.cap))S.settings.cap=sim.settings.cap;}
   if(sim.league&&typeof sim.league==='object'&&!S.league)S.league=sim.league; // classement simulé (hors ligne) : décoratif
 }
 
