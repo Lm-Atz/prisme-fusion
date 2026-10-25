@@ -1,4 +1,4 @@
-const VERSION='11.0 · saison';
+const VERSION='11.1 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -187,10 +187,12 @@ function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){
 
 /* v9.9 : onglets débloqués au fil de la progression (premières minutes plus lisibles) */
 const NAV_AT={atelier:3,quests:5,shop:8,clan:10};
-function navUnlock(){S.st.nav=S.st.nav||[];for(const k in NAV_AT){const b=document.querySelector(`.nav [data-tab="${k}"]`);if(!b)continue;const on=S.bestStage>=NAV_AT[k]||S.prestiges>0;b.hidden=!on;if(on&&!S.st.nav.includes(k)){S.st.nav.push(k);if(S.bestStage>1&&S.bestStage<20)toast(t('nav_new',{t:t('nav_'+k)}));}}}
+function navUnlock(){S.st.nav=S.st.nav||[];for(const k in NAV_AT){const b=document.querySelector(`.nav [data-tab="${k}"]`);if(!b)continue;const on=S.bestStage>=NAV_AT[k]||S.prestiges>0;b.hidden=false; /* v11.1 : onglets verrouillés visibles (cadenas + étape), plus d'onglet « Jeu » seul */
+    b.classList.toggle('lockd',!on);b.setAttribute('aria-disabled',String(!on));let lk=b.querySelector('.lk');if(!on&&!lk){lk=document.createElement('span');lk.className='lk';lk.innerHTML=ic('lock');b.appendChild(lk);}else if(on&&lk)lk.remove();
+    if(on&&!S.st.nav.includes(k)){S.st.nav.push(k);if(S.bestStage>1&&S.bestStage<20){toast(t('nav_new',{t:t('nav_'+k)}));b.classList.add('newtab');setTimeout(()=>b.classList.remove('newtab'),2400);sfx.chord();}}}}
 function refresh(){
   roll();
-  $('cG').textContent=grp(S.gems);const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
+  gemCounter();const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
   navUnlock();
   const rg=$('refrG');if(rg){const on=!S.prestiges&&S.bestStage>=10&&S.run.max<CFG.prestige.minStage;rg.hidden=!on;if(on)rg.textContent=t('refr_gauge',{n:S.run.max,m:CFG.prestige.minStage});}
   $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
@@ -465,7 +467,8 @@ function loginModal(){
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
 }
 function goTab(t){audio();Music.start();tab=t;if(t!=='home')track('tab',{t});renderTab();if(t==='clan')homeMoments();}
-document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;goTab(b.dataset.tab);});
+document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;if(b.classList.contains('lockd')){const k=b.dataset.tab;toast(t('nav_lock',{t:t('nav_'+k),n:NAV_AT[k]}));b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope');sfx.low&&kick('small');return;}goTab(b.dataset.tab);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('veil').hidden&&$('modal').querySelector('[data-close]'))closeModal();}); // v11.1 : Échap ferme la fenêtre (clavier, web)
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
 $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
@@ -485,7 +488,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.grp){atGroup=el.dataset.grp;renderTab();}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
-  else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(act('claim',{kind:k,i:+i},()=>claim(k,+i))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
+  else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(gainFx(el,()=>act('claim',{kind:k,i:+i},()=>claim(k,+i)))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
   else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
   else if(el.id==='gdCreate'){const nm=$('gdName').value.trim();guildBusy=true;renderTab();gdErrMsg='';actAsync('guild_create',{name:nm}).then(d=>{guildBusy=false;if(d&&d.ok){guildCache=null;guildList=null;sfx.win();toast(t('gd_created'));track('guild_create',{});}else gdErrMsg=gdErr(d&&d.err);renderTab();refresh();});}
@@ -498,9 +501,9 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='gdLeave'){modal(`<h2>${t('gd_leave_q')}</h2><p>${t('gd_leave_p')}</p><div class="acts"><button class="b b-red" id="gdLeaveOk">${t('gd_leave')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.ppage!=null){passPage=+el.dataset.ppage;renderTab();}
   else if(el.dataset.passtier){const k=+el.dataset.passtier;if(act('pass_buy',{k},()=>passBuy(k))){sfx.buy();toast(t('ps_bought',{n:k}));passPage=-1;}else toast(t('no_gems'));save();refresh();renderTab();}
-  else if(el.id==='passAll'){const c=act('pass_all',{},()=>passClaimAll()||false);if(c){sfx.chord();toast(t('ps_got_n',{n:c}));}save();refresh();renderTab();}
-  else if(el.id==='shopGift'){if(act('shop_gift',{},()=>shopGift())){sfx.chord();toast(t('sg_got',{n:CFG.shopGift.g}));}save();refresh();renderTab();}
-  else if(el.dataset.pass){const n=+el.dataset.pass,tr=el.dataset.track;if(tr==='p'&&!passState().prem){el.blur();const o=OFFERS.find(x=>x.id==='pass');track('offer_view',{id:'pass',ctx:'track'});modal(`<div class="mart">${ic('crown','ig')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="pass">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}else if(act('pass_claim',{n,track:tr},()=>passClaim(n,tr))){sfx.chord();toast(t('ps_got'));save();refresh();renderTab();}}
+  else if(el.id==='passAll'){const c=gainFx(el,()=>act('pass_all',{},()=>passClaimAll()||false));if(c){sfx.chord();toast(t('ps_got_n',{n:c}));}save();refresh();renderTab();}
+  else if(el.id==='shopGift'){if(gainFx(el,()=>act('shop_gift',{},()=>shopGift()))){sfx.chord();}save();refresh();renderTab();}
+  else if(el.dataset.pass){const n=+el.dataset.pass,tr=el.dataset.track;if(tr==='p'&&!passState().prem){el.blur();const o=OFFERS.find(x=>x.id==='pass');track('offer_view',{id:'pass',ctx:'track'});modal(`<div class="mart">${ic('crown','ig')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="pass">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}else if(gainFx(el,()=>act('pass_claim',{n,track:tr},()=>passClaim(n,tr)))){sfx.chord();save();refresh();renderTab();}}
   else if(el.dataset.passbuy){const o=OFFERS.find(x=>x.id==='pass');track('offer_view',{id:'pass'});modal(`<div class="mart">${ic('crown','ig')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><div class="acts"><button class="b b-gold" data-confirm="pass">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.id==='privBtn')privacyModal();
   else if(el.dataset.greport){const id=el.dataset.greport;el.disabled=true;netGuildReport(id).then(r=>toast(r.ok?t('lg_reported'):gdErr(r.err)));}
@@ -650,6 +653,20 @@ async function notifCancel(){const P=LN();if(!P)return;try{await P.cancel({notif
 function notifPrompt(){if(!$('veil').hidden||S.settings.notif!=null)return;track('notif_ask',{});
   modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_title')}</h2><p>${t('nt_p')}</p><div class="acts"><button class="b b-gold" id="notifYes">${t('nt_yes')}</button><button class="b" id="notifNo">${t('nt_no')}</button></div>`);}
 async function notifAsk(){const P=LN();if(!P)return false;let ok=false;try{const r=await P.requestPermissions();ok=r&&r.display==='granted';}catch(e){}S.settings.notif=ok;track('notif',{on:ok});save();if(!ok)toast(t('nt_denied'));if(tab==='profile')renderTab();return ok;}
+/* ================= v11.1 : gains visibles (game feel) ================= */
+/* Toute récompense récupérée dans un menu jaillit du bouton (+10 gemmes, +étincelles), le bouton rebondit, petite vibration.
+   Transitoire (900 ms), proportionné, désactivé avec « Effets » ou « réduire les animations ». */
+function gainFx(el,fn){const g0=S.gems,s0=S.run.sparks,b0=S.boostUntil;const r=fn();if(r){const dg=S.gems-g0,ds=S.run.sparks-s0,db=S.boostUntil>b0+60e3;rewardFx(el,dg,ds,db);}return r;}
+function rewardFx(el,dg,ds,db){const parts=[];if(dg>0)parts.push(`+${grp(dg)}${ic('gem','ig')}`);if(ds>=1)parts.push(`+${fmt(ds)}${ic('spark','ie')}`);if(db)parts.push(ic('bolt','ie')+'×2');if(!parts.length)return;
+  const R=el&&el.getBoundingClientRect?el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const d=document.createElement('div');d.className='rwpop'+(motionOK()?'':' still');d.innerHTML=parts.join(' ');d.style.left=(R.left+R.width/2)+'px';d.style.top=(R.top+R.height/2)+'px';d.setAttribute('aria-hidden','true');document.body.appendChild(d);setTimeout(()=>d.remove(),1000);
+  if(el&&el.classList&&motionOK()){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');}
+  if(S.settings.fx)try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
+/* compteur de gemmes : il défile vers la nouvelle valeur et la pastille rebondit quand le total monte */
+let gemShown=null,gemTw=0;
+function gemCounter(){const el=$('cG');if(!el)return;const v=S.gems;if(gemShown==null||!motionOK()||tab!=='home'||Math.abs(v-gemShown)>100000){gemShown=v;el.textContent=grp(v);return;}if(v===gemShown)return;
+  const from=gemShown,up=v>from,t0=performance.now(),D=450,id=++gemTw;gemShown=v;if(up){const p=$('pillG');p.classList.remove('bump');void p.offsetWidth;p.classList.add('bump');}
+  const step=now=>{if(id!==gemTw)return;const k=Math.min(1,(now-t0)/D),e=1-Math.pow(1-k,3);el.textContent=grp(Math.round(from+(v-from)*e));if(k<1)requestAnimationFrame(step);};requestAnimationFrame(step);}
 /* ----- textes statiques (nav, aria, hors-ligne) ----- */
 function applyStatic(){document.querySelectorAll('[data-i18n]').forEach(el=>{el.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent=t(el.dataset.i18n);});});document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAria)));document.title='Prisme Fusion';}
 /* ----- lancement de la partie continue ----- */
@@ -716,7 +733,7 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}

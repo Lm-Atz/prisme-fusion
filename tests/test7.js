@@ -302,6 +302,15 @@ T('v11 : Atelier : rangée « Définitives » et rangée « Remises à zéro »'
 T('v11 : Réfraction : « Tu gardes » / « Tu repars à zéro »',r.pre);T('v11 : petits textes des boutons dans la police du jeu',r.font&&r.adFont);
 r=await ev(async()=>{const G=window.__G,o=[];const lang0=G.LANG;for(const lg of ['fr','de','pt']){G.setLang(lg);for(const tb of ['shop','pass','quests','profile','atelier']){G.setTab(tb);document.querySelectorAll('#panel button,#panel .b').forEach(e=>{if(!e.offsetParent)return;const R=e.getBoundingClientRect();e.querySelectorAll('*').forEach(c=>{const q=c.getBoundingClientRect();if(q.width&&(q.right>R.right+2||q.left<R.left-2))o.push(lg+'/'+tb+': '+c.textContent.trim().slice(0,25));});});}}G.setLang(lang0);G.setTab('home');return o;});
 T('v11 : aucun texte qui déborde de son bouton (fr, de, pt) '+r.slice(0,3).join(' | '),r.length===0);
+// v11.1 : game feel des menus, onglets verrouillés, Échap
+r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;const sv={b:G.S.bestStage,p:G.S.prestiges};G.S.bestStage=1;G.S.prestiges=0;G.refresh();
+  const b=document.querySelector('.nav [data-tab="shop"]');b.click();o.lockTap=G.tab!=='shop'&&/étape 8/.test(document.getElementById('toast').textContent);G.S.bestStage=sv.b;G.S.prestiges=sv.p;G.refresh();o.unl=!document.querySelector('.nav [data-tab="shop"]').classList.contains('lockd');
+  G.S.day.sgift=0;G.setTab('shop');const g0=G.S.gems;document.getElementById('shopGift').click();const pop=document.querySelector('.rwpop');o.pop=!!pop&&/\+5/.test(pop.textContent)&&G.S.gems===g0+5;
+  await new Promise(z=>setTimeout(z,1100));o.gone=!document.querySelector('.rwpop');
+  G.setTab('home');await new Promise(z=>setTimeout(z,600));const c=document.getElementById('cG');G.S.gems+=500;G.refresh();await new Promise(z=>setTimeout(z,120));const mid=+c.textContent.replace(/\D/g,'');await new Promise(z=>setTimeout(z,600));const end=+c.textContent.replace(/\D/g,'');
+  o.count=mid<G.S.gems&&end===G.S.gems;G.S.gems-=500;G.refresh();
+  G.privacyModal();document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));o.esc=document.getElementById('veil').hidden;return o;});
+T('v11.1 : onglet verrouillé : message « se débloque à l\'étape 8 »',r.lockTap);T('v11.1 : onglet débloqué ensuite',r.unl);T('v11.1 : récompense qui jaillit du bouton (+5 gemmes)',r.pop);T('v11.1 : effet transitoire (disparaît)',r.gone);T('v11.1 : compteur de gemmes qui défile',r.count);T('v11.1 : Échap ferme la fenêtre',r.esc);
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});
@@ -315,11 +324,11 @@ r=await ev(async()=>{const G=window.__G,o={};G.S.settings.music=true;G.S.setting
 T('v10.2 : musique lancée',r.ac&&r.on0);T('v10.2 : arrière-plan → musique arrêtée, son suspendu',r.off);T('v10.2 : retour → musique reprise',r.back);T('v10.2 : musique désactivée → ne reprend pas',r.noMusic);
 // v9.9 : premières minutes
 r=await ev(()=>{const G=window.__G,S=G.S,o={};const sv={b:S.bestStage,p:S.prestiges,m:S.run.max,st:S.st.nav};S.bestStage=1;S.prestiges=0;S.run.max=1;G.refresh();
-  const hid=k=>document.querySelector(`.nav [data-tab="${k}"]`).hidden;o.start=hid('atelier')&&hid('quests')&&hid('shop')&&hid('clan');
+  const hid=k=>{const b=document.querySelector(`.nav [data-tab="${k}"]`);return !b.hidden&&b.classList.contains('lockd')&&!!b.querySelector('.lk');};o.start=hid('atelier')&&hid('quests')&&hid('shop')&&hid('clan');
   S.bestStage=3;G.refresh();o.s3=!hid('atelier')&&hid('quests');S.bestStage=8;G.refresh();o.s8=!hid('shop')&&hid('clan');S.bestStage=10;G.refresh();o.s10=!hid('clan');
   S.bestStage=15;S.run.max=15;G.refresh();const rg=document.getElementById('refrG');o.gauge=!rg.hidden&&/15 \/ 30/.test(rg.textContent);S.run.max=30;G.refresh();o.gaugeOff=rg.hidden;
   S.bestStage=sv.b;S.prestiges=sv.p;S.run.max=sv.m;G.refresh();return o;});
-T('v9.9 : onglets cachés au départ',r.start);T('v9.9 : Atelier à l\'étape 3',r.s3);T('v9.9 : Boutique à l\'étape 8',r.s8);T('v9.9 : Clan à l\'étape 10',r.s10);T('v9.9 : jauge de Réfraction 10–29',r.gauge&&r.gaugeOff);
+T('v11.1 : onglets verrouillés visibles (cadenas) au départ',r.start);T('v9.9 : Atelier à l\'étape 3',r.s3);T('v9.9 : Boutique à l\'étape 8',r.s8);T('v9.9 : Clan à l\'étape 10',r.s10);T('v9.9 : jauge de Réfraction 10–29',r.gauge&&r.gaugeOff);
 // connexion obligatoire
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran
