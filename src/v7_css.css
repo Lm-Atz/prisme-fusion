@@ -191,3 +191,21 @@ body{margin:0}
 .bump{animation:bump 260ms cubic-bezier(.34,1.56,.64,1)}
 @keyframes bump{40%{transform:scale(1.12)}}
 @media (max-height:700px){.hint{margin-right:54px}}
+/* v11.2 : revue design */
+.pips.inf{background:var(--edge);opacity:1}
+.tname{font-size:15px}
+.offer{position:relative}.offer.best{box-shadow:inset 0 0 0 2px var(--gem)}
+.ribbon{position:absolute;top:-9px;right:14px;background:var(--gem);color:#22093a;font:13px/1 var(--display);padding:5px 9px;border-radius:9px;box-shadow:0 2px 0 var(--gem-edge)}
+.bon{display:inline-block;font:13px/1 var(--display);padding:3px 6px;border-radius:7px;background:rgba(212,140,255,.18);color:var(--gem);vertical-align:2px}
+.oart.pk{position:relative}.oart.pk .i{position:absolute;width:28px;height:28px}
+.oart.pk1 .i{left:50%;top:50%;transform:translate(-50%,-50%);width:32px;height:32px}
+.oart.pk2 .i:nth-child(1){left:9px;top:16px}.oart.pk2 .i:nth-child(2){left:21px;top:8px}
+.oart.pk3 .i:nth-child(1){left:5px;top:20px}.oart.pk3 .i:nth-child(2){left:25px;top:20px}.oart.pk3 .i:nth-child(3){left:15px;top:5px}
+.x2bar{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;padding:9px 12px;border-radius:12px;background:rgba(255,200,87,.12);box-shadow:inset 0 0 0 2px rgba(255,200,87,.45);color:var(--beam);font:15px var(--display)}.x2bar .i{width:18px;height:18px}
+.lgsub{display:flex;align-items:flex-start;gap:10px}.lgsub .note{flex:1;margin-top:0}
+.qhelp{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:0;background:var(--night-2);box-shadow:inset 0 0 0 2px var(--line);color:var(--light);font:20px var(--display);cursor:pointer}
+.lg.bot .nm{font-style:normal;opacity:1}
+.simtag{display:inline-block;margin-right:6px;font:700 11px/1 var(--body);padding:3px 6px;border-radius:6px;background:var(--night-2);color:var(--faint);vertical-align:2px;text-transform:uppercase;letter-spacing:.04em}
+.langbtn{width:100%;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}.langbtn .lv2{display:flex;align-items:center;gap:6px;color:var(--beam);font:16px var(--display)}.langbtn .lv2 .i{width:14px;height:14px;transform:rotate(45deg);opacity:.0}
+.langs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.simall{margin:6px 0 8px;padding:8px 12px;border-radius:10px;background:var(--night-2);color:var(--mist);font-size:13px}

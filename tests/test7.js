@@ -228,8 +228,8 @@ await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
 // ===== v10 : boutique, pass de saison, achats encadrés, notifications, offres contextuelles, confidentialité =====
 await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.setTab('shop');});
 r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');const H=pn.innerHTML;o.order=H.indexOf('shopGift')<H.indexOf('data-tab="pass"')&&H.indexOf('data-tab="pass"')<H.indexOf('data-offer="g100"');
-  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2').length===6;return o;});
-T('v11 : boutique : cadeau, puis carte du pass, puis gemmes',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v10 : ×2 affiché sur les 6 packs',r.x2);
+  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2bar').length===1&&pn.querySelectorAll('.x2').length===0;o.best=pn.querySelectorAll('.offer.best .ribbon').length===1&&!!pn.querySelector('.offer.best [data-offer="g16000"]');o.nopct=!/par rapport au petit paquet/.test(pn.innerText)&&pn.querySelectorAll('.bon').length===5;o.starter=pn.innerHTML.indexOf('data-offer="starter"')<pn.innerHTML.indexOf('data-tab="pass"');return o;});
+T('v11 : boutique : cadeau, puis carte du pass, puis gemmes',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v11.2 : ×2 annoncé une fois (bandeau)',r.x2);T('v11.2 : un seul « Meilleur rapport », sur le vrai meilleur pack',r.best);T('v11.2 : bonus en pastille, plus de phrase répétée',r.nopct);T('v11.2 : pack de départ en haut tant qu\'il n\'est pas pris',r.starter);
 r=await ev(()=>{const G=window.__G;const g=G.S.gems;document.getElementById('shopGift').click();const a=G.S.gems===g+5&&document.getElementById('shopGift').disabled;return a;});T('v10 : cadeau du jour +5, puis bouton désactivé',r);
 await p.locator('#panel [data-tab="pass"]').first().click();
 r=await ev(()=>{const G=window.__G,pn=document.getElementById('panel'),o={};o.tab=G.tab==='pass';o.rows=pn.querySelectorAll('.pt:not(.ph)').length===10&&/Paliers 1 à 10/.test(pn.innerText)&&/Palier 0 \/ 100/.test(pn.innerText);o.nav=document.querySelector('.nav [data-tab="shop"]').getAttribute('aria-selected')==='true';return o;});
@@ -311,6 +311,21 @@ r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hid
   o.count=mid<G.S.gems&&end===G.S.gems;G.S.gems-=500;G.refresh();
   G.privacyModal();document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));o.esc=document.getElementById('veil').hidden;return o;});
 T('v11.1 : onglet verrouillé : message « se débloque à l\'étape 8 »',r.lockTap);T('v11.1 : onglet débloqué ensuite',r.unl);T('v11.1 : récompense qui jaillit du bouton (+5 gemmes)',r.pop);T('v11.1 : effet transitoire (disparaît)',r.gone);T('v11.1 : compteur de gemmes qui défile',r.count);T('v11.1 : Échap ferme la fenêtre',r.esc);
+// v11.2 : revue design
+r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;G.setTab('atelier');const pn=document.getElementById('panel');
+  o.sub=!/sont définitifs/.test(pn.querySelector('.phead').innerText);document.querySelector('#panel [data-grp="start"]').click();await new Promise(z=>setTimeout(z,30));
+  o.inf=[...document.querySelectorAll('#panel .pips.inf')].every(e=>!/gradient/.test(getComputedStyle(e).backgroundImage));
+  const ic=id=>document.querySelector(`#panel [data-updetail="${id}"] use`)?.getAttribute('href');o.icons=ic('off')!==ic('st_cad')&&ic('off')==='#i-clock';
+  const sv0=G.S.bestStage;G.seenReset();G.S.bestStage=1;['start','auto','atk','grid','eco','jok','arm'].forEach(g=>G.seenGroup(g));G.S.bestStage=sv0;G.S.bestStage=1;o.seen0=['start','auto','atk','grid','eco','jok','arm'].every(g=>!G.grpNew(g));
+  const sv=sv0;G.S.bestStage=999;o.newB=['start','auto','atk','grid','eco','jok','arm'].some(g=>G.grpNew(g));const g1=['start','auto','atk','grid','eco','jok','arm'].find(g=>G.grpNew(g));G.seenGroup(g1);o.seenAfter=!G.grpNew(g1);G.S.bestStage=sv;
+  G.setTab('clan');const c=document.getElementById('panel');o.lg=!/montent en/.test(c.innerText)&&!c.querySelector('.zone')&&/étapes/.test(c.querySelector('h2.sec').innerText);
+  document.getElementById('lgHelp').click();o.help=/division dépend/.test(document.getElementById('modal').innerText);document.querySelector('#modal [data-close]').click();
+  o.allsim=!!c.querySelector('.simall')&&!c.querySelector('.simtag');
+  G.setTab('profile');o.nosel=!document.querySelector('#panel select');document.getElementById('langBtn').click();const b=document.querySelector('#modal [data-setlang="en"]');o.langs=document.querySelectorAll('#modal [data-setlang]').length>=6;b.click();await new Promise(z=>setTimeout(z,50));o.en=G.LANG==='en';G.setLang('fr');G.setTab('home');return o;});
+T('v11.2 : Atelier sans en-tête redondant',r.sub);T('v11.2 : plus de fausse barre pleine (recherches sans maximum)',r.inf);T('v11.2 : Veille a sa propre icône',r.icons);
+T('v11.2 : pastilles : rien de neuf → aucune',r.seen0);T('v11.2 : pastille sur une famille avec une recherche nouvellement débloquée',r.newB);T('v11.2 : pastille effacée une fois la famille ouverte',r.seenAfter);
+T('v11.2 : ligue : plus de « montée », tranche d\'étapes affichée',r.lg);T('v11.2 : ligue : explication derrière « ? »',r.help);T('v11.2 : classement tout simulé : une seule mention',r.allsim);
+T('v11.2 : langue : plus de menu déroulant système',r.nosel);T('v11.2 : langue choisie dans une fenêtre du jeu',r.langs&&r.en);
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});
