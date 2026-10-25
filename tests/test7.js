@@ -326,6 +326,11 @@ T('v11.2 : Atelier sans en-tête redondant',r.sub);T('v11.2 : plus de fausse bar
 T('v11.2 : pastilles : rien de neuf → aucune',r.seen0);T('v11.2 : pastille sur une famille avec une recherche nouvellement débloquée',r.newB);T('v11.2 : pastille effacée une fois la famille ouverte',r.seenAfter);
 T('v11.2 : ligue : plus de « montée », tranche d\'étapes affichée',r.lg);T('v11.2 : ligue : explication derrière « ? »',r.help);T('v11.2 : classement tout simulé : une seule mention',r.allsim);
 T('v11.2 : langue : plus de menu déroulant système',r.nosel);T('v11.2 : langue choisie dans une fenêtre du jeu',r.langs&&r.en);
+// v11.3 : identité visuelle par onglet
+r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;const acc=t=>{G.setTab(t);return getComputedStyle(document.querySelector('#panel .phead .ttl')).color;};
+  o.diff=new Set(['atelier','quests','clan','shop'].map(acc)).size===4;G.S.st.manual=Math.max(G.S.st.manual,20);G.setTab('quests');o.one=document.querySelectorAll('#panel .hero').length<=1;
+  G.S.starter=false;G.setTab('shop');o.shop=!!document.querySelector('#panel .offer.feat.hero .herol');G.setTab('profile');o.none=!document.querySelector('#panel .hero');G.setTab('home');return o;});
+T('v11.3 : une couleur du spectre par onglet',r.diff);T('v11.3 : au plus un élément mis en avant par écran',r.one&&r.none);T('v11.3 : offre de bienvenue mise en avant en boutique',r.shop);
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});

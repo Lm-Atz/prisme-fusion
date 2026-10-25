@@ -1,4 +1,4 @@
-const VERSION='11.2 · saison';
+const VERSION='11.3 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -371,6 +371,11 @@ async function afterLogin(){
   acctBusy=false;renderTab();
 }
 function recoverModal(){modal(`<h2>${t('pr_recover')}</h2><p>${t('pr_acct_other',{n:esc(acct.other.name),s:acct.other.best})}</p><p>${t('pr_recover_p')}</p><div class="acts"><button class="b b-gold" id="acRecoverOk">${t('pr_recover')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+/* v11.3 : identité visuelle des onglets. Le prisme décompose la lumière : chaque onglet est une bande du spectre
+   (Atelier or, Quêtes vert, Clan cyan, Boutique et pass violet). Un seul élément mis en avant par écran, taillé comme une facette. */
+const HERO={atelier:['.slot:not(.empty)','hero_run'],quests:['.quest.hl','hero_claim'],shop:['.offer.feat','hero_welcome'],pass:['.pr:not(:disabled):not(.lock)','hero_claim'],clan:['.lg.me','hero_you']};
+function markHero(){const pn=$('panel');pn.dataset.acc=tab;const hdef=HERO[tab];if(!hdef)return;let e=pn.querySelector(hdef[0]);if(tab==='pass'&&e)e=e.closest('.pt');if(!e)return;e.classList.add('hero');
+  if(tab!=='pass'&&tab!=='clan'){const l=document.createElement('span');l.className='herol';l.textContent=t(hdef[1]);const host=e.querySelector('b,.qbody b')||e;if(host.parentNode)host.parentNode.insertBefore(l,host);}}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab)));
@@ -464,7 +469,7 @@ function renderTab(){
     h+=`<h2 class="sec">${t('pr_xfer')}</h2><p class="sub" style="margin:-4px 0 8px">${t('pr_xfer_p')}</p><div class="row"><button class="b" style="flex:1" id="xferShow">${t('pr_xfer_show')}</button><button class="b" style="flex:1" id="xferEnter">${t('pr_xfer_enter')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_demo')}<small>${t('pr_version',{v:VERSION})}</small></h2><button class="b b-red" style="width:100%" id="resetBtn">${t('pr_reset')}</button>`;
   }
-  p.innerHTML=h;window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});
+  p.innerHTML=h;markHero();window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});
   p.querySelectorAll('canvas[data-wpn]').forEach(m=>{const c=m.getContext('2d');c.clearRect(0,0,88,88);drawGem(c,44,44,30,+m.dataset.wpn,1,1,false,0);});
   p.querySelectorAll('canvas[data-foe]').forEach(m=>{drawFoeAt(m.getContext('2d'),88,0,enemyFor(+m.dataset.foe));});
   p.querySelectorAll('canvas[data-mini]').forEach(m=>{const hv=m.dataset.hue;drawMini(m,+m.dataset.mini,hv==='me'?skinHue(0):hv==='prism'?300:+hv);});

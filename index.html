@@ -429,6 +429,20 @@ body{margin:0}
 .langbtn{width:100%;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}.langbtn .lv2{display:flex;align-items:center;gap:6px;color:var(--beam);font:16px var(--display)}.langbtn .lv2 .i{width:14px;height:14px;transform:rotate(45deg);opacity:.0}
 .langs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
 .simall{margin:6px 0 8px;padding:8px 12px;border-radius:10px;background:var(--night-2);color:var(--mist);font-size:13px}
+/* v11.3 : une bande du spectre par onglet, facettes au lieu de carrés arrondis, un seul élément taillé par écran */
+#panel{--acc:var(--beam)}
+#panel[data-acc=atelier]{--acc:var(--beam)}#panel[data-acc=quests]{--acc:var(--ok)}#panel[data-acc=clan]{--acc:var(--shard)}#panel[data-acc=shop],#panel[data-acc=pass]{--acc:var(--gem)}#panel[data-acc=profile]{--acc:var(--mist)}
+#panel .phead .ttl{color:var(--acc)}
+#panel h2.sec{position:relative;padding-left:20px}#panel h2.sec::before{content:"";position:absolute;left:3px;top:.55em;width:9px;height:9px;background:var(--acc);transform:rotate(45deg)}
+#panel[data-acc=quests] .quest.hl{box-shadow:inset 0 0 0 2px var(--acc),0 4px 0 var(--edge)}
+#panel .quit{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--acc) 45%,var(--line))}
+.oart,.qic,.tico,.jart{clip-path:polygon(28% 0,72% 0,100% 28%,100% 72%,72% 100%,28% 100%,0 72%,0 28%);border-radius:0}
+.hero{background:linear-gradient(135deg,var(--acc) 0 15px,transparent 15.5px),var(--slab)!important;box-shadow:inset 0 0 0 2px var(--acc)!important}
+.pt.hero{background:none!important;box-shadow:none!important}.pt.hero .rk{color:var(--acc)}
+.lg.me.hero{background:linear-gradient(135deg,var(--acc) 0 12px,transparent 12.5px),var(--slab-hi)!important}
+.herol{display:block;font:13px/1.2 var(--display);color:var(--acc);letter-spacing:.02em;margin-bottom:2px}
+.slot.hero .herol{margin-bottom:0}
+.pcard .oart{width:48px;height:48px}.pcard .oart .i{width:30px;height:30px}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -637,6 +651,7 @@ Object.assign(I18N.fr,{"of_pass": "Pass de saison", "of_pass_d": "Débloque la p
 Object.assign(I18N.fr,{"ps_open": "Ouvrir", "ps_plus": "+{n} palier{n|s}", "ps_buy_free": "Sans le pass payant, les paliers achetés débloquent la piste gratuite. Si tu prends le pass ensuite, leurs récompenses premium deviennent aussi disponibles.", "ps_all": "Tout récupérer", "ps_prev": "Paliers précédents", "ps_next": "Paliers suivants", "ps_range": "Paliers {a} à {b}", "ps_bought": "+{n} palier{n|s}", "ps_got_n": "{n} récompense{n|s} récupérée{n|s}", "at_keep": "Définitives", "at_cycle": "Remises à zéro à la Réfraction", "at_tag_keep": "Gardée à la Réfraction", "at_tag_cycle": "Remise à zéro à la Réfraction (en mémoire)", "pre_keep": "Tu gardes", "pre_lose": "Tu repars à zéro", "pre_keep_l": "Départ, Auto, Jokers, Armes, gemmes, couleurs, pass", "pre_lose_l": "Attaque, Plateau, Économie (en mémoire, rachat instantané à moitié prix), étincelles, étape, boosters"}); // v11
 Object.assign(I18N.fr,{"sh_best": "Meilleur rapport", "lg_short": "Ton total de dégâts contre le Titan cette semaine ({days}).", "lg_help_t": "Comment marche la ligue ?", "lg_help": "Chaque semaine, tu affrontes le Titan les jours indiqués. Tes dégâts s'additionnent.\nTu es classé avec des joueurs de même puissance : ta division dépend de ta meilleure étape (Bronze avant l'étape 30, puis Argent, Or, Platine, Diamant).\nTant qu'un groupe compte moins de 20 joueurs, il est complété par des rivaux simulés, marqués « simulé ». Leur score suit le tien de la semaine passée : fais mieux pour grimper.\nLe dimanche soir, le classement se fige et tu reçois des gemmes et de la production selon ta place.", "lg_sim": "simulé", "lg_range_0": "étapes 1 à 29", "lg_range_1": "étapes 30 à 59", "lg_range_2": "étapes 60 à 99", "lg_range_3": "étapes 100 à 199", "lg_range_4": "étape 200 et plus"}); // v11.2
 Object.assign(I18N.fr,{"lg_allsim": "Classement d'entraînement, entièrement simulé : tu rejoins de vrais joueurs dès ton premier combat contre le Titan."});
+Object.assign(I18N.fr,{"hero_run": "En cours", "hero_claim": "À récupérer", "hero_welcome": "Offre de bienvenue", "hero_you": "Toi"}); // v11.3
 Object.assign(I18N.fr,{"nav_lock": "{t} : se débloque à l'étape {n}"}); // v11.1
 Object.assign(I18N.fr,{"name_league": "Ton nom en ligue", "nav_new": "Nouvel onglet : {t}", "refr_gauge": "Réfraction : étape {n} / {m}"}); // v9.9
 Object.assign(I18N.fr,{"of_chest": "Coffre de gemmes", "of_chest_d": "Se remplit d'une gemme pour deux gemmes gagnées en jouant. Contient {n} gemmes sur {m}, contenu exact, sans hasard. S'ouvre dès {o}."}); // v9.8 coffre
@@ -775,6 +790,7 @@ Object.assign(I18N.en,{"ps_open": "Open", "ps_plus": "+{n} tier{n|s}", "ps_buy_f
 Object.assign(I18N.en,{"nav_lock": "{t}: unlocks at stage {n}"}); // v11.1
 Object.assign(I18N.en,{"sh_best": "Best value", "lg_short": "Your total damage against the Titan this week ({days}).", "lg_help_t": "How does the league work?", "lg_help": "Each week, you fight the Titan on the days shown. Your damage adds up.\nYou are ranked with players of similar power: your division depends on your best stage (Bronze before stage 30, then Silver, Gold, Platinum, Diamond).\nWhile a group has fewer than 20 players, it is filled with simulated rivals, marked “simulated”. Their score follows yours from last week: beat it to climb.\nOn Sunday evening the ranking locks and you get gems and production based on your place.", "lg_sim": "simulated", "lg_range_0": "stages 1–29", "lg_range_1": "stages 30–59", "lg_range_2": "stages 60–99", "lg_range_3": "stages 100–199", "lg_range_4": "stage 200+"}); // v11.2
 Object.assign(I18N.en,{"lg_allsim": "Practice ranking, fully simulated: you join real players after your first Titan fight."});
+Object.assign(I18N.en,{"hero_run": "In progress", "hero_claim": "Ready to claim", "hero_welcome": "Welcome offer", "hero_you": "You"}); // v11.3
 I18N.es={
   _name:'Español',_units:['k','M','MM','B'],_days:['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardiente','Lunar','Eléctrico','Sombrío','Radiante','Cuántico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vector','Nova','Púlsar','Octógono','Fotón','Órbita','Fractal'],
   sparks:'chispas',shards:'esquirlas',gems:'gemas',stage:'Etapa {n}',level:'nivel',lvl:'niv. {n}',max:'Máx.',close:'Cerrar',later:'Más tarde',cancel:'Cancelar',
@@ -898,6 +914,7 @@ Object.assign(I18N.es,{"ps_open": "Abrir", "ps_plus": "+{n} nivel{n|es}", "ps_bu
 Object.assign(I18N.es,{"nav_lock": "{t}: se desbloquea en la etapa {n}"}); // v11.1
 Object.assign(I18N.es,{"sh_best": "Mejor precio", "lg_short": "Tu daño total contra el Titán esta semana ({days}).", "lg_help_t": "¿Cómo funciona la liga?", "lg_help": "Cada semana te enfrentas al Titán los días indicados. Tu daño se suma.\nCompites con jugadores de poder similar: tu división depende de tu mejor etapa (Bronce antes de la etapa 30, luego Plata, Oro, Platino, Diamante).\nMientras un grupo tenga menos de 20 jugadores, se completa con rivales simulados, marcados como «simulado». Su puntuación sigue la tuya de la semana pasada: supérala para subir.\nEl domingo por la noche la clasificación se cierra y recibes gemas y producción según tu puesto.", "lg_sim": "simulado", "lg_range_0": "etapas 1 a 29", "lg_range_1": "etapas 30 a 59", "lg_range_2": "etapas 60 a 99", "lg_range_3": "etapas 100 a 199", "lg_range_4": "etapa 200 o más"}); // v11.2
 Object.assign(I18N.es,{"lg_allsim": "Clasificación de práctica, totalmente simulada: te unes a jugadores reales tras tu primer combate contra el Titán."});
+Object.assign(I18N.es,{"hero_run": "En curso", "hero_claim": "Para recoger", "hero_welcome": "Oferta de bienvenida", "hero_you": "Tú"}); // v11.3
 I18N.de={
   _name:'Deutsch',_units:['Tsd.','Mio.','Mrd.','Bio.'],_days:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],_dur:['s','Min.','Std.','T.'],_adj:['Kobalt','Blitzend','Purpur','Stellar','Flink','Polar','Glühend','Lunar','Elektrisch','Dunkel','Strahlend','Quanten'],_noun:['Sechseck','Prisma','Fünfeck','Komet','Spirale','Vektor','Nova','Pulsar','Achteck','Photon','Orbit','Fraktal'],
   sparks:'Funken',shards:'Splitter',gems:'Edelsteine',stage:'Stufe {n}',level:'Level',lvl:'Lv. {n}',max:'Max',close:'Schließen',later:'Später',cancel:'Abbrechen',
@@ -1021,6 +1038,7 @@ Object.assign(I18N.de,{"ps_open": "Öffnen", "ps_plus": "+{n} Stufe{n|n}", "ps_b
 Object.assign(I18N.de,{"nav_lock": "{t}: wird ab Stufe {n} freigeschaltet"}); // v11.1
 Object.assign(I18N.de,{"sh_best": "Bester Preis", "lg_short": "Dein Gesamtschaden gegen den Titan diese Woche ({days}).", "lg_help_t": "Wie funktioniert die Liga?", "lg_help": "Jede Woche kämpfst du an den angegebenen Tagen gegen den Titan. Dein Schaden wird addiert.\nDu trittst gegen Spieler mit ähnlicher Stärke an: Deine Division hängt von deiner besten Stufe ab (Bronze vor Stufe 30, dann Silber, Gold, Platin, Diamant).\nSolange eine Gruppe weniger als 20 Spieler hat, wird sie mit simulierten Rivalen aufgefüllt, markiert mit „simuliert“. Ihre Punktzahl richtet sich nach deiner der Vorwoche: Übertriff sie, um aufzusteigen.\nAm Sonntagabend steht die Rangliste fest und du erhältst Edelsteine und Produktion je nach Platz.", "lg_sim": "simuliert", "lg_range_0": "Stufen 1–29", "lg_range_1": "Stufen 30–59", "lg_range_2": "Stufen 60–99", "lg_range_3": "Stufen 100–199", "lg_range_4": "ab Stufe 200"}); // v11.2
 Object.assign(I18N.de,{"lg_allsim": "Übungsrangliste, vollständig simuliert: Nach deinem ersten Kampf gegen den Titan triffst du auf echte Spieler."});
+Object.assign(I18N.de,{"hero_run": "Läuft", "hero_claim": "Zum Abholen", "hero_welcome": "Willkommensangebot", "hero_you": "Du"}); // v11.3
 I18N.pt={
   _name:'Português',_units:['mil','mi','bi','tri'],_days:['domingo','segunda','terça','quarta','quinta','sexta','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardente','Lunar','Elétrico','Sombrio','Radiante','Quântico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vetor','Nova','Pulsar','Octógono','Fotão','Órbita','Fractal'],
   sparks:'faíscas',shards:'estilhaços',gems:'gemas',stage:'Etapa {n}',level:'nível',lvl:'nív. {n}',max:'Máx.',close:'Fechar',later:'Mais tarde',cancel:'Cancelar',
@@ -1144,6 +1162,7 @@ Object.assign(I18N.pt,{"ps_open": "Abrir", "ps_plus": "+{n} níve{n|l/is}", "ps_
 Object.assign(I18N.pt,{"nav_lock": "{t}: desbloqueia na etapa {n}"}); // v11.1
 Object.assign(I18N.pt,{"sh_best": "Melhor preço", "lg_short": "O teu dano total contra o Titã esta semana ({days}).", "lg_help_t": "Como funciona a liga?", "lg_help": "Todas as semanas enfrentas o Titã nos dias indicados. O teu dano soma-se.\nÉs classificado com jogadores de força semelhante: a tua divisão depende da tua melhor etapa (Bronze antes da etapa 30, depois Prata, Ouro, Platina, Diamante).\nEnquanto um grupo tiver menos de 20 jogadores, é completado por rivais simulados, marcados como «simulado». A pontuação deles segue a tua da semana passada: supera-a para subir.\nNo domingo à noite a classificação fecha e recebes gemas e produção conforme o teu lugar.", "lg_sim": "simulado", "lg_range_0": "etapas 1 a 29", "lg_range_1": "etapas 30 a 59", "lg_range_2": "etapas 60 a 99", "lg_range_3": "etapas 100 a 199", "lg_range_4": "etapa 200 ou mais"}); // v11.2
 Object.assign(I18N.pt,{"lg_allsim": "Classificação de treino, totalmente simulada: juntas-te a jogadores reais após o teu primeiro combate contra o Titã."});
+Object.assign(I18N.pt,{"hero_run": "Em curso", "hero_claim": "Para receber", "hero_welcome": "Oferta de boas-vindas", "hero_you": "Tu"}); // v11.3
 I18N.it={
   _name:'Italiano',_units:['k','M','Mrd','Bln'],_days:['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'],_dur:['s','min','h','g'],_adj:['Cobalto','Fulminante','Purpureo','Stellare','Vivace','Polare','Ardente','Lunare','Elettrico','Oscuro','Radioso','Quantico'],_noun:['Esagono','Prisma','Pentagono','Cometa','Spirale','Vettore','Nova','Pulsar','Ottagono','Fotone','Orbita','Frattale'],
   sparks:'scintille',shards:'schegge',gems:'gemme',stage:'Livello {n}',level:'grado',lvl:'gr. {n}',max:'Max',close:'Chiudi',later:'Più tardi',cancel:'Annulla',
@@ -1267,6 +1286,7 @@ Object.assign(I18N.it,{"ps_open": "Apri", "ps_plus": "+{n} livell{n|o/i}", "ps_b
 Object.assign(I18N.it,{"nav_lock": "{t}: si sblocca al livello {n}"}); // v11.1
 Object.assign(I18N.it,{"sh_best": "Miglior prezzo", "lg_short": "Il tuo danno totale contro il Titano questa settimana ({days}).", "lg_help_t": "Come funziona la lega?", "lg_help": "Ogni settimana affronti il Titano nei giorni indicati. I tuoi danni si sommano.\nSei in classifica con giocatori di forza simile: la tua divisione dipende dal tuo miglior livello (Bronzo prima del livello 30, poi Argento, Oro, Platino, Diamante).\nFinché un gruppo ha meno di 20 giocatori, viene completato da rivali simulati, contrassegnati «simulato». Il loro punteggio segue il tuo della settimana scorsa: superalo per salire.\nLa domenica sera la classifica si chiude e ricevi gemme e produzione in base al tuo posto.", "lg_sim": "simulato", "lg_range_0": "livelli 1–29", "lg_range_1": "livelli 30–59", "lg_range_2": "livelli 60–99", "lg_range_3": "livelli 100–199", "lg_range_4": "livello 200 e oltre"}); // v11.2
 Object.assign(I18N.it,{"lg_allsim": "Classifica di allenamento, interamente simulata: entri tra i giocatori veri dopo il tuo primo scontro con il Titano."});
+Object.assign(I18N.it,{"hero_run": "In corso", "hero_claim": "Da ritirare", "hero_welcome": "Offerta di benvenuto", "hero_you": "Tu"}); // v11.3
 
 /* ================= utilitaires ================= */
 const $=id=>document.getElementById(id);
@@ -2163,7 +2183,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='11.2 · saison';
+const VERSION='11.3 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2590,6 +2610,11 @@ async function afterLogin(){
   acctBusy=false;renderTab();
 }
 function recoverModal(){modal(`<h2>${t('pr_recover')}</h2><p>${t('pr_acct_other',{n:esc(acct.other.name),s:acct.other.best})}</p><p>${t('pr_recover_p')}</p><div class="acts"><button class="b b-gold" id="acRecoverOk">${t('pr_recover')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
+/* v11.3 : identité visuelle des onglets. Le prisme décompose la lumière : chaque onglet est une bande du spectre
+   (Atelier or, Quêtes vert, Clan cyan, Boutique et pass violet). Un seul élément mis en avant par écran, taillé comme une facette. */
+const HERO={atelier:['.slot:not(.empty)','hero_run'],quests:['.quest.hl','hero_claim'],shop:['.offer.feat','hero_welcome'],pass:['.pr:not(:disabled):not(.lock)','hero_claim'],clan:['.lg.me','hero_you']};
+function markHero(){const pn=$('panel');pn.dataset.acc=tab;const hdef=HERO[tab];if(!hdef)return;let e=pn.querySelector(hdef[0]);if(tab==='pass'&&e)e=e.closest('.pt');if(!e)return;e.classList.add('hero');
+  if(tab!=='pass'&&tab!=='clan'){const l=document.createElement('span');l.className='herol';l.textContent=t(hdef[1]);const host=e.querySelector('b,.qbody b')||e;if(host.parentNode)host.parentNode.insertBefore(l,host);}}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab)));
@@ -2683,7 +2708,7 @@ function renderTab(){
     h+=`<h2 class="sec">${t('pr_xfer')}</h2><p class="sub" style="margin:-4px 0 8px">${t('pr_xfer_p')}</p><div class="row"><button class="b" style="flex:1" id="xferShow">${t('pr_xfer_show')}</button><button class="b" style="flex:1" id="xferEnter">${t('pr_xfer_enter')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_demo')}<small>${t('pr_version',{v:VERSION})}</small></h2><button class="b b-red" style="width:100%" id="resetBtn">${t('pr_reset')}</button>`;
   }
-  p.innerHTML=h;window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});
+  p.innerHTML=h;markHero();window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});
   p.querySelectorAll('canvas[data-wpn]').forEach(m=>{const c=m.getContext('2d');c.clearRect(0,0,88,88);drawGem(c,44,44,30,+m.dataset.wpn,1,1,false,0);});
   p.querySelectorAll('canvas[data-foe]').forEach(m=>{drawFoeAt(m.getContext('2d'),88,0,enemyFor(+m.dataset.foe));});
   p.querySelectorAll('canvas[data-mini]').forEach(m=>{const hv=m.dataset.hue;drawMini(m,+m.dataset.mini,hv==='me'?skinHue(0):hv==='prism'?300:+hv);});
