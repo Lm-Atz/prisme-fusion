@@ -123,3 +123,4 @@ Object.assign(I18N.it,{"sh_best": "Miglior prezzo", "lg_short": "Il tuo danno to
 Object.assign(I18N.it,{"lg_allsim": "Classifica di allenamento, interamente simulata: entri tra i giocatori veri dopo il tuo primo scontro con il Titano."});
 Object.assign(I18N.it,{"hero_run": "In corso", "hero_claim": "Da ritirare", "hero_welcome": "Offerta di benvenuto", "hero_you": "Tu"}); // v11.3
 Object.assign(I18N.it,{"nt_test": "Prova le notifiche", "nt_test_body": "Test riuscito: le notifiche di Prisme Fusion funzionano.", "nt_test_ok": "Tra 10 secondi arriva una notifica. Esci dal gioco (tasto home) per vederla.", "nt_test_denied": "Il telefono blocca le notifiche del gioco. Attivale in Impostazioni › App › Prisme Fusion › Notifiche.", "nt_test_err": "Impossibile programmare la notifica ({e}).", "nt_test_diag": "Diagnostica: permesso {p}, allarmi esatti {x}"}); // v11.4
+Object.assign(I18N.it,{"ad_wait": "Prossima pubblicità tra {s} s"});

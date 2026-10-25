@@ -123,3 +123,4 @@ Object.assign(I18N.en,{"sh_best": "Best value", "lg_short": "Your total damage a
 Object.assign(I18N.en,{"lg_allsim": "Practice ranking, fully simulated: you join real players after your first Titan fight."});
 Object.assign(I18N.en,{"hero_run": "In progress", "hero_claim": "Ready to claim", "hero_welcome": "Welcome offer", "hero_you": "You"}); // v11.3
 Object.assign(I18N.en,{"nt_test": "Test notifications", "nt_test_body": "Test passed: Prisme Fusion notifications work.", "nt_test_ok": "A notification arrives in 10 seconds. Leave the game (home button) to see it.", "nt_test_denied": "Your phone blocks the game's notifications. Turn them on in Settings › Apps › Prisme Fusion › Notifications.", "nt_test_err": "The notification could not be scheduled ({e}).", "nt_test_diag": "Diagnostics: permission {p}, exact alarms {x}"}); // v11.4
+Object.assign(I18N.en,{"ad_wait": "Next ad available in {s} s"});

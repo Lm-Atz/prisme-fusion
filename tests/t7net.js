@@ -75,6 +75,15 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.navReset();localStorage.removeItem('prisme-nav');G.refresh();const tt=document.getElementById('toast');let n=0;
     for(let i=0;i<3;i++){tt.hidden=true;await G.actAsync('sync');G.refresh();await new Promise(z=>setTimeout(z,50));if(!tt.hidden&&/Nouvel onglet/.test(tt.textContent))n++;}return n;});
   T('v11.5 : pas de « Nouvel onglet » en boucle après synchronisation',r===0);
+  // --- v11.6 : Réfraction automatique validée par le serveur ; étincelles sans double comptage ; réinitialisation de démo côté serveur
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;await G.actAsync('sync');const p0=G.S.prestiges;G.hooks.autoPrestige();await new Promise(z=>setTimeout(z,600));await G.actAsync('sync');return {p0,p1:G.S.prestiges};});
+  T('v11.6 : Réfraction automatique enregistrée par le serveur',r.p1===r.p0+1&&DB.players[idA].state.prestiges===r.p1||r.p1===r.p0&&DB.players[idA].state.prestiges===r.p0);
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;await G.actAsync('sync');const s0=G.S.run.sparks;G.S.gems=Math.max(G.S.gems,20);G.setTab('shop');const b=document.querySelector('[data-pack="0"]');if(!b||b.disabled)return null;b.click();await new Promise(z=>setTimeout(z,800));await G.actAsync('sync');return {cli:G.S.run.sparks};});
+  if(r)T('v11.6 : étincelles d\'un paquet comptées une seule fois (téléphone = serveur)',Math.abs(r.cli-DB.players[idA].state.run.sparks)<Math.max(50,0.02*r.cli));
+  // --- v11.6 : boosters achetés pendant un aller-retour lent : pas d'étincelles rendues
+  LAT=600;r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('home');G.S.run.sparks=Math.max(G.S.run.sparks,1e5);await G.actAsync('sync');
+    const p=G.actAsync('sync');await new Promise(z=>setTimeout(z,100));const before=G.S.run.sparks;const k=['cad','power','spark'].find(k=>G.buyTB(k));const after=G.S.run.sparks;await p;await new Promise(z=>setTimeout(z,50));return {k,spent:before-after,now:G.S.run.sparks,before};});LAT=0;
+  T('v11.6 : achat de booster pendant la synchro : la dépense n\'est pas annulée',!r.k||r.now<=r.before-r.spent*0.9);
   // --- pseudo
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();await new Promise(z=>setTimeout(z,300));return G.S.name;});
   T('pseudo validé et propagé',r==='Lumen Vif'&&DB.players[idA].name==='Lumen Vif'&&DB.players[idA].state.name==='Lumen Vif');
@@ -110,6 +119,8 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(500);
   T('mesure : fin de session envoyée en arrière-plan, avec sa durée',DB.events.some(e=>e.id===idA&&e.n==='session_end'&&e.p.sec>=0));
   await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(300);
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('resetBtn').click();document.querySelector('#modal [data-doreset]').click();await new Promise(z=>setTimeout(z,800));await G.actAsync('sync');return {g:G.S.gems,p:G.S.prestiges};});
+  T('v11.6 : réinitialisation de démo tenue après synchronisation',r.g===20&&r.p===0&&DB.players[idA].state.prestiges===0&&DB.players[idA].state.gems===20);
   // --- code de transfert
   const code=await ev(A,()=>window.__G.xferCode());r=await ev(A,c=>{const d=window.__G.xferParse(c);return d&&d.id===window.__G.DEV.id;},code);T('code de transfert cohérent',r);
   T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs.slice(0,5));

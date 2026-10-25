@@ -1,4 +1,4 @@
-const VERSION='11.5 · saison';
+const VERSION='11.7 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -145,6 +145,7 @@ hooks.bossFled=v=>{banner(t(v?'boss_back':'boss_fled'),t('boss_fled_p'),'',2600)
 hooks.joker=id=>{const j=jokerById(id);sfx.chord();fx.glow=1;fx.flash=0.6;fx.flashCol='212,140,255';kick('medium');bfx.nums.push({txt:j.t,t:0,x:BW/2,y:BH*0.85,col:'hsl(282 100% 80%)',big:true});};
 hooks.harvest=(i,sp)=>{if(Math.random()<0.5)return;const [x,y]=fx.at(i);fx.floats.push({x,y:y-cell*.2,t:0,txt:'+'+(sp<10?dec(sp,1):fmt(sp)),h:150,small:true});};
 hooks.tb=k=>{sfx.buy();kick('small');fx.glow=Math.min(1,fx.glow+0.4);if(tutoStep===3)tutoNext();};
+hooks.autoPrestige=()=>{act('prestige',{},()=>doPrestige()||false);};
 hooks.prestige=g=>{track('refraction',{stage:S.run.stage,pts:g});boardCache=null;fx.flash=1;fx.flashCol='127,226,255';kick('huge');sfx.win();for(let i=0;i<R.N*R.N;i++)fx.burst(i,null,4,300);};
 hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><div class="big">${fmt(d)}</div><p>${d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest)})}</p><div class="acts"><button class="b b-gold" data-close>${t('continue')}</button></div>`);};
 //__ME__
@@ -182,15 +183,19 @@ function showAd(done,label){
   let n=3;modal(`<div class="mart">${ic('tv','ie')}</div><p>${label||t('ad_sim')}</p><div class="ad" id="adn">3</div><p>${t('ad_real')}</p>`);
   const it=setInterval(()=>{n--;const el=$('adn');if(el)el.textContent=n;if(n<=0){clearInterval(it);closeModal();done();}},1000);
 }
+/* v11.6 : délai entre deux pubs du même type, identique au serveur (sinon il refusait et la récompense était retirée) */
+const AD_GAP={shop:40,boost:40,build:15},adLast={};
+function adWait(k){const g=AD_GAP[k];if(!g)return 0;return Math.max(0,Math.ceil((adLast[k]||0)+g*1000-Date.now())/1000);}
+function adGate(k){const w=adWait(k);if(w>0){toast(t('ad_wait',{s:Math.ceil(w)}));return false;}adLast[k]=Date.now();return true;}
 function rewarded(done){track('ad',{at:lastPlace});showAd(()=>{roll();S.day.ads++;done();save();refresh();});}
-function maybeInterstitial(then){if(!S.noAds&&S.adCount>=CFG.interstitialEvery){S.adCount=0;save();showAd(then,t('ad_between'));}else then();}
+function maybeInterstitial(then){const n=+(lsGet('prisme-adc')||0);if(!S.noAds&&n>=CFG.interstitialEvery){lsSet('prisme-adc','0');showAd(then,t('ad_between'));}else then();} // v11.6 : compteur sur l'appareil (S.adCount était remis à 0 par le serveur)
 
 /* v9.9 : onglets débloqués au fil de la progression (premières minutes plus lisibles) */
 const NAV_AT={atelier:3,quests:5,shop:8,clan:10};
 /* v11.5 : onglets déjà annoncés gardés sur l'appareil. S.st.nav n'était pas conservé par le serveur : à chaque synchronisation,
    la liste repartait à zéro et « Nouvel onglet » revenait en boucle. */
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
-let NAVS=null;
+let NAVS=null,guildTry=0;const doneSeen=new Set();
 function navSeen(){if(NAVS)return NAVS;try{NAVS=JSON.parse(localStorage.getItem('prisme-nav')||'null');}catch(e){}if(!Array.isArray(NAVS))NAVS=Object.keys(NAV_AT).filter(k=>S.bestStage>=NAV_AT[k]||S.prestiges>0);return NAVS;}
 function navUnlock(){const seen=navSeen();for(const k in NAV_AT){const b=document.querySelector(`.nav [data-tab="${k}"]`);if(!b)continue;const on=S.bestStage>=NAV_AT[k]||S.prestiges>0;b.hidden=false; /* v11.1 : onglets verrouillés visibles (cadenas + étape), plus d'onglet « Jeu » seul */
     b.classList.toggle('lockd',!on);b.setAttribute('aria-disabled',String(!on));let lk=b.querySelector('.lk');if(!on&&!lk){lk=document.createElement('span');lk.className='lk';lk.innerHTML=ic('lock');b.appendChild(lk);}else if(on&&lk)lk.remove();
@@ -201,7 +206,7 @@ function refresh(){
   navUnlock();
   const rg=$('refrG');if(rg){const on=!S.prestiges&&S.bestStage>=10&&S.run.max<CFG.prestige.minStage;rg.hidden=!on;if(on)rg.textContent=t('refr_gauge',{n:S.run.max,m:CFG.prestige.minStage});}
   $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
-  const done=tickBuild();if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
+  const done=tickBuild().filter(id=>{const k=id+':'+lvlOf(upById(id));if(doneSeen.has(k))return false;doneSeen.add(k);return true;});if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
@@ -263,7 +268,7 @@ function giftTick(dt){
   if(!giftNext)giftNext=giftT+rnd(CFG.gift.every[0],CFG.gift.every[1]);
   if(giftT>=giftNext&&!giftAsk&&$('veil').hidden&&tab==='home'){giftAsk=true;giftNext=0;
     const show=gf=>{gift=gf;giftShown=giftT;const g=$('gift');g.innerHTML=ic(gift.k==='sp'?'spark':gift.k==='g'?'gem':'bolt',gift.k==='g'?'ig':'ie');g.hidden=false;g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');sfx.tick();};
-    if(!NET.on||!netReady){show(giftRoll());giftAsk=false;return;}
+    if(!NET.on){show(giftRoll());giftAsk=false;return;}if(!netReady){giftAsk=false;return;} /* v11.6 : en ligne, seul le serveur crée les cadeaux */
     actAsync('gift_offer').then(d=>{giftAsk=false;if(d&&d.ok&&d.result&&d.result.ok&&d.result.gift)show(d.result.gift);else if(d&&d.result&&d.result.wait)giftNext=giftT+d.result.wait;else giftNext=giftT+60;}).catch(()=>{giftAsk=false;giftNext=giftT+60;});}
 }
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
@@ -319,7 +324,7 @@ function upDetail(id){
 function guildHtml(){
   if(!netReady)return `<p class="note">${t('gd_offline')}</p>`;
   const g=guildCache;
-  if(!g){netGuild().then(()=>{if(tab==='clan'&&clanPane==='guild')renderTab();});return `<p class="note">${t('loading')}</p>`;}
+  if(!g){if(Date.now()-guildTry<8000)return `<p class="note">${t('gd_offline')}</p>`;netGuild().then(r=>{if(r){if(tab==='clan'&&clanPane==='guild')renderTab();}else guildTry=Date.now();});return `<p class="note">${t('loading')}</p>`;} /* v11.6 : plus de requêtes en boucle si la guilde ne répond pas */
   const C=CFG.guild;let h='';
   if(!g.guild){
     h+=`<p class="note">${t('gd_none_p',{n:C.size})}</p>`;
@@ -502,7 +507,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.build)doBuild(el.dataset.build);
   else if(el.dataset.updetail)upDetail(el.dataset.updetail);
   else if(el.dataset.rush){const id=el.dataset.rush;if(act('rush',{id},()=>rushBuild(id))){sfx.chord();}else toast(t('no_gems'));save();refresh();renderTab();}
-  else if(el.dataset.adb){const id=el.dataset.adb;rewarded(()=>{act('adbuild',{id},()=>{adUse('build');return adBuild(id);});toast(t('at_rushed'));renderTab();});}
+  else if(el.dataset.adb){const id=el.dataset.adb;if(adGate('build'))rewarded(()=>{act('adbuild',{id},()=>{adUse('build');return adBuild(id);});toast(t('at_rushed'));renderTab();});}
   else if(el.id==='restoreAll'){const n=act('restore',{},()=>restoreAll()||false);if(n){sfx.chord();toast(t('at_restored',{n}));if(R)renderTB();}save();refresh();renderTab();}
   else if(el.id==='buySlot'){if(act('slot',{},()=>buySlot())){sfx.chord();toast(t('at_newslot'));}save();refresh();renderTab();}
   else if(el.id==='buyJSlot'){if(act('jslot',{},()=>buyJSlot())){sfx.chord();toast(t('at_newjslot'));}save();refresh();renderTab();}
@@ -534,11 +539,11 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.report){toast(t('lg_reported'));el.disabled=true;if(/-/.test(el.dataset.report))act('report',{target:el.dataset.report});}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);}
   else if(el.dataset.gem){const id=el.dataset.gem;if(act('gemitem',{id},()=>buyGemItem(id))){sfx.buy();save();refresh();renderTab();}}
-  else if(el.id==='adSparks'){rewarded(()=>{const v=adSparks('shop');act('ad',{kind:'shop'},()=>{adUse('shop');S.run.sparks+=v;return true;});toast('+'+fmt(v)+' '+t('sparks'));sfx.win();if(R)renderTB();renderTab();});}
+  else if(el.id==='adSparks'){if(adGate('shop'))rewarded(()=>{const v=adSparks('shop');act('ad',{kind:'shop'},()=>{adUse('shop');S.run.sparks+=v;return true;});toast('+'+fmt(v)+' '+t('sparks'));sfx.win();if(R)renderTB();renderTab();});}
   else if(el.dataset.pack){const i=+el.dataset.pack;const r=act('pack',{i},()=>buyPack(i));if(r===true){sfx.buy();save();refresh();if(R)renderTB();renderTab();}else if(r==='cap')toast(t('sh_cap',{h:CFG.sparkShop.capMin/60}));}
-  else if(el.id==='adBoost'){rewarded(()=>{act('ad',{kind:'boost'},()=>{adUse('boost');give({b:CFG.boost.adH});return true;});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
+  else if(el.id==='adBoost'){if(adGate('boost'))rewarded(()=>{act('ad',{kind:'boost'},()=>{adUse('boost');give({b:CFG.boost.adH});return true;});toast(t('sh_boosted',{n:CFG.boost.adH}));renderTab();});}
   else if(el.dataset.skin){const id=el.dataset.skin;const sk=SKINS.find(s=>s.id===id);if(sk&&sk.pass&&!S.skins.includes(id)){toast(t('ps_skin'));return;}if(!act('skin',{id},()=>buySkin(id)))toast(t('no_gems'));else sfx.buy();save();refresh();renderTab();}
-  else if(el.id==='nameBtn'){const nm=$('nameIn').value;const r=act('rename',{name:nm},()=>{const x=rename(nm);return x.ok?x:false;});if(r&&r.ok){toast(t('name_updated'));save();refresh();renderTab();}else $('nameErr').textContent=r.msg;}
+  else if(el.id==='nameBtn'){const nm=$('nameIn').value;let x=null;const r=act('rename',{name:nm},()=>{x=rename(nm);return x.ok?x:false;});if(r&&r.ok){toast(t('name_updated'));save();refresh();renderTab();}else $('nameErr').textContent=(x&&x.msg)||t('srv_refused');}
   else if(el.dataset.oauth){acctBusy=true;acctErr='';renderTab();authWith(el.dataset.oauth).then(afterLogin).catch(e=>{acctBusy=false;acctErr=e.code==='cancel'?'':acctMsg(e.code);renderTab();});}
   else if(el.id==='acLink'){acctBusy=true;renderTab();afterLogin();}
   else if(el.id==='acRecover')recoverModal();
@@ -574,10 +579,10 @@ $('modal').addEventListener('click',e=>{
   else if(el.dataset.gkickok){const id=el.dataset.gkickok;closeModal();netGuildKick(id).then(r=>{toast(r.ok?t('gd_kicked'):gdErr(r.err));renderTab();});}
   else if(el.id==='gdLeaveOk'){closeModal();netGuildLeave().then(r=>{guildList=null;toast(r.ok?t('gd_left'):gdErr(r.err));renderTab();});}
   else if(el.id==='lgClaim'){closeModal();sfx.win();save();refresh();if(R)renderTB();toast('+'+el.dataset.gems+' '+t('gems'));}
-  else if(el.hasAttribute('data-doreset')){S=fresh();closeModal();save();tab='home';startRun();renderTab();refresh();}
-  else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}const r=act('rename',{name:v},()=>{const x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=r.msg;}
+  else if(el.hasAttribute('data-doreset')){const keep={name:S.name,nameChanges:S.nameChanges};act('reset',{},()=>{S=fresh();Object.assign(S,keep);return true;});closeModal();save();tab='home';startRun();renderTab();refresh();}
+  else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}let x=null;const r=act('rename',{name:v},()=>{x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=(x&&x.msg)||t('srv_refused');}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());closeModal();if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
-  else if(el.id==='doPrest'){closeModal();S.adCount++;const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');starterModal();} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
+  else if(el.id==='doPrest'){closeModal();lsSet('prisme-adc',String(+(lsGet('prisme-adc')||0)+1));const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');starterModal();} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
   else if(el.id==='titanGo'){closeModal();launchTitan();}
   else if(el.id==='giftGo'){const gf=gift;gift=null;$('gift').hidden=true;giftNext=0;closeModal();showAd(()=>{act('ad',{kind:'gift'},()=>{giftTake(gf);return true;});toast(giftLabel(gf));sfx.win();save();refresh();if(R)renderTB();},t('ad_sim'));}
   else if(el.id==='titanAd'){closeModal();rewarded(()=>{act('ad',{kind:'titan'},()=>titanAdTicket());toast(t('titan_got'));titanModal();});}
@@ -756,6 +761,7 @@ if(window.ResizeObserver){let rsz=0;new ResizeObserver(()=>{const bw=$('bw');con
 /* v10.2 : couper tout le son quand le jeu passe en arrière-plan (bouton accueil, autre appli, écran éteint), le reprendre au retour */
 function soundBg(hidden){if(hidden){Music.stop();try{if(AC&&AC.state==='running')AC.suspend();}catch(e){}}else if(S.settings.music)Music.start();else if(S.settings.sound)audio();}
 document.addEventListener('visibilitychange',()=>soundBg(document.hidden));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&R&&R.mode==='titan'){try{endTitan();}catch(e){}}}); // v11.6 : Titan terminé (et score envoyé) quand on quitte le jeu, sinon le serveur le refusait après la pause
 window.addEventListener('pagehide',()=>soundBg(true));
 try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener){CA.addListener('pause',()=>soundBg(true));CA.addListener('resume',()=>soundBg(false));CA.addListener('appStateChange',s=>soundBg(!s.isActive));}}catch(e){}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)notifSchedule();else notifQ=notifQ.then(notifCancel).catch(()=>{});});
@@ -772,7 +778,7 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
@@ -798,5 +804,5 @@ onServer=({action,d,fail})=>{
 };
 netBoot();
 /* ----- bouton Retour Android (Capacitor) ----- */
-try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){closeModal();return;}if(tab!=='home'){goTab('home');return;}soundBg(true);save();if(netReady)act('sync',{bye:true});if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}
+try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){if($('adn'))return;closeModal();return;} /* v11.6 : la pub simulée ne se ferme pas au bouton Retour */if(tab!=='home'){goTab('home');return;}soundBg(true);save();if(netReady)act('sync',{bye:true});if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}
 })();

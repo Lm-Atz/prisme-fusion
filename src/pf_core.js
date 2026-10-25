@@ -69,11 +69,11 @@ function pfMergeSim(G,sim,dt,anomalies){
   up(S.week,'kills',w.kills,(S.week.kills|0)+dt/1.5+10);
   if(sim.bestiary&&typeof sim.bestiary==='object'&&Object.keys(sim.bestiary).length<=300){const b={};for(const k in sim.bestiary){if(/^\d+$/.test(k)&&Number.isInteger(sim.bestiary[k]))b[k]=sim.bestiary[k];}S.bestiary=Object.assign(S.bestiary||{},b);}
   if(sim.settings&&typeof sim.settings==='object')for(const k of ['music','sound','fx','stats','notif'])if(typeof sim.settings[k]==='boolean')S.settings[k]=sim.settings[k];
-  if(sim.league&&typeof sim.league==='object'&&!S.league)S.league=sim.league; // classement simulé (hors ligne) : décoratif
+  // v11.6 : le classement simulé n'est plus accepté du téléphone (la quête « top 10 » en dépendait : un téléphone modifié pouvait envoyer des rivaux faibles). Le serveur génère le sien.
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','pass_claim','pass_buy','pass_all','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -129,6 +129,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
       if(res.err==='implausible'){anomalies.push('titan');S.titanRun=null;}break;}
     case 'purchase':if(need(trusted||body.demo===true,'store')){res.ok=G.purchase(String(p.id));if(!res.ok)res.err='owned';}break;
     case 'pass_claim':res.ok=G.passClaim(pfInt(p.n,1,G.CFG.pass.tiers,0),p.track==='p'?'p':'f');if(!res.ok)res.err='pass';break;
+    case 'reset':if(need(body.demo===true,'store')){const keep={name:S.name,nameChanges:S.nameChanges,tz:S.tz,flagged:S.flagged};S=G.fresh();Object.assign(S,keep);G.S=S;res.reset=true;}break; // v11.6 : réinitialisation de démo, aussi côté serveur
     case 'pass_buy':res.ok=G.passBuy(pfInt(p.k,1,100,0));if(!res.ok)res.err='gems';break;
     case 'pass_all':{const c=G.passClaimAll();res.ok=c>0;res.n=c;if(!res.ok)res.err='pass';break;}
     case 'shop_gift':res.ok=G.shopGift();if(!res.ok)res.err='claimed';break;

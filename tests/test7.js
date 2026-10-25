@@ -53,7 +53,7 @@ r=await ev(()=>{const G=window.__G,S=G.S,R=G.R;const o={};R.paused=false;S.boost
   S.gems=1000;S.day.spMin=0;const sp0=S.run.sparks;o.buy=G.buyPack(0)===true&&S.gems===980&&S.run.sparks===sp0+600*30&&S.day.spMin===30;
   S.day.spMin=1440-200;o.cap=G.buyPack(2)==='cap'&&S.gems===980;S.gems=0;o.poor=G.buyPack(0)===false;S.day.spMin=0;
   // cadeau : fermer = disparaît ; plus de limite journalière
-  S.day.gifts=99;o.okNoCap=G.giftOK();G.forceGift();o.shown=!document.getElementById('gift').hidden;document.getElementById('gift').click();o.modal=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();o.gone=document.getElementById('gift').hidden&&!G.gift;
+  S.day.gifts=99;o.okNoCap=G.giftOK();const no=G.NET.on;G.NET.on=false;G.forceGift();G.NET.on=no;o.shown=!document.getElementById('gift').hidden;document.getElementById('gift').click();o.modal=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();o.gone=document.getElementById('gift').hidden&&!G.gift;
   return o;});
 T('débit de référence mesuré',r.pos&&r.coh);T('boost ×2 exclu de la référence',r.boostSame);T('pub cadeau : plancher 60',r.zero&&r.giftFloor);T('pub boutique : plancher 200',r.shopFloor&&r.packFloor);T('pub = 10 / 30 min de production',r.gift&&r.shop);T('pack 100 gemmes = 4 h',r.pack);T('achat de pack',r.buy);T('plafond 24 h / jour',r.cap);T('sans gemmes : refus',r.poor);T('cadeaux sans limite journalière',r.okNoCap);T('cadeau : fermer le fait disparaître',r.shown&&r.modal&&r.gone);
 // --- tick, spawn, auto, kill, étapes, boss
@@ -163,7 +163,7 @@ const txt=await ev(()=>{const bad=[];document.querySelectorAll('#game *').forEac
 T('pas de débordement',await ev(()=>document.documentElement.scrollHeight<=innerHeight));
 // recherches infinies, cadeaux
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('power');S.up.power=200;o.inf=isFinite(G.upCost(u))&&G.upCost(u)>0&&G.upTime(u)<=2592000&&G.upTime(u)>86400;S.up.power=0;o.crit=G.upById('crit').max===25;o.board=G.upById('board').max===2;
-  S.bestStage=40;S.day.gifts=0;G.forceGift();o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.run.sparks,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
+  S.bestStage=40;S.day.gifts=0;{const no=G.NET.on;G.NET.on=false;G.forceGift();G.NET.on=no;}o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.run.sparks,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
 T('recherches infinies, durée plafonnée à 30 j',r.inf);T('probabilités et plateau restent plafonnés',r.crit&&r.board);T('bulle cadeau affichée',r.shown);T('cadeau : modale',r.modal);
 await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S=window.__G.S;return S.day.gifts===1&&(S.run.sparks>b.sh||S.gems>b.gm||S.run.sparks>b.sp||S.boostUntil>Date.now());},r.before));
 T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=999;const ok=G.giftOK();G.S.day.gifts=0;return ok;}));
@@ -339,6 +339,9 @@ r=await ev(async()=>{const G=window.__G;document.getElementById('veil').hidden=t
   let again=0;for(let i=0;i<4;i++){tt.hidden=true;delete G.S.st.nav;G.S.st={...G.S.st};G.refresh();if(!tt.hidden&&/Nouvel onglet/.test(tt.textContent))again++;}
   G.S.bestStage=sv.b;G.S.prestiges=sv.p;G.refresh();return {first,again};});
 T('v11.5 : « Nouvel onglet » annoncé au déblocage',r.first);T('v11.5 : … et plus jamais ensuite, même si la partie est réécrite',r.again===0);
+// v11.6 : messages d'erreur du pseudo, pub non fermable au Retour
+r=await ev(async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('nameIn').value='x';document.getElementById('nameBtn').click();const m=document.getElementById('nameErr').textContent;G.setTab('home');return m;});
+T('v11.6 : pseudo refusé : le message s\'affiche',r.length>3&&r!=='undefined');
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});

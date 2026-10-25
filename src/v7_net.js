@@ -36,8 +36,10 @@ let PEND=[];
 const pendDrop=e=>{const i=PEND.indexOf(e);if(i>=0)PEND.splice(i,1);};
 function pendReplay(){for(const p of PEND)if(p.fn){try{p.fn();}catch(e){}}}
 function act(action,payload,localFn){
-  const snap=simSnap(),sent=S.run.sparks;let out=true;
+  const snap=simSnap();let out=true;
   if(localFn){try{out=localFn();}catch(e){out=false;}if(out===false||(typeof out==='string'&&out!=='ok'))return out;}
+  const sent=S.run.sparks; /* v11.6 : APRÈS l'action locale. Avant, l'effet de l'action sur les étincelles était compté deux fois
+     (une fois par le serveur, une fois dans « ce qui a bougé pendant l'aller-retour ») → étincelles gonflées puis rabotées par le serveur (anomalie). */
   if(!NET.on)return out;
   const ent={action,fn:REPLAY.has(action)&&localFn?localFn:null};PEND.push(ent);
   srvQ=srvQ.then(()=>actNow(action,payload,snap,sent,1,ent)).catch(()=>null).then(()=>pendDrop(ent));
@@ -58,14 +60,14 @@ async function actNow(action,payload,snap,sent,retry=1,ent=null){
   if(!d||!d.ok){onServer({action,fail:d&&d.err});return d;}
   srvErr=0;srvLast=_dateNow();netReady=true;syncClock({now:d.now});
   applyServer(d,sent);
-  if(ent)pendDrop(ent);pendReplay();
+  if(ent)pendDrop(ent);{const sp=S.run.sparks;pendReplay();S.run.sparks=sp;} /* les étincelles des actions en attente sont déjà dans « ce qui a bougé » : ne pas les rejouer */
   onServer({action,d});
   return d;
 }
 /* l'état serveur remplace le nôtre ; on conserve seulement ce qui a bougé pendant l'aller-retour */
 function applyServer(d,sent){
   const st=d.state,prev=S,an=d.anomalies||[];
-  const gained=Math.max(0,prev.run.sparks-sent);
+  const gained=prev.run.sparks-sent; // v11.6 : peut être négatif (boosters achetés pendant l'aller-retour) ; borné à 0 avant → étincelles dépensées rendues, boosters gratuits
   const m=mergeSave(st);
   m.run.sparks=an.includes('sparks')?st.run.sparks:Math.max(0,st.run.sparks+gained);
   if(!an.includes('stage')){m.run.stage=Math.max(st.run.stage,prev.run.stage);m.run.max=Math.max(st.run.max,prev.run.max);m.maxStage=Math.max(st.maxStage,prev.maxStage);m.bestStage=Math.max(st.bestStage,prev.bestStage);}

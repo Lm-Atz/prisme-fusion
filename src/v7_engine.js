@@ -375,7 +375,7 @@ function doPrestige(){
   S.run.cells=null;if(R){const N=boardN();if(R.N!==N){R.N=N;R.cells=Array(N*N).fill(null);hooks.grow&&hooks.grow(N);}R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }
-function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr))doPrestige();}
+function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Math.min(S.up.au_prestige-1,4)];if(g>0&&g>=Math.max(50,S.run.sparks*thr)){if(hooks.autoPrestige)hooks.autoPrestige();else doPrestige();}} // v11.6 : côté téléphone, passe par le serveur (sinon Réfraction perdue)
 /* ---------- hors-ligne ---------- */
 function offlineGains(now=Date.now()){
   const el=(now-S.lastSeen)/1000;if(el<30)return null;

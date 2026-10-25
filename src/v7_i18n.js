@@ -135,6 +135,7 @@ Object.assign(I18N.fr,{"sh_best": "Meilleur rapport", "lg_short": "Ton total de 
 Object.assign(I18N.fr,{"lg_allsim": "Classement d'entraînement, entièrement simulé : tu rejoins de vrais joueurs dès ton premier combat contre le Titan."});
 Object.assign(I18N.fr,{"hero_run": "En cours", "hero_claim": "À récupérer", "hero_welcome": "Offre de bienvenue", "hero_you": "Toi"}); // v11.3
 Object.assign(I18N.fr,{"nt_test": "Tester les notifications", "nt_test_body": "Test réussi : les notifications de Prisme Fusion fonctionnent.", "nt_test_ok": "Une notification arrive dans 10 secondes. Quitte le jeu (bouton accueil) pour la voir.", "nt_test_denied": "Le téléphone bloque les notifications du jeu. Active-les dans Réglages › Applications › Prisme Fusion › Notifications.", "nt_test_err": "La notification n'a pas pu être programmée ({e}).", "nt_test_diag": "Diagnostic : permission {p}, alarmes exactes {x}"}); // v11.4
+Object.assign(I18N.fr,{"ad_wait": "Prochaine pub disponible dans {s} s"});
 Object.assign(I18N.fr,{"nav_lock": "{t} : se débloque à l'étape {n}"}); // v11.1
 Object.assign(I18N.fr,{"name_league": "Ton nom en ligue", "nav_new": "Nouvel onglet : {t}", "refr_gauge": "Réfraction : étape {n} / {m}"}); // v9.9
 Object.assign(I18N.fr,{"of_chest": "Coffre de gemmes", "of_chest_d": "Se remplit d'une gemme pour deux gemmes gagnées en jouant. Contient {n} gemmes sur {m}, contenu exact, sans hasard. S'ouvre dès {o}."}); // v9.8 coffre
