@@ -1,4 +1,4 @@
-const VERSION='10.6 · saison';
+const VERSION='10.7 · saison';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'hourglass',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -601,29 +601,34 @@ function ctxSlots(){const g=CFG.build.slotGems[S.slots-1];track('offer_view',{id
 function privacyModal(){modal(`<h2>${t('pv_title')}</h2><div class="priv">${t('pv_body').split('\n').map(p=>`<p>${p}</p>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);}
 /* ================= v10 : notifications locales (au plus 2 par 24 h, annulées au retour dans le jeu) ================= */
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
-const NOTIF={max:2,quiet:[22,9],ids:[101,102]};
+const NOTIF={max:2,quiet:[22,9],ids:[101,102],rids:[201,202,203,204,205,206]}; // v10.7 : rappels limités à 2 par 24 h ; fins de recherche toujours signalées (hors nuit)
 function notifLog(){try{return JSON.parse(localStorage.getItem('prisme-nlog')||'[]');}catch(e){return [];}}
 function notifLogSet(a){try{localStorage.setItem('prisme-nlog',JSON.stringify(a));}catch(e){}}
 function notifShift(at){const d=new Date(at),h=d.getHours();if(h>=NOTIF.quiet[0]){d.setDate(d.getDate()+1);d.setHours(NOTIF.quiet[1],0,0,0);}else if(h<NOTIF.quiet[1])d.setHours(NOTIF.quiet[1],0,0,0);return d.getTime();}
 function notifPlan(now=Date.now()){
-  const H=3600e3,c=[];
+  const H=3600e3,c=[],out=[];
+  /* fins de recherche : une notification par recherche (regroupées si elles tombent à moins de 10 min), sans plafond */
+  const rs=S.build.map(b=>({at:notifShift(Math.max(b.until,now+60e3)),t:upById(b.id).t})).filter(r=>r.at<now+7*24*H).sort((a,b)=>a.at-b.at);
+  const grp=[];rs.forEach(r=>{const g=grp[grp.length-1];if(g&&r.at-g.at<10*60e3)g.ts.push(r.t);else grp.push({at:r.at,ts:[r.t]});});
+  grp.slice(0,NOTIF.rids.length).forEach(g=>out.push(g.ts.length>1?{k:'n_res2',at:g.at,r:true,v:{n:g.ts.length,t:g.ts.join(', ')}}:{k:'n_res',at:g.at,r:true,v:{t:g.ts[0]}}));
+  /* rappels : au plus 2 par 24 h glissantes, 3 h d'écart */
   c.push({k:'n_full',at:now+(2+S.up.off)*H});
-  if(S.build.length){const b=S.build.reduce((m,x)=>x.until<m.until?x:m);c.push({k:'n_res',at:b.until,v:{t:upById(b.id).t}});}
   for(let d=0;d<=1;d++){const x=new Date(now);x.setDate(x.getDate()+d);x.setHours(18,0,0,0);const at=x.getTime();if(at<=now+15*60e3)continue;
     if(isTitanDay(at)&&S.bestStage>=10)c.push({k:'n_titan',at});
     if(x.getDay()===0&&S.bestStage>=10)c.push({k:'n_league',at});}
   const sent=notifLog().filter(t=>t>now-24*H&&t<=now).length;
-  let left=Math.max(0,NOTIF.max-sent);const out=[];
-  c.map(n=>Object.assign(n,{at:notifShift(n.at)})).filter(n=>n.at>now+15*60e3&&n.at<now+24*H).sort((a,b)=>a.at-b.at).forEach(n=>{if(left>0&&!out.some(o=>Math.abs(o.at-n.at)<3*H)){out.push(n);left--;}});
-  return out;
+  let left=Math.max(0,NOTIF.max-sent);const rem=[];
+  c.map(n=>Object.assign(n,{at:notifShift(n.at)})).filter(n=>n.at>now+15*60e3&&n.at<now+24*H).sort((a,b)=>a.at-b.at).forEach(n=>{if(left>0&&!rem.some(o=>Math.abs(o.at-n.at)<3*H)){rem.push(n);left--;}});
+  return out.concat(rem).sort((a,b)=>a.at-b.at);
 }
 async function notifSchedule(){const P=LN();if(!P||!S.settings.notif)return [];
-  const plan=notifPlan();try{await P.cancel({notifications:NOTIF.ids.map(id=>({id}))});}catch(e){}
+  const plan=notifPlan();try{await P.cancel({notifications:NOTIF.ids.concat(NOTIF.rids).map(id=>({id}))});}catch(e){}
   if(!plan.length)return plan;
-  try{await P.schedule({notifications:plan.map((n,i)=>({id:NOTIF.ids[i],title:'Prisme Fusion',body:t(n.k,n.v||{}),schedule:{at:new Date(n.at),allowWhileIdle:true}}))});
-    notifLogSet(notifLog().filter(t=>t>Date.now()-24*3600e3).concat(plan.map(n=>n.at)));}catch(e){}
+  let ri=0,mi=0;
+  try{await P.schedule({notifications:plan.map(n=>({id:n.r?NOTIF.rids[ri++]:NOTIF.ids[mi++],title:'Prisme Fusion',body:t(n.k,n.v||{}),schedule:{at:new Date(n.at),allowWhileIdle:true}}))});
+    notifLogSet(notifLog().filter(t=>t>Date.now()-24*3600e3).concat(plan.filter(n=>!n.r).map(n=>n.at)));}catch(e){}
   return plan;}
-async function notifCancel(){const P=LN();if(!P)return;try{await P.cancel({notifications:NOTIF.ids.map(id=>({id}))});}catch(e){}const now=Date.now();notifLogSet(notifLog().filter(t=>t<=now&&t>now-24*3600e3));}
+async function notifCancel(){const P=LN();if(!P)return;try{await P.cancel({notifications:NOTIF.ids.concat(NOTIF.rids).map(id=>({id}))});}catch(e){}const now=Date.now();notifLogSet(notifLog().filter(t=>t<=now&&t>now-24*3600e3));}
 function notifPrompt(){if(!$('veil').hidden||S.settings.notif!=null)return;track('notif_ask',{});
   modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_title')}</h2><p>${t('nt_p')}</p><div class="acts"><button class="b b-gold" id="notifYes">${t('nt_yes')}</button><button class="b" id="notifNo">${t('nt_no')}</button></div>`);}
 async function notifAsk(){const P=LN();if(!P)return false;let ok=false;try{const r=await P.requestPermissions();ok=r&&r.display==='granted';}catch(e){}S.settings.notif=ok;track('notif',{on:ok});save();if(!ok)toast(t('nt_denied'));if(tab==='profile')renderTab();return ok;}
