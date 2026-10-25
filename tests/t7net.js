@@ -71,6 +71,10 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   LAT=0;const srvA=DB.players[idA].state;
   T('v10.4 : '+ready.length+' quêtes validées vite : aucune ne réapparaît pendant les réponses',ready.length>=2&&!r.flick);if(r.flick)console.log(r.seen);
   T('v10.4 : file vide, serveur et téléphone d\'accord',r.pend===0&&await ev(A,g=>window.__G.S.gems,null)===srvA.gems);
+  // --- v11.5 : la synchronisation réécrit la partie : « Nouvel onglet » ne doit pas revenir
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.navReset();localStorage.removeItem('prisme-nav');G.refresh();const tt=document.getElementById('toast');let n=0;
+    for(let i=0;i<3;i++){tt.hidden=true;await G.actAsync('sync');G.refresh();await new Promise(z=>setTimeout(z,50));if(!tt.hidden&&/Nouvel onglet/.test(tt.textContent))n++;}return n;});
+  T('v11.5 : pas de « Nouvel onglet » en boucle après synchronisation',r===0);
   // --- pseudo
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('profile');document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();await new Promise(z=>setTimeout(z,300));return G.S.name;});
   T('pseudo validé et propagé',r==='Lumen Vif'&&DB.players[idA].name==='Lumen Vif'&&DB.players[idA].state.name==='Lumen Vif');
