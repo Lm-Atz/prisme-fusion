@@ -557,8 +557,8 @@ const RATE={EUR:1,USD:1,JPY:150,KRW:1400,CNY:7.5,RUB:100,TRY:35,PLN:4.3,IDR:1600
 function priceOf(o){const cur=CUR[LANG]||'USD',v=o.price*(RATE[cur]||1);try{return new Intl.NumberFormat(LANG,{style:'currency',currency:cur,maximumFractionDigits:cur==='JPY'||cur==='KRW'||cur==='IDR'?0:2}).format(cur==='JPY'||cur==='KRW'||cur==='IDR'?Math.round(v/10)*10-1:v);}catch(e){return o.price+' €';}}
 const eurOf=g=>'≈ '+priceOf({price:g*GEM_REF.price/GEM_REF.n}); // équivalent en monnaie réelle d'un prix en gemmes
 function purchase(id){const o=OFFERS.find(x=>x.id===id);if(!o||(o.once&&o.once())||(o.avail&&!o.avail())||!canPay())return false;o.give();addSpend(o.price);return true;}
-/* v10 : achats réels réservés aux adultes déclarés (écran d'âge neutre) ; suivi des dépenses du mois pour l'alerte */
-const canPay=()=>S.settings.age==='a';
+/* v10.5 : plus d'écran d'âge (jeu 16+) : les achats passent par le compte Google ou Apple et ses contrôles parentaux ; suivi des dépenses du mois pour l'alerte */
+const canPay=()=>true;
 const monthKey=(t=Date.now())=>{const [y,m]=dparts(t);return y+'-'+(m+1);};
 function spendNow(){const m=monthKey();if(!S.spend||S.spend.m!==m)S.spend={m,eur:0};return S.spend;}
 function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}

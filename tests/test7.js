@@ -126,12 +126,12 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=5
   o.q=G.questView();o.onb3=o.q.onb.length===3;o.onbTotal=G.ONB.length;o.daily=o.q.d.length===4;o.week=o.q.w.length===4;
   S.st.manual=10;const g=S.gems;o.claim=G.claim('o',0)&&S.gems===g+10;o.claimTwice=G.claim('o',0)===false;
   o.login=G.loginState().day===1;o.claimL=G.claimLogin()&&!G.claimLogin();
-  o.noAge=G.purchase('starter')===false&&!S.starter;S.settings.age='t';o.minor=G.purchase('starter')===false;S.settings.age='a';
+  
   o.buy=G.purchase('starter')&&S.starter&&S.boostUntil>Date.now();o.boostx2=G.powerMult()>=2;
   o.gemBoost=G.buyGemItem('boost');o.skin=G.buySkin('rose')&&S.skin==='rose';
   return o;});
 T('recherche lancée',r.start==='ok');T('un seul emplacement',r.busy==='slots');T('2e emplacement',r.two==='ok');T('recherche verrouillée par étape',r.locked==='locked');T('accélérer en gemmes',r.rush&&r.rushed);T('pub −30 min',r.ad);
-T('≥ 40 recherches',r.n>=40);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('v10 : achat refusé sans âge, puis refusé pour un mineur',r.noAge&&r.minor);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
+T('≥ 40 recherches',r.n>=40);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
 // --- interface
 await ev(()=>{document.getElementById('veil').hidden=true;const G=window.__G;G.S.st.tuto=3;G.tutoStep=0;document.getElementById('hint').hidden=true;G.S.st.namePrompted=true;G.startRun();G.refresh();G.renderTB();});
 T('pas d\'énergie',await ev(()=>!document.getElementById('cE')));
@@ -146,12 +146,8 @@ await p.locator('#panel .quit').click();T('fermer le panneau',await ev(()=>docum
 await p.locator('.nav [data-tab="atelier"]').click();await p.waitForTimeout(100);T('7 boutons de famille',await p.locator('.grp button').count()===7);
 await p.locator('[data-updetail="st_power"]').click();T('détail recherche',await ev(()=>!document.getElementById('veil').hidden&&document.getElementById('modal').textContent.includes('Force de départ')));
 await p.locator('#modal [data-close]').click();await p.locator('#panel .quit').click();
-await ev(()=>{delete window.__G.S.settings.age;});
 await p.locator('#pillG').click();T('gemmes → boutique',await ev(()=>window.__G.tab==='shop'));
-T('v10 : écran d\'âge neutre à la première ouverture de la boutique',await ev(()=>!document.getElementById('veil').hidden&&!!document.getElementById('ageY')&&document.getElementById('ageY').value===''&&document.getElementById('ageM').value===''));
-await p.locator('#ageOk').click();T('v10 : âge obligatoire',await ev(()=>/Choisis/.test(document.getElementById('ageErr').textContent)));
-{const y=new Date().getFullYear()-30;await p.selectOption('#ageM','1');await p.selectOption('#ageY',String(y));}await p.locator('#ageOk').click();
-T('v10 : âge déclaré adulte, seule la tranche est gardée',await ev(()=>window.__G.S.settings.age==='a'&&document.getElementById('veil').hidden&&!JSON.stringify(window.__G.S.settings).includes(String(new Date().getFullYear()-30))));
+T('v10.5 : plus d\'écran d\'âge à l\'ouverture de la boutique',await ev(()=>document.getElementById('veil').hidden&&!document.getElementById('ageY')));
 await p.locator('#panel .quit').click();await p.locator('#meBtn').click();T('avatar → profil',await ev(()=>window.__G.tab==='profile'));
 await p.locator('.nav [data-tab="home"]').click();
 await ev(()=>{const G=window.__G;G.S.run.max=30;G.renderActs();});T('bouton prestige',await p.locator('#prest').count()===1);
@@ -248,15 +244,14 @@ await ev(()=>{const G=window.__G;G.S.spend.eur=24;G.setTab('shop');});const gA=a
 await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-confirm="g600"]').click();
 T('v10 : alerte de dépenses au-delà de 25 €',await ev(()=>/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&/24,00/.test(document.getElementById('modal').innerText))&&await ev(g=>window.__G.S.gems===g,gA));
 await p.locator('#modal [data-over="1"]').click();await p.waitForTimeout(100);T('v10 : achat confirmé malgré l\'alerte',await ev(g=>window.__G.S.gems===g+600,gA));
-await ev(()=>{const G=window.__G;G.S.settings.age='t';G.setTab('shop');});await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();
-T('v10 : mineur : achat bloqué avec explication',await ev(()=>/Achats indisponibles/.test(document.getElementById('modal').innerText)));
-await ev(()=>{document.querySelector('#modal [data-close]').click();window.__G.S.settings.age='a';});
+await ev(()=>{const G=window.__G;delete G.S.settings.age;G.S.spend=null;G.setTab('shop');});const gB=await ev(()=>window.__G.S.gems);await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
+T('v10.5 : achat possible sans âge déclaré (contrôles Google/Apple)',await ev(g=>window.__G.S.gems===g+100&&!/Achats indisponibles/.test(document.getElementById('modal').innerText),gB));
 T('v10 : couleur Saison : non achetable, marquée pass',await ev(()=>{const G=window.__G;G.S.skins=G.S.skins.filter(s=>s!=='saison');G.setTab('shop');const b=document.querySelector('[data-skin="saison"]');const g=G.S.gems;b.click();return /Pass de saison/.test(b.innerText)&&!G.S.skins.includes('saison')&&G.S.gems===g;}));
 // profil : plafond, confidentialité, âge
 await ev(()=>window.__G.setTab('profile'));
-T('v10 : profil : plafond réglable, âge affiché, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!!document.getElementById('setCap')&&/adulte/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
+T('v10 : profil : plafond réglable, âge affiché, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!!document.getElementById('setCap')&&!/Âge déclaré/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
 await p.selectOption('#setCap','50');T('v10 : plafond enregistré',await ev(()=>window.__G.S.settings.cap===50));
-await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/suppression/.test(x)&&!/24 mois/.test(x);}));
+await p.locator('#privBtn').click();T('v10 : politique de confidentialité dans le jeu',await ev(()=>{const x=document.getElementById('modal').innerText;return /Supabase/.test(x)&&/Irlande/.test(x)&&/CNIL/.test(x)&&/suppression/.test(x)&&!/24 mois/.test(x)&&/16 ans/.test(x)&&/consentement/.test(x)&&!/tranche d'âge/.test(x);}));
 await p.locator('#modal [data-close]').click();
 // notifications (faux plugin Capacitor)
 await ev(()=>{window.__notif={sched:[],cancel:0};window.Capacitor={Plugins:{LocalNotifications:{async requestPermissions(){return {display:'granted'};},async schedule(o){window.__notif.sched=o.notifications;},async cancel(){window.__notif.cancel++;}}}};localStorage.removeItem('prisme-nlog');});

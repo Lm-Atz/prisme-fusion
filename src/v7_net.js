@@ -69,7 +69,7 @@ function applyServer(d,sent){
   const m=mergeSave(st);
   m.run.sparks=an.includes('sparks')?st.run.sparks:Math.max(0,st.run.sparks+gained);
   if(!an.includes('stage')){m.run.stage=Math.max(st.run.stage,prev.run.stage);m.run.max=Math.max(st.run.max,prev.run.max);m.maxStage=Math.max(st.maxStage,prev.maxStage);m.bestStage=Math.max(st.bestStage,prev.bestStage);}
-  {const sa=m.settings.age;m.settings=Object.assign({},m.settings,prev.settings);if(sa)m.settings.age=sa;} // v10 : préférences locales prioritaires (sauf l'âge déjà enregistré)
+  m.settings=Object.assign({},m.settings,prev.settings); // préférences locales prioritaires
   m.run.tb=prev.run.tb;m.run.cells=prev.run.cells;m.run.fled=prev.run.fled;m.run.fledAt=prev.run.fledAt;m.run.brate=prev.run.brate;m.run.srate=prev.run.srate;m.run.krate=prev.run.krate;m.run.rate=prev.run.rate;
   for(const k of ['merges','manual','kills','bosses','jokerUses','maxCombo'])m.st[k]=Math.max(m.st[k]|0,prev.st[k]|0);
   for(const k of ['merges','kills','bosses','tb','jokers','combo'])m.day[k]=Math.max(m.day[k]|0,prev.day[k]|0);
