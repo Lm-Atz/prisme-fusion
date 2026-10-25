@@ -155,3 +155,25 @@ body{margin:0}
 .pr:not(:disabled){box-shadow:inset 0 0 0 2px var(--beam);cursor:pointer}.pr.lock:not(:disabled){box-shadow:inset 0 0 0 2px var(--line)}.pr:disabled{opacity:.5}.pr.done{opacity:.4}
 .priv{max-height:55vh;overflow-y:auto;text-align:left;font-size:13px;line-height:1.45}.priv p{margin:0 0 8px}
 .lg.bot .nm{font-style:italic;opacity:.75}
+/* v11 : petits textes des boutons (pubs restantes, durées de recherche…) dans la police du jeu, comme le libellé du bouton */
+.b small,.b small.eur{font:14px/1.1 var(--display);font-weight:400;letter-spacing:.01em;opacity:.9}
+/* v11 : Atelier, recherches définitives (or, cadenas) et remises à zéro (cyan, prisme) */
+.grpk{margin:14px 0 4px}.grpk .grp{margin:0}.grpk .grp button{flex:1 1 0;min-width:64px}
+.grpl{display:flex;align-items:center;gap:6px;margin:0 0 6px;font:14px var(--display);letter-spacing:.02em}.grpl .i{width:16px;height:16px}
+.grpk.keep .grpl{color:var(--beam)}.grpk.cyc .grpl{color:var(--shard)}
+.grpk.keep .grp button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--beam)}.grpk.cyc .grp button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--shard)}
+.tile{position:relative}.tile .tile-top{padding-right:20px}
+.ttag{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--night-2)}
+.ttag .i{width:13px;height:13px}.ttag.keep{color:var(--beam);box-shadow:inset 0 0 0 2px var(--beam)}.ttag.cyc{color:var(--shard);box-shadow:inset 0 0 0 2px var(--shard)}
+.note.cycn{color:var(--shard)}.note.keepn{color:var(--beam)}.note .i{width:14px;height:14px;vertical-align:-2px}
+.prek{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin:8px 0}
+.prek>div{padding:10px;border-radius:12px;background:var(--night-2)}.prek b{display:flex;align-items:center;gap:6px;font:15px var(--display)}.prek b .i{width:16px;height:16px}.prek p{margin:4px 0 0;font-size:13px;line-height:1.35}
+.prek .keep{box-shadow:inset 0 0 0 2px var(--beam)}.prek .keep b{color:var(--beam)}.prek .cyc{box-shadow:inset 0 0 0 2px var(--shard)}.prek .cyc b{color:var(--shard)}
+/* v11 : pass de saison */
+.pcard{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;border:0;color:inherit;font:inherit;cursor:pointer;margin:8px 0;position:relative}
+.pcard b{font:17px var(--display);position:relative}.pcard .badge{position:relative;display:inline-block;top:-8px;right:auto;margin-left:6px}
+.pcard .pbar{margin:6px 0 4px}
+.pbuy{display:flex;gap:8px}.pbuy .b{flex:1}
+.ppager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px}.ppager span{font:16px var(--display)}.ppager .b{min-width:48px;min-height:44px;font-size:22px}
+.ptrack{max-height:none}.pr.big{box-shadow:inset 0 0 0 2px var(--gem)}
+.b.stk{flex-direction:column;gap:1px;line-height:1.05;padding-top:6px;padding-bottom:6px}.b.stk small{margin-left:0;font-size:13px}

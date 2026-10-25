@@ -7,7 +7,7 @@ const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,adLeft,adUse,chestFill,chestG,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
 jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
-offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
+offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,passBuy,passClaimAll,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
   const code=src+'\n'+PF_TAIL;
@@ -73,7 +73,7 @@ function pfMergeSim(G,sim,dt,anomalies){
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','pass_claim','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','pass_claim','pass_buy','pass_all','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -128,7 +128,9 @@ function pfApply(src,stateIn,body,nowMs,trusted){
       if(need(S.titanRun&&nowMs-S.titanRun.at<(G.CFG.titan.time+90)*1000,'norun')&&need(sc>=0&&sc<=cap,'implausible')){S.titanRun=null;S.week.best=(S.week.best|0)+sc;if(sc>(S.st.titanBest|0))S.st.titanBest=sc;res.effects=[{titan:sc,best:S.bestStage}];}
       if(res.err==='implausible'){anomalies.push('titan');S.titanRun=null;}break;}
     case 'purchase':if(need(trusted||body.demo===true,'store')){res.ok=G.purchase(String(p.id));if(!res.ok)res.err='owned';}break;
-    case 'pass_claim':res.ok=G.passClaim(pfInt(p.n,1,99,0),p.track==='p'?'p':'f');if(!res.ok)res.err='pass';break;
+    case 'pass_claim':res.ok=G.passClaim(pfInt(p.n,1,G.CFG.pass.tiers,0),p.track==='p'?'p':'f');if(!res.ok)res.err='pass';break;
+    case 'pass_buy':res.ok=G.passBuy(pfInt(p.k,1,100,0));if(!res.ok)res.err='gems';break;
+    case 'pass_all':{const c=G.passClaimAll();res.ok=c>0;res.n=c;if(!res.ok)res.err='pass';break;}
     case 'shop_gift':res.ok=G.shopGift();if(!res.ok)res.err='claimed';break;
     case 'gemitem':res.ok=G.buyGemItem(String(p.id));if(!res.ok)res.err='gems';break;
     case 'skin':res.ok=G.buySkin(String(p.id));if(!res.ok)res.err='gems';break;

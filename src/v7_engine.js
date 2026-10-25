@@ -17,7 +17,7 @@ const CFG={
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
   chest:{cap:600,open:300,price:2.99},
-  pass:{price:4.99,tiers:20,xp:50,q:{o:10,d:10,w:30,login:10},dupe:150}, // v10 : pass de saison de 4 semaines (le même contenu revient à chaque saison)
+  pass:{price:4.99,tiers:100,xp:15,q:{o:10,d:10,w:30,login:10},dupe:150,tierGems:20,v:2}, // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
   // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
@@ -563,18 +563,22 @@ const monthKey=(t=Date.now())=>{const [y,m]=dparts(t);return y+'-'+(m+1);};
 function spendNow(){const m=monthKey();if(!S.spend||S.spend.m!==m)S.spend={m,eur:0};return S.spend;}
 function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
 /* v10 : pass de saison */
-const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:15}:{g:10},p:Object.assign({g:60},n%5===0?{b:4}:{},n===CFG.pass.tiers?{skin:'saison'}:{})};});
+/* v11 : gratuit = 2 gemmes un palier sur deux, 10 min de production sinon ; premium = 8 gemmes, 50 tous les 10 paliers, boost 4 h aux paliers 25/50/75/100, couleur Saison au 100 (≈ 1 220 gemmes) */
+const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:10}:{g:2},p:Object.assign({g:n%10===0?50:8},n%25===0?{b:4}:{},n===CFG.pass.tiers?{skin:'saison'}:{})};});
 const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
 function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
 const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
 const seasonLeft=(t=Date.now())=>28-((seasonDay(t)%28)+28)%28; // jours restants, aujourd'hui compris
-function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k)S.pass={k,xp:0,prem:false,cf:[],cp:[]};return S.pass;}
+function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k||S.pass.v!==CFG.pass.v)S.pass={k,v:CFG.pass.v,xp:S.pass&&S.pass.k===k?Math.min(S.pass.xp|0,CFG.pass.tiers*CFG.pass.xp):0,prem:!!(S.pass&&S.pass.k===k&&S.pass.prem),cf:[],cp:[]};return S.pass;}
 function passXP(n){if(!n)return;const p=passState();p.xp=Math.min(CFG.pass.tiers*CFG.pass.xp,p.xp+n);}
 const passTier=()=>Math.floor(passState().xp/CFG.pass.xp);
 function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(n<1||n>CFG.pass.tiers||passTier()<n||(prem&&!p.prem))return false;const cl=prem?p.cp:p.cf;if(cl.includes(n))return false;cl.push(n);const r=PASS[n-1][prem?'p':'f'];
   if(r.skin){if(S.skins.includes(r.skin))S.gems+=CFG.pass.dupe;else S.skins.push(r.skin);}
   if(r.m)S.run.sparks+=Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*r.m));
   give({g:r.g,b:r.b});if(!prem)chestFill(r.g|0);return true;}
+/* v11 : acheter des paliers avec des gemmes (ouvert à tous ; sans pass payant, seuls les paliers gratuits deviennent récupérables) */
+function passBuy(k){const p=passState(),n=passTier();k=Math.min(k|0,CFG.pass.tiers-n);if(k<1)return false;const g=k*CFG.pass.tierGems;if(S.gems<g)return false;S.gems-=g;p.xp=(n+k)*CFG.pass.xp;return true;}
+function passClaimAll(){const p=passState(),n=passTier();let c=0;for(let i=1;i<=n;i++){if(!p.cf.includes(i)&&passClaim(i,'f'))c++;if(p.prem&&!p.cp.includes(i)&&passClaim(i,'p'))c++;}return c;}
 const passClaimable=()=>{const p=passState(),n=passTier();for(let i=1;i<=n;i++){if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;}return false;};
 /* v10 : cadeau gratuit quotidien de la boutique */
 function shopGift(){roll();if(S.day.sgift)return false;S.day.sgift=1;S.gems+=CFG.shopGift.g;chestFill(CFG.shopGift.g);return true;}

@@ -12,7 +12,13 @@ extra_css='''.oc{width:62px;height:62px;border-radius:50%;display:grid;place-ite
 .ptier{color:var(--mist);font-size:13px;margin-top:-4px;text-align:center}
 '''
 head=L(1,58).replace('partie = arène + plateau-écrin + outils ronds.','un seul écran : arène + plateau-écrin + boosters.').replace('Accueil = une scène (faisceau de lumière, gemme du joueur, route des niveaux, combat, trois orbes) ;','Le jeu tourne en continu ;')
-css=head+'\n'+extra_css+L(110,237)+'\n'+L(286,310)+'\n'+L(318,318)+'\n'+rd('v7_css.css')+'</style>\n\n'
+# v11 : polices embarquées (plus d'appel à Google Fonts : jeu hors réseau tiers, aucune adresse IP envoyée à Google)
+import base64 as _b64
+def _ff(fam,w,f):return "@font-face{font-family:'%s';font-style:normal;font-weight:%d;font-display:swap;src:url(data:font/woff2;base64,%s) format('woff2')}"%(fam,w,_b64.b64encode(open('fonts/'+f,'rb').read()).decode())
+_fonts='\n'.join([_ff('Lilita One',400,'lilita-one-latin-400-normal.woff2')]+[_ff('Nunito',w,'nunito-latin-%d-normal.woff2'%w) for w in (600,700,800)])
+head=head.replace('<link rel="preconnect" href="https://fonts.googleapis.com">\n','').replace('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">','')
+assert 'googleapis' not in head
+css=head+'\n'+_fonts+'\n'+extra_css+L(110,237)+'\n'+L(286,310)+'\n'+L(318,318)+'\n'+rd('v7_css.css')+'</style>\n\n'
 sprite=L(321,359)
 body=rd('v7_body.html')
 ui=rd('v7_ui.js').replace('//__FOE__',foe).replace('//__ME__',me)

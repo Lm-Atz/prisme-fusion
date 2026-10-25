@@ -227,16 +227,26 @@ await ev(()=>{const G=window.__G;G.S.chest=700;G.setTab('shop');});T('boutique :
 await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
 // ===== v10 : boutique, pass de saison, achats encadrés, notifications, offres contextuelles, confidentialité =====
 await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.setTab('shop');});
-r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');o.order=pn.innerHTML.indexOf('shopGift')<pn.innerHTML.indexOf('data-passbuy')&&pn.innerHTML.indexOf('data-passbuy')<pn.innerHTML.indexOf('data-offer="g100"');
-  o.tiers=pn.querySelectorAll('.pt:not(.ph)').length;o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2').length===6;o.locked=[...pn.querySelectorAll('[data-pass]')].every(b=>b.disabled||b.classList.contains('lock'));return o;});
-T('v10 : boutique : cadeau, puis pass, puis gemmes',r.order);T('v10 : pass : 20 paliers',r.tiers===20);T('v10 : ×2 affiché sur les 6 packs',r.x2);
+r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');const H=pn.innerHTML;o.order=H.indexOf('shopGift')<H.indexOf('data-tab="pass"')&&H.indexOf('data-tab="pass"')<H.indexOf('data-offer="g100"');
+  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2').length===6;return o;});
+T('v11 : boutique : cadeau, puis carte du pass, puis gemmes',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v10 : ×2 affiché sur les 6 packs',r.x2);
 r=await ev(()=>{const G=window.__G;const g=G.S.gems;document.getElementById('shopGift').click();const a=G.S.gems===g+5&&document.getElementById('shopGift').disabled;return a;});T('v10 : cadeau du jour +5, puis bouton désactivé',r);
-await ev(()=>{const G=window.__G;G.passXP(120);G.setTab('shop');});
-r=await ev(()=>{const G=window.__G;const o={};o.tier=G.passTier()===2;const s=G.S.run.sparks;document.querySelector('[data-pass="1"][data-track="f"]').click();o.free=G.S.run.sparks>s&&G.passState().cf.includes(1);
-  o.lock3=document.querySelector('[data-pass="3"][data-track="f"]').disabled;document.querySelector('[data-pass="1"][data-track="p"]').click();o.modal=!!document.querySelector('#modal [data-confirm="pass"]');return o;});
-T('v10 : pass : 120 points = palier 2',r.tier);T('v10 : palier gratuit récupéré',r.free);T('v10 : palier non atteint désactivé',r.lock3);T('v10 : piste premium → proposition du pass',r.modal);
-await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);
-r=await ev(()=>{const G=window.__G;const g=G.S.gems;const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();return G.passState().prem&&G.S.gems===g+60&&G.S.spend.eur===4.99;});T('v10 : pass acheté, palier premium 1 = 60 gemmes, dépense notée',r);
+await p.locator('#panel [data-tab="pass"]').first().click();
+r=await ev(()=>{const G=window.__G,pn=document.getElementById('panel'),o={};o.tab=G.tab==='pass';o.rows=pn.querySelectorAll('.pt:not(.ph)').length===10&&/Paliers 1 à 10/.test(pn.innerText)&&/Palier 0 \/ 100/.test(pn.innerText);o.nav=document.querySelector('.nav [data-tab="shop"]').getAttribute('aria-selected')==='true';return o;});
+T('v11 : menu du pass dédié, 100 paliers par pages de 10',r.tab&&r.rows);T('v11 : onglet Boutique reste allumé',r.nav);
+await ev(()=>{const G=window.__G;G.passXP(120);G.renderTab();});
+r=await ev(()=>{const G=window.__G;const o={};o.tier=G.passTier()===8;const s=G.S.run.sparks;document.querySelector('[data-pass="1"][data-track="f"]').click();o.free=G.S.run.sparks>s&&G.passState().cf.includes(1);
+  o.lock9=document.querySelector('[data-pass="9"][data-track="f"]').disabled;document.querySelector('[data-pass="1"][data-track="p"]').click();o.modal=!!document.querySelector('#modal [data-confirm="pass"]');return o;});
+T('v11 : 120 points = palier 8 (15 points par palier)',r.tier);T('v10 : palier gratuit récupéré',r.free);T('v10 : palier non atteint désactivé',r.lock9);T('v10 : piste premium → proposition du pass',r.modal);
+await p.locator('#modal [data-close]').click();
+r=await ev(()=>{const G=window.__G,o={};G.S.gems=100;const g=G.S.gems;document.querySelector('[data-passtier="1"]').click();o.buy1=G.passTier()===9&&G.S.gems===g-20;o.freeOnly=!document.querySelector('[data-pass="9"][data-track="f"]').disabled&&document.querySelector('[data-pass="9"][data-track="p"]').classList.contains('lock');
+  const before=G.passState().cf.length;document.getElementById('passAll').click();o.all=G.passState().cf.length===9&&G.passState().cp.length===0&&before===1;
+  G.S.gems=5;G.renderTab();o.poor=document.querySelector('[data-passtier="1"]').disabled;G.S.gems=999;G.renderTab();
+  document.querySelector('[data-ppage="1"]').click();o.next=/Paliers 11 à 20/.test(document.getElementById('panel').innerText)&&!!document.querySelector('[data-pass="20"].big');return o;});
+T('v11 : acheter 1 palier = 20 gemmes',r.buy1);T('v11 : sans pass payant, seul le gratuit se débloque',r.freeOnly);T('v11 : tout récupérer (gratuit seulement sans pass)',r.all);T('v11 : achat de palier impossible sans gemmes',r.poor);T('v11 : page suivante, palier 20 mis en avant',r.next);
+await ev(()=>{window.__G.passXP(0);window.__G.renderTab();});await p.locator('#panel [data-passbuy]').click();await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);await ev(()=>{const G=window.__G;window.__pp=-1;});
+r=await ev(()=>{const G=window.__G;G.setTab('pass');const g=G.S.gems;document.querySelector('[data-ppage="0"]')?.click();const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();const o={one:G.passState().prem&&G.S.gems===g+8&&G.S.spend.eur===4.99};
+  const g2=G.S.gems;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+8*8;return o;});T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
 await ev(()=>window.__G.setTab('shop'));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
 await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
@@ -279,6 +289,19 @@ await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});
 await ev(()=>window.__G.setTab('home'));
 // v10.9 : plus aucun équivalent en euros à côté des prix en gemmes
 T('v10.9 : aucun « ≈ € » en boutique, Atelier et Profil',await ev(()=>{const G=window.__G;let ok=true;for(const tb of ['shop','atelier','profile']){G.setTab(tb);const x=document.getElementById('panel').innerText;if(/≈\s*[\d.,\s\u202f]+\s*(€|\$)/.test(x)||[...document.querySelectorAll('#panel .eur')].some(e=>/€|\$/.test(e.textContent))||/100 gemmes =/.test(x))ok=false;}G.setTab('home');return ok;}));
+// v11 : Atelier séparé, Réfraction claire, petits textes des boutons, débordements
+r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;G.S.bestStage=50;G.S.prestiges=Math.max(1,G.S.prestiges);G.setTab('atelier');const pn=document.getElementById('panel');
+  const keep=[...pn.querySelectorAll('.grpk.keep [data-grp]')].map(b=>b.dataset.grp),cyc=[...pn.querySelectorAll('.grpk.cyc [data-grp]')].map(b=>b.dataset.grp);
+  o.rows=keep.join()==='start,auto,jok,arm'&&cyc.join()==='atk,grid,eco'&&cyc.every(g=>G.CFG.refr.reset.includes(g))&&keep.every(g=>!G.CFG.refr.reset.includes(g));
+  pn.querySelector('[data-grp="atk"]').click();await new Promise(z=>setTimeout(z,30));o.tagC=[...document.querySelectorAll('#panel .tile')].every(t=>t.querySelector('.ttag.cyc'));
+  document.querySelector('#panel [data-grp="start"]').click();await new Promise(z=>setTimeout(z,30));o.tagK=[...document.querySelectorAll('#panel .tile')].every(t=>t.querySelector('.ttag.keep'));
+  const f=document.querySelector('#panel .b small');o.font=!f||/Lilita/.test(getComputedStyle(f).fontFamily);G.setTab('home');
+  G.S.run.max=35;G.renderActs();document.getElementById('prest').click();const m=document.getElementById('modal');o.pre=!!m.querySelector('.prek .keep')&&!!m.querySelector('.prek .cyc')&&/Tu gardes/.test(m.innerText)&&/Tu repars à zéro/.test(m.innerText);m.querySelector('[data-close]').click();
+  G.setTab('shop');const sm=[...document.querySelectorAll('#panel .b small')];o.adFont=sm.length>0&&sm.every(e=>/Lilita/.test(getComputedStyle(e).fontFamily));G.setTab('home');return o;});
+T('v11 : Atelier : rangée « Définitives » et rangée « Remises à zéro »',r.rows);T('v11 : étiquette cyan sur les recherches remises à zéro',r.tagC);T('v11 : étiquette or sur les recherches gardées',r.tagK);
+T('v11 : Réfraction : « Tu gardes » / « Tu repars à zéro »',r.pre);T('v11 : petits textes des boutons dans la police du jeu',r.font&&r.adFont);
+r=await ev(async()=>{const G=window.__G,o=[];const lang0=G.LANG;for(const lg of ['fr','de','pt']){G.setLang(lg);for(const tb of ['shop','pass','quests','profile','atelier']){G.setTab(tb);document.querySelectorAll('#panel button,#panel .b').forEach(e=>{if(!e.offsetParent)return;const R=e.getBoundingClientRect();e.querySelectorAll('*').forEach(c=>{const q=c.getBoundingClientRect();if(q.width&&(q.right>R.right+2||q.left<R.left-2))o.push(lg+'/'+tb+': '+c.textContent.trim().slice(0,25));});});}}G.setLang(lang0);G.setTab('home');return o;});
+T('v11 : aucun texte qui déborde de son bouton (fr, de, pt) '+r.slice(0,3).join(' | '),r.length===0);
 // v10.3 : son de victoire discret
 r=await ev(async()=>{const G=window.__G;G.S.settings.sound=true;G.S.settings.music=false;G.Music.stop();G.soundBg(false);const A=G.AC;const types=[],freqs=[];const co=A.createOscillator.bind(A);A.createOscillator=()=>{const o=co();const d=Object.getOwnPropertyDescriptor(OscillatorNode.prototype,'type');Object.defineProperty(o,'type',{set(v){types.push(v);d.set.call(o,v);},get(){return d.get.call(o);}});const sv=o.frequency.setValueAtTime.bind(o.frequency);o.frequency.setValueAtTime=(f,t)=>{freqs.push(f);return sv(f,t);};return o;};
   for(let i=0;i<6;i++)G.sfx.pop();const n1=types.length;G.sfx.tick();A.createOscillator=co;return {n1,noSquare:!types.includes('square'),maxF:Math.max(...freqs)};});
