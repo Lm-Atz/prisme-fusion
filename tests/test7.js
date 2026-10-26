@@ -367,6 +367,20 @@ T('v11.1 : onglets verrouillés visibles (cadenas) au départ',r.start);T('v9.9 
 T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(false);const a=!document.getElementById('offline').hidden&&G.R.hold===true;G.setOnline(true);return a&&document.getElementById('offline').hidden&&G.R.hold===false;}));
 // petit écran
 await p.setViewportSize({width:375,height:667});await p.waitForTimeout(300);T('375×667 sans débordement',await ev(()=>document.documentElement.scrollHeight<=innerHeight&&document.getElementById('board').getBoundingClientRect().width>=180));
+// v11.9 : onglets Jokers et Armes en vrais clics
+await p.setViewportSize({width:390,height:844});
+r=await ev(async()=>{const G=window.__G,S=G.S,o={};document.getElementById('veil').hidden=true;S.bestStage=20;S.jk={};S.equip=[];S.jslots=1;S.run.sparks=1e7;S.pp=5;S.wp={};G.setTab('atelier');
+  document.querySelector('[data-grp="jok"]').click();await new Promise(r=>setTimeout(r,50));const P=document.getElementById('panel');
+  o.how=!!P.querySelector('.howto li');o.new=!!P.querySelector('.jst.new');o.lock=!!P.querySelector('.jst.lock');o.lab=!!P.querySelector('.jlab');
+  P.querySelector('[data-unlock="chameleon:s"]').click();await new Promise(r=>setTimeout(r,50));o.unl=(G.S.jk.chameleon|0)===1&&!!document.querySelector('#panel .jst.eq'); /* débloquer équipe d'office s'il reste une place */
+  document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));const off=!G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.own');document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));o.eq=off&&G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.eq');
+  S.jk.magnet=1;G.setTab('atelier');o.diff=/3 → 4/.test(document.getElementById('panel').textContent);
+  document.querySelector('[data-grp="arm"]').click();await new Promise(r=>setTimeout(r,50));const Q=document.getElementById('panel');
+  o.gem=/Gemme 1/.test(Q.textContent);o.nores=!document.getElementById('wpReset');
+  Q.querySelector('[data-wp="0"]').click();await new Promise(r=>setTimeout(r,50));o.wp=S.wp[0]===1&&S.pp===4&&/effet \+20/.test(document.getElementById('panel').textContent)&&!!document.getElementById('wpReset');
+  document.getElementById('wpHelp').click();await new Promise(r=>setTimeout(r,50));o.help=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();return o;});
+T('v11.9 jokers : mode d\'emploi et statuts',r.how&&r.new&&r.lock&&r.lab);T('v11.9 jokers : débloquer au clic',r.unl);T('v11.9 jokers : équiper au clic',r.eq);T('v11.9 jokers : niveau suivant « 3 → 4 »',r.diff);
+T('v11.9 armes : « Gemme 1 », pas de Redistribuer sans dépense',r.gem&&r.nores);T('v11.9 armes : Améliorer au clic + bonus affiché',r.wp);T('v11.9 armes : aide des points',r.help);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);
