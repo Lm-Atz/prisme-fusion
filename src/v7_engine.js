@@ -99,14 +99,15 @@ const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0
 for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k)}});Object.defineProperty(TBDEF[k],'d',{get(){return t('tb_'+k+'_d')}});}
 
 /* ================= état du joueur ================= */
-const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'},{id:'saison',price:0,pass:true,c:'#7dff6a'}].map(k=>Object.defineProperty(k,'label',{get(){return t('skin_'+k.id)},enumerable:true}));
+/* v12.1 : chaque couleur portée donne un bonus (achetées uniquement en gemmes) ; chaque couleur possédée ajoute +1 % d'étincelles (collection) */
+const SKINS=[{id:'cyan',price:0,c:'#3ef2ff',h:192},{id:'rose',price:100,c:'#ff3ec8',h:322,bn:{dmg:0.05}},{id:'or',price:200,c:'#ffd23e',h:44,bn:{sp:0.08}},{id:'emeraude',price:300,c:'#3effa0',h:150,bn:{res:0.08}},{id:'saphir',price:300,c:'#3e7bff',h:222,bn:{cad:0.08}},{id:'prisme',price:400,c:'rainbow',h:-1,bn:{sp:0.06,dmg:0.06}},{id:'rubis',price:500,c:'#ff3e5e',h:352,bn:{dmg:0.12}},{id:'obsidienne',price:800,c:'#9a6bff',h:262,bn:{jok:0.15,off:0.1}},{id:'aurore',price:1200,c:'aurora',h:-2,bn:{sp:0.15,cad:0.05}},{id:'solaire',price:2000,c:'solar',h:-3,bn:{dmg:0.2,sp:0.1}},{id:'saison',price:0,pass:true,c:'#7dff6a',h:110,bn:{off:0.1}}].map(k=>Object.defineProperty(k,'label',{get(){return t('skin_'+k.id)},enumerable:true}));
 function fresh(){
   const now=Date.now();
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
     pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
-    name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],
+    name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],medals:{},
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
     week:{k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,claimed:[]},
@@ -157,7 +158,7 @@ const isPP=u=>u.g==='auto'; // automatisations : points de réfraction, sans dé
 const memLvl=id=>(S.mem&&S.mem[id])||0;
 const inMem=u=>!u.joker&&CFG.refr.reset.includes(u.g)&&lvlOf(u)<memLvl(u.id); // niveau déjà atteint avant une Réfraction
 const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:isPP(u)?CFG.refr.ppAuto(lvlOf(u)):u.c(lvlOf(u))*(inMem(u)?CFG.refr.memCost:1);
-const upTime=u=>isPP(u)||inMem(u)?0:Math.round(u.time(lvlOf(u))*(evOn('build')?0.5:1)); // v12 : week-end recherches 2× plus rapides
+const upTime=u=>isPP(u)||inMem(u)?0:Math.round(u.time(lvlOf(u))*(evOn('build')?0.5:1)/bonusMul('res')); // v12 : week-end recherches 2× plus rapides
 const upAfford=u=>isPP(u)?(S.pp||0)>=upCost(u):S.run.sparks>=upCost(u);
 const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
@@ -188,7 +189,7 @@ const jokerAvail=j=>S.bestStage>=j.lvl;
 function unlockJoker(id,cur){const j=jokerById(id);if(!j||S.jk[id]||!jokerAvail(j))return false;if(cur==='g'){if(S.gems<j.gm)return false;S.gems-=j.gm;}else{if(S.run.sparks<j.sh)return false;S.run.sparks-=j.sh;}S.jk[id]=1;if(S.equip.length<S.jslots)S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function toggleEquip(id){if(!S.jk[id])return false;const i=S.equip.indexOf(id);if(i>=0){S.equip.splice(i,1);if(R)delete R.jk[id];return true;}if(S.equip.length>=S.jslots)return false;S.equip.push(id);if(R)R.jk[id]=0;return true;}
 function buyJSlot(){const i=S.jslots-1;if(i>=CFG.build.jslotGems.length)return false;const g=CFG.build.jslotGems[i];if(S.gems<g)return false;S.gems-=g;S.jslots++;return true;}
-const jokerNeed=id=>{const j=jokerById(id),l=S.jk[id]||1,n=Math.max(4,Math.ceil(j.base*(1-0.08*S.up.catal))-(l-1));return evOn('joker')?Math.max(2,Math.ceil(n/2)):n;}; // v12 : week-end jokers 2× plus rapides
+const jokerNeed=id=>{const j=jokerById(id),l=S.jk[id]||1,n=Math.max(4,Math.ceil(j.base*(1-0.08*S.up.catal))-(l-1));const m=Math.max(2,Math.ceil(n/bonusMul('jok')));return evOn('joker')?Math.max(2,Math.ceil(m/2)):m;}; // v12 : week-end jokers 2× plus rapides
 
 /* ================= boosters temporaires ================= */
 const tbLvl=k=>S.run.tb[k]+(S.up['st_'+k]||0);
@@ -197,11 +198,11 @@ function buyTB(k){const c=tbCost(k);if(!isFinite(c)||S.run.sparks<c)return false
 function autoBuyTick(dt){if(!S.up.au_buy)return;R.buyT=(R.buyT||0)+dt;const every=Math.max(1,10-S.up.au_buy);if(R.buyT<every)return;R.buyT=0;
   let best=null,bc=Infinity;for(const k in CFG.tb){const c=tbCost(k);if(c<bc){bc=c;best=k;}}if(best&&S.run.sparks>=bc)buyTB(best);}
 const spawnLevel=()=>1+tbLvl('birth');
-const spawnInterval=()=>Math.max(CFG.board.spawnMin,CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,tbLvl('cad')));
+const spawnInterval=()=>Math.max(CFG.board.spawnMin,CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,tbLvl('cad'))/bonusMul('cad'));
 const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.up.au_merge);};
-const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1);
+const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1)*bonusMul('dmg');
 const refMult=()=>1+CFG.prestige.mult*S.prestiges; // multiplicateur permanent d'étincelles gagné à chaque Réfraction
-const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1)*refMult()*(evOn('spark')?2:1); // v12 : week-end étincelles ×2
+const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1)*refMult()*(evOn('spark')?2:1)*bonusMul('sp'); // v12 : week-end étincelles ×2 ; v12.1 : couleurs et médailles
 const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
 const boardN=()=>4+S.up.board;
 
@@ -381,7 +382,7 @@ function maybeAutoPrestige(){const g=prestigeGain(),thr=[1,0.5,0.25,0.1,0.05][Ma
 function offlineGains(now=Date.now()){
   const el=(now-S.lastSeen)/1000;if(el<30)return null;
   const capS=(2+S.up.off+(premOn()?CFG.pass.perks.offH:0))*3600,sec=Math.min(el,capS);
-  const sparks=Math.floor((S.run.srate||0)*sec*CFG.offline.factor);
+  const sparks=Math.floor((S.run.srate||0)*sec*CFG.offline.factor*bonusMul('off'));
   let stages=0;if(S.up.au_exped&&S.run.krate){const expS=Math.min(el,2*S.up.au_exped*3600);stages=Math.floor(S.run.krate*expS*0.5);
     const maxAdv=Math.max(0,(Math.floor((S.run.stage-1)/10)+1)*10-1-S.run.stage); // jamais au-delà du prochain boss
     stages=Math.min(stages,maxAdv);}
@@ -587,7 +588,30 @@ const slotsN=()=>S.slots+(premOn()?CFG.pass.perks.slot:0);
 const seasonHue=k=>Math.round(((k*137.508)%360+360)%360);
 const seasonName=k=>t('sn_'+(((k%12)+12)%12));
 const isSeasonSkin=id=>/^s\d+x?$/.test(id);
-function skinInfo(id){if(isSeasonSkin(id)){const k=parseInt(id.slice(1)),x=id.endsWith('x');return {id,season:k,x,hue:seasonHue(k),get label(){return x?t('sn_x',{n:seasonName(k)}):seasonName(k);}};}const s=SKINS.find(z=>z.id===id);return s?Object.assign({hue:{cyan:192,rose:322,or:44,saison:110,prisme:-1}[id]},s,{label:s.label}):null;}
+function skinInfo(id){if(isSeasonSkin(id)){const k=parseInt(id.slice(1)),x=id.endsWith('x');return {id,season:k,x,hue:seasonHue(k),bn:x?{dmg:0.1,sp:0.1}:{sp:0.08},get label(){return x?t('sn_x',{n:seasonName(k)}):seasonName(k);}};}const s=SKINS.find(z=>z.id===id);return s?Object.assign({hue:s.h,bn:s.bn||{}},s,{label:s.label}):null;}
+/* v12.1 : médailles (succès en 4 rangs : bronze, argent, or, diamant), bonus permanent selon la difficulté */
+const MEDAL_RANK=[0.01,0.02,0.03,0.05],MEDAL_GEMS=[5,10,25,50];
+const MEDALS=[
+  {id:'explore',ic:'flag',k:'dmg',q:1.5,th:[25,75,150,300],v:()=>S.bestStage},
+  {id:'hunt',ic:'swords',k:'sp',q:1,th:[1e3,1e4,1e5,1e6],v:()=>S.st.kills},
+  {id:'boss',ic:'trophy',k:'dmg',q:1.2,th:[10,50,250,1000],v:()=>S.st.bosses},
+  {id:'alch',ic:'prism',k:'cad',q:1,th:[1e3,1e4,1e5,1e6],v:()=>S.st.merges},
+  {id:'artisan',ic:'hammer',k:'sp',q:1.2,th:[100,1e3,1e4,5e4],v:()=>S.st.manual},
+  {id:'refr',ic:'diamond',k:'sp',q:1.5,th:[1,5,20,60],v:()=>S.prestiges},
+  {id:'titan',ic:'flame',k:'dmg',q:1.2,th:[3,15,60,200],v:()=>S.st.titans|0},
+  {id:'research',ic:'anvil',k:'res',q:1,th:[10,50,150,400],v:()=>S.st.bought},
+  {id:'collect',ic:'gem',k:'off',q:1,th:[3,5,8,12],v:()=>S.skins.length},
+  {id:'loyal',ic:'heart',k:'sp',q:1.5,th:[7,30,100,365],v:()=>S.st.days},
+  {id:'joker',ic:'star',k:'jok',q:1,th:[20,200,1000,5000],v:()=>S.st.jokerUses},
+  {id:'season',ic:'crown',k:'dmg',q:1.5,th:[1,3,6,12],v:()=>S.skins.filter(isSeasonSkin).length},
+].map(m=>Object.defineProperty(m,'t',{get(){return t('md_'+m.id)},enumerable:true}));
+const medalLvl=id=>((S.medals||{})[id]|0);
+const medalBonusOf=(m,l)=>MEDAL_RANK.slice(0,l).reduce((a,x)=>a+x,0)*m.q;
+const medalReady=m=>medalLvl(m.id)<4&&m.v()>=m.th[medalLvl(m.id)];
+function claimMedal(id){const m=MEDALS.find(x=>x.id===id);if(!m||!medalReady(m))return false;const l=medalLvl(id);S.medals=S.medals||{};S.medals[id]=l+1;S.gems+=MEDAL_GEMS[l];return true;}
+const medalsReady=()=>MEDALS.some(medalReady);
+/* bonus total d'un type : couleur portée × médailles × collection (+1 % d'étincelles par couleur possédée au-delà de la première) */
+function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const md=MEDALS.reduce((a,m)=>a+(m.k===k?medalBonusOf(m,medalLvl(m.id)):0),0);const col=k==='sp'?0.01*Math.max(0,(S.skins||[]).length-1):0;return (1+w)*(1+md)*(1+col);}
 /* v12 : offre de la semaine (gemmes), une par semaine, qui change seule */
 const weekOffer=()=>{const L=CFG.weekOffer,h=dayHash('o'+weekKey());return L[h%L.length];};
 function buyWeekOffer(){roll();const o=weekOffer();if(S.week.wo||S.gems<o.g)return false;S.gems-=o.g;S.week.wo=1;if(o.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*o.m/30),Math.floor(rateMin()*o.m));if(o.b)give({b:o.b});return true;}

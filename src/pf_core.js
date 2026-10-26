@@ -6,7 +6,7 @@
 const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,adLeft,adUse,chestFill,chestG,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
-jokerById,jokerAvail,buyWeekOffer,weekOffer,jokerNeed,offlineGains,passXP,weekTheme,seasonLeft,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,passTierCost,shopGiftG,pickWeekly,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
+jokerById,jokerAvail,buyWeekOffer,weekOffer,jokerNeed,offlineGains,passXP,bonusMul,MEDALS,powerMult,spawnInterval,claimMedal,medalReady,medalsReady,medalLvl,medalBonusOf,weekTheme,seasonLeft,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,passTierCost,shopGiftG,pickWeekly,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
 offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,passBuy,passClaimAll,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
@@ -21,7 +21,7 @@ function pfMakeEngine(src,nowMs){
 function pfMaxSparkPerSec(G){
   const S=G.S,C=G.CFG,st=Math.max(1,S.run.stage|0);
   const L=1+(S.run.tb.birth|0)+(S.up.st_birth|0)+10;                       // niveau de gemme plausible
-  const sm=Math.pow(1.08,(S.run.tb.spark|0)+(S.up.st_spark|0))*Math.pow(1.1,S.up.spark|0)*2*(1+C.prestige.mult*(S.prestiges|0));
+  const sm=Math.pow(1.08,(S.run.tb.spark|0)+(S.up.st_spark|0))*Math.pow(1.1,S.up.spark|0)*2*(1+C.prestige.mult*(S.prestiges|0))*G.bonusMul('sp')*(G.weekendEvent()==='spark'?2:1); // v12.1 : couleurs, médailles, week-end ×2
   const kill=(C.sparks.kill(st)*5*(1+0.15*(S.up.killspark|0))*sm+4*st*(1+0.08*(S.up.loot|0)))*0.5; // ≤ 1 ennemi / 2 s, compté comme boss
   const merge=3*0.15*L*2*sm;                                                  // ≤ 3 fusions manuelles / s
   const star=3*0.15*L*(1+0.5*(L/8))*(1+0.2*8)*sm*0.3;                          // étoiles
@@ -31,7 +31,7 @@ function pfMaxSparkPerSec(G){
 function pfMaxDps(G,dt){
   const S=G.S,C=G.CFG,N=4+(S.up.board|0);
   const L=1+(S.run.tb.birth|0)+(S.up.st_birth|0)+2+Math.log2(1+Math.max(1,dt)*1.5); // niveau de gemme plausible après dt s de fusions (boosters vérifiés)
-  const pm=Math.pow(1.12,(S.run.tb.power|0)+(S.up.st_power|0))*Math.pow(1.1,S.up.power|0)*2;
+  const pm=Math.pow(1.12,(S.run.tb.power|0)+(S.up.st_power|0))*Math.pow(1.1,S.up.power|0)*2*G.bonusMul('dmg'); // v12.1 : couleurs et médailles
   const wp=1+0.08*8*Math.max(0,...Object.values(S.wp||{}).map(x=>x|0),0);
   const fr=(1+0.05*(S.up.cadence|0))*(1+(0.05+0.01*(S.up.combo|0))*30)*2/0.55;
   const crit=1+0.02*(S.up.crit|0)*2+0.5; // critiques + aura, généreux
@@ -73,7 +73,7 @@ function pfMergeSim(G,sim,dt,anomalies){
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','week_offer','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','week_offer','medal','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -132,6 +132,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'reset':if(need(body.demo===true,'store')){const keep={name:S.name,nameChanges:S.nameChanges,tz:S.tz,flagged:S.flagged};S=G.fresh();Object.assign(S,keep);G.S=S;res.reset=true;}break; // v11.6 : réinitialisation de démo, aussi côté serveur
     case 'pass_buy':res.ok=G.passBuy(pfInt(p.k,1,100,0));if(!res.ok)res.err='gems';break;
     case 'pass_all':{const c=G.passClaimAll();res.ok=c>0;res.n=c;if(!res.ok)res.err='pass';break;}
+    case 'medal':res.ok=G.claimMedal(String(p.id));if(!res.ok)res.err='medal';break; // v12.1 : médailles
     case 'week_offer':res.ok=G.buyWeekOffer();if(!res.ok)res.err='gems';break; // v12 : offre de la semaine
     case 'shop_gift':res.ok=G.shopGift();if(!res.ok)res.err='claimed';break;
     case 'gemitem':res.ok=G.buyGemItem(String(p.id));if(!res.ok)res.err='gems';break;

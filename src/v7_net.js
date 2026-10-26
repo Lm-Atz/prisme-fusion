@@ -31,7 +31,7 @@ let srvQ=Promise.resolve(),srvLast=0,srvErr=0,onServer=()=>{};
 /* act : capture la simulation AVANT l'application locale, exécute l'action locale (retour immédiat), puis confirme auprès du serveur */
 /* v10.4 : actions en attente de réponse. Quand le serveur répond à l'une, son état ne contient pas encore les suivantes :
    on les rejoue par-dessus (actions qui ne touchent que la partie), sinon une quête validée réapparaissait puis disparaissait. */
-const REPLAY=new Set(['claim','login','pass_claim','pass_buy','pass_all','shop_gift','week_offer','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
+const REPLAY=new Set(['claim','login','pass_claim','pass_buy','pass_all','shop_gift','week_offer','medal','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
 let PEND=[];
 const pendDrop=e=>{const i=PEND.indexOf(e);if(i>=0)PEND.splice(i,1);};
 function pendReplay(){for(const p of PEND)if(p.fn){try{p.fn();}catch(e){}}}

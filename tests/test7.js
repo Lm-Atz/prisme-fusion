@@ -392,6 +392,16 @@ r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeo
   return o;});
 T('v12 : pass : avantages premium et prix 15 gemmes',r.perks&&r.price);T('v12 : pass acheté → avantages « Actif »',r.active);T('v12 : atelier : emplacement du pass signalé',r.slot);
 T('v12 : boutique : couleurs de la saison',r.skins);T('v12 : offre de la semaine achetée au clic',r.wo);T('v12 : carte d\'événement le week-end (boutique et quêtes)',r.ev&&r.evq);
+// v12.1 : médailles et couleurs à bonus (vrais clics)
+r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;G.S.medals={};G.S.bestStage=Math.max(G.S.bestStage,30);G.setTab('home');G.refresh();
+  o.dot=document.getElementById('meBtn').classList.contains('dot');G.setTab('profile');await w(30);const P=()=>document.getElementById('panel');
+  o.sec=P().querySelectorAll('.medal').length===12&&!!P().querySelector('[data-medal="explore"]');const g=G.S.gems,d0=G.bonusMul('dmg');P().querySelector('[data-medal="explore"]').click();await w(80);
+  o.claim=G.S.medals.explore===1&&G.S.gems===g+5&&G.bonusMul('dmg')>d0&&/Bronze/.test(P().textContent);
+  G.setTab('shop');await w(30);o.bn=P().querySelectorAll('.skin .skbn').length>=10&&/dégâts \+12/.test(P().textContent);
+  G.S.gems=5000;const b=P().querySelector('[data-skin="solaire"]');const g2=G.S.gems;b.click();await w(80);o.buy=G.S.skin==='solaire'&&G.S.gems===g2-2000&&G.S.skins.includes('solaire');
+  return o;});
+T('v12.1 : point sur l\'engrenage quand une médaille est prête',r.dot);T('v12.1 : 12 médailles dans le profil',r.sec);T('v12.1 : médaille récupérée au clic (+5 gemmes, bonus actif)',r.claim);
+T('v12.1 : bonus affiché sur chaque couleur',r.bn);T('v12.1 : couleur Solaire achetée 2 000 gemmes et portée',r.buy);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);
