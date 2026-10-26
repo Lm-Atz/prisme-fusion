@@ -226,5 +226,11 @@ body{margin:0}
 .ntest{width:100%;margin-top:2px}
 /* v11.8 — vérification à l'œil */
 .grp.seg button{flex:1 1 0;padding:0 14px} /* Ligue / Guilde : le texte ne touche plus le bord */
-.b[data-build] small{white-space:nowrap} /* durée de recherche sur une seule ligne */
+.b[data-build] small{white-space:nowrap}@media (max-width:380px){.b[data-build].sm{padding-left:8px;padding-right:8px;gap:4px}.b[data-build].sm small{font-size:12.5px}} /* durée de recherche sur une seule ligne */
 .langbtn{font-weight:700} /* même graisse que les autres réglages */
+/* v11.8 : réglages du compte = petit engrenage discret en haut à gauche, hors des icônes de jeu */
+.stg .stgt{margin-right:auto}
+.stg .me{pointer-events:auto;flex:0 0 auto;width:44px;height:44px;margin:-10px -2px 0 -10px;display:grid;place-items:center;border:0;background:none;padding:0;color:var(--mist);opacity:.55;cursor:pointer;border-radius:50%}
+.stg .me .i{width:18px;height:18px}
+.stg .me:active{opacity:.9;transform:scale(.92)}
+.stg .me:focus-visible{outline:2px solid var(--beam);opacity:1}

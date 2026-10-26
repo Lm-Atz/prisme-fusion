@@ -721,7 +721,7 @@ function startRun(){
 }
 /* ================= boucle ================= */
 let last=performance.now(),uiT=0,saveT=0,lastStage=0,lastMode='';
-const meC=$('meMini').getContext('2d');
+
 function frame(now){
   let dt=Math.min((now-last)/1000,0.1);last=now;const t=now/1000;
   if(now<fx.stopUntil)dt*=0.05;
@@ -741,7 +741,7 @@ function frame(now){
       if(R.mode==='farm')Music.target=Math.min(1,Math.max(fill*0.9,R.combo/6,0.25));
     }
   }
-  if(tab==='home'){drawMini($('meMini'),tierOf(S.bestStage).sides,skinHue(t));}
+  
   else if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt);
   uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
