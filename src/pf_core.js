@@ -6,7 +6,7 @@
 const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,adLeft,adUse,chestFill,chestG,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
-jokerById,jokerAvail,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
+jokerById,jokerAvail,buyWeekOffer,weekOffer,jokerNeed,offlineGains,passXP,weekTheme,seasonLeft,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,passTierCost,shopGiftG,pickWeekly,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
 offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,passBuy,passClaimAll,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
@@ -66,14 +66,14 @@ function pfMergeSim(G,sim,dt,anomalies){
   if(Number.isInteger(st.tuto))S.st.tuto=Math.min(3,Math.max(S.st.tuto|0,st.tuto));if(typeof st.namePrompted==='boolean')S.st.namePrompted=st.namePrompted;if(Number.isInteger(st.hintW))S.st.hintW=Math.min(9,Math.max(0,st.hintW));
   up(S.day,'merges',d.merges,(S.day.merges|0)+3*dt+30);up(S.day,'kills',d.kills,(S.day.kills|0)+dt/1.5+10);up(S.day,'bosses',d.bosses,Math.floor((S.day.kills|0)/5)+2);
   up(S.day,'tb',d.tb,(S.day.tb|0)+Object.values(S.run.tb).reduce((a,b)=>a+b,0)+5);up(S.day,'jokers',d.jokers,(S.day.jokers|0)+dt/5+5);if(Number.isInteger(d.combo))S.day.combo=Math.min(30,Math.max(S.day.combo|0,d.combo));
-  up(S.week,'kills',w.kills,(S.week.kills|0)+dt/1.5+10);
+  up(S.week,'kills',w.kills,(S.week.kills|0)+dt/1.5+10);up(S.week,'merges',w.merges,(S.week.merges|0)+3*dt+30);up(S.week,'bosses',w.bosses,Math.floor((S.week.kills|0)/5)+2); // v12
   if(sim.bestiary&&typeof sim.bestiary==='object'&&Object.keys(sim.bestiary).length<=300){const b={};for(const k in sim.bestiary){if(/^\d+$/.test(k)&&Number.isInteger(sim.bestiary[k]))b[k]=sim.bestiary[k];}S.bestiary=Object.assign(S.bestiary||{},b);}
   if(sim.settings&&typeof sim.settings==='object')for(const k of ['music','sound','fx','stats','notif'])if(typeof sim.settings[k]==='boolean')S.settings[k]=sim.settings[k];
   // v11.6 : le classement simulé n'est plus accepté du téléphone (la quête « top 10 » en dépendait : un téléphone modifié pouvait envoyer des rivaux faibles). Le serveur génère le sien.
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','week_offer','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -132,6 +132,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'reset':if(need(body.demo===true,'store')){const keep={name:S.name,nameChanges:S.nameChanges,tz:S.tz,flagged:S.flagged};S=G.fresh();Object.assign(S,keep);G.S=S;res.reset=true;}break; // v11.6 : réinitialisation de démo, aussi côté serveur
     case 'pass_buy':res.ok=G.passBuy(pfInt(p.k,1,100,0));if(!res.ok)res.err='gems';break;
     case 'pass_all':{const c=G.passClaimAll();res.ok=c>0;res.n=c;if(!res.ok)res.err='pass';break;}
+    case 'week_offer':res.ok=G.buyWeekOffer();if(!res.ok)res.err='gems';break; // v12 : offre de la semaine
     case 'shop_gift':res.ok=G.shopGift();if(!res.ok)res.err='claimed';break;
     case 'gemitem':res.ok=G.buyGemItem(String(p.id));if(!res.ok)res.err='gems';break;
     case 'skin':res.ok=G.buySkin(String(p.id));if(!res.ok)res.err='gems';break;

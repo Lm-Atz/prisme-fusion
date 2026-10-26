@@ -86,18 +86,18 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
   r=pfApply(src2,S2,{action:'skin',payload:{id:'saison'}},t0);T('v10 : couleur Saison non achetable',!r.result.ok);
   {const Gx=pfMakeEngine(src2,t0);Gx.S=S2;Gx.passState();S2.pass.xp=0;}r=pfApply(src2,S2,{action:'pass_claim',payload:{n:1,track:'f'}},t0);T('v10 : palier non atteint refusé',r.result.err==='pass');
   r=pfApply(src2,S2,{action:'sync'},t0);S2=r.state;const G0=pfMakeEngine(src2,t0);G0.S=S2;G0.passState();const k0=S2.pass.k;S2.gems=100;
-  r=pfApply(src2,S2,{action:'pass_buy',payload:{k:1}},t0);T('v11 : 1 palier acheté 20 gemmes, sans pass payant',r.result.ok&&r.state.gems===80&&r.state.pass.xp===15);S2=r.state;
-  r=pfApply(src2,S2,{action:'pass_buy',payload:{k:10}},t0);T('v11 : 10 paliers refusés faute de gemmes',r.result.err==='gems'&&r.state.gems===80);
+  r=pfApply(src2,S2,{action:'pass_buy',payload:{k:1}},t0);T('v12 : 1 palier acheté 15 gemmes, sans pass payant',r.result.ok&&r.state.gems===85&&r.state.pass.xp===15);S2=r.state;
+  r=pfApply(src2,S2,{action:'pass_buy',payload:{k:10}},t0);T('v12 : 10 paliers (120) refusés faute de gemmes',r.result.err==='gems'&&r.state.gems===85);
   r=pfApply(src2,S2,{action:'pass_claim',payload:{n:1,track:'p'}},t0);T('v11 : palier acheté sans pass : premium refusé',r.result.err==='pass');
-  S2.pass={k:k0,v:2,xp:1485,prem:false,cf:[],cp:[]};S2.gems=999;r=pfApply(src2,S2,{action:'pass_buy',payload:{k:50}},t0);T('v11 : jamais au-delà du palier 100 (1 seul acheté pour 20 gemmes)',r.result.ok&&r.state.pass.xp===1500&&r.state.gems===979);S2=r.state;
+  S2.pass={k:k0,v:2,xp:1485,prem:false,cf:[],cp:[]};S2.gems=999;r=pfApply(src2,S2,{action:'pass_buy',payload:{k:50}},t0);T('v12 : jamais au-delà du palier 100 (1 seul acheté pour 15 gemmes)',r.result.ok&&r.state.pass.xp===1500&&r.state.gems===984);S2=r.state;
   r=pfApply(src2,S2,{action:'pass_buy',payload:{k:1}},t0);T('v11 : palier 100 atteint : plus d\'achat',!r.result.ok);
   g0=S2.gems;r=pfApply(src2,S2,{action:'pass_claim',payload:{n:2,track:'f'}},t0);T('v11 : palier gratuit 2 = 2 gemmes',r.result.ok&&r.state.gems===g0+2);S2=r.state;
   r=pfApply(src2,S2,{action:'pass_claim',payload:{n:2,track:'p'}},t0);T('v10 : piste premium verrouillée sans pass',r.result.err==='pass');
   r=pfApply(src2,S2,{action:'purchase',payload:{id:'pass'},demo:true},t0);T('v10 : achat du pass',r.result.ok&&r.state.pass.prem);S2=r.state;g0=S2.gems;
-  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:100,track:'p'}},t0);T('v11 : palier 100 premium : 50 gemmes, boost 4 h, couleur',r.result.ok&&r.state.gems===g0+50&&r.state.skins.includes('saison')&&r.state.boostUntil>=t0+4*3600e3-1000);S2=r.state;
+  r=pfApply(src2,S2,{action:'pass_claim',payload:{n:100,track:'p'}},t0);T('v12 : palier 100 premium : 80 gemmes + couleur Éclat de la saison',r.result.ok&&r.state.gems===g0+80&&r.state.skins.includes('s'+k0+'x'));S2=r.state;
   r=pfApply(src2,S2,{action:'pass_claim',payload:{n:100,track:'p'}},t0);T('v10 : pas deux fois le même palier',r.result.err==='pass');
-  g0=S2.gems;r=pfApply(src2,S2,{action:'pass_all'},t0);T('v11 : tout récupérer : 99 premium + 99 gratuits, 1 170 + 98 gemmes',r.result.ok&&r.result.n===198&&r.state.gems===g0+1170+98);S2=r.state;
-  {const G=pfMakeEngine(src2,t0);T('v11 : un palier coûte plus qu\'il ne rapporte (pas de boucle de gemmes)',Array.from({length:10},(_,b)=>G.PASS.slice(b*10,b*10+10)).every(B=>B.reduce((a,x)=>a+(x.p.g|0)+(x.f.g|0),0)<10*G.CFG.pass.tierGems)&&G.PASS.reduce((a,x)=>a+x.p.g,0)===1220);}
+  g0=S2.gems;r=pfApply(src2,S2,{action:'pass_all'},t0);T('v12 : tout récupérer : 99 premium + 99 gratuits, 1 360 + 98 gemmes, couleur du palier 50',r.result.ok&&r.result.n===198&&r.state.gems===g0+1360+98&&r.state.skins.includes('s'+k0));S2=r.state;
+  {const G=pfMakeEngine(src2,t0);const prem=G.PASS.reduce((a,x)=>a+(x.p.g|0),0),free=G.PASS.reduce((a,x)=>a+(x.f.g|0),0),cost=G.passTierCost(10)*10;T('v12 : paliers achetés rentables avec le pass, gain borné par saison (≤ 400 gemmes)',prem===1440&&prem+free>cost&&prem+free-cost<=400&&free<cost);}
   r=pfApply(src2,S2,{action:'purchase',payload:{id:'pass'},demo:true},t0);T('v10 : pass non rachetable dans la saison',!r.result.ok);
   r=pfApply(src2,S2,{action:'sync'},t0+29*864e5);T('v10 : nouvelle saison : pass remis à zéro au premier usage',(()=>{const G=pfMakeEngine(src2,t0+29*864e5);G.S=r.state;return G.passState().prem===false&&G.passTier()===0;})());}
  r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+10000);T('pub hors-ligne : doublé une fois',r.result.ok&&r.result.sparks===6480);S=r.state;r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+20000);T('…pas deux',r.result.err==='nooff');

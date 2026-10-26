@@ -26,12 +26,12 @@ function syncClock(res){if(res&&res.now){clockOff=res.now-_dateNow();}}
 function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return migrate(m);}
 function simSnap(){snapBoard();const r=S.run;return {run:{sparks:r.sparks,stage:r.stage,max:r.max,tb:Object.assign({},r.tb),fled:!!r.fled,cells:r.cells,brate:r.brate||0,srate:r.srate||0,krate:r.krate||0},
   st:{merges:S.st.merges,manual:S.st.manual,kills:S.st.kills,bosses:S.st.bosses,jokerUses:S.st.jokerUses,maxCombo:S.st.maxCombo,tuto:S.st.tuto,namePrompted:S.st.namePrompted,hintW:S.st.hintW},
-  day:{merges:S.day.merges,kills:S.day.kills,bosses:S.day.bosses,tb:S.day.tb||0,jokers:S.day.jokers,combo:S.day.combo||0},week:{kills:S.week.kills},bestiary:S.bestiary,settings:S.settings,league:S.league};}
+  day:{merges:S.day.merges,kills:S.day.kills,bosses:S.day.bosses,tb:S.day.tb||0,jokers:S.day.jokers,combo:S.day.combo||0},week:{kills:S.week.kills,merges:S.week.merges|0,bosses:S.week.bosses|0},bestiary:S.bestiary,settings:S.settings,league:S.league};}
 let srvQ=Promise.resolve(),srvLast=0,srvErr=0,onServer=()=>{};
 /* act : capture la simulation AVANT l'application locale, exécute l'action locale (retour immédiat), puis confirme auprès du serveur */
 /* v10.4 : actions en attente de réponse. Quand le serveur répond à l'une, son état ne contient pas encore les suivantes :
    on les rejoue par-dessus (actions qui ne touchent que la partie), sinon une quête validée réapparaissait puis disparaissait. */
-const REPLAY=new Set(['claim','login','pass_claim','pass_buy','pass_all','shop_gift','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
+const REPLAY=new Set(['claim','login','pass_claim','pass_buy','pass_all','shop_gift','week_offer','build','slot','jslot','skin','gemitem','pack','joker','equip','wp','wpreset','restore','rush','purchase','titan_gem']);
 let PEND=[];
 const pendDrop=e=>{const i=PEND.indexOf(e);if(i>=0)PEND.splice(i,1);};
 function pendReplay(){for(const p of PEND)if(p.fn){try{p.fn();}catch(e){}}}

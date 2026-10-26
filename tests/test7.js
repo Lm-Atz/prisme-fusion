@@ -242,14 +242,14 @@ r=await ev(()=>{const G=window.__G;const o={};o.tier=G.passTier()===8;const s=G.
   o.lock9=document.querySelector('[data-pass="9"][data-track="f"]').disabled;document.querySelector('[data-pass="1"][data-track="p"]').click();o.modal=!!document.querySelector('#modal [data-confirm="pass"]');return o;});
 T('v11 : 120 points = palier 8 (15 points par palier)',r.tier);T('v10 : palier gratuit récupéré',r.free);T('v10 : palier non atteint désactivé',r.lock9);T('v10 : piste premium → proposition du pass',r.modal);
 await p.locator('#modal [data-close]').click();
-r=await ev(()=>{const G=window.__G,o={};G.S.gems=100;const g=G.S.gems;document.querySelector('[data-passtier="1"]').click();o.buy1=G.passTier()===9&&G.S.gems===g-20;o.freeOnly=!document.querySelector('[data-pass="9"][data-track="f"]').disabled&&document.querySelector('[data-pass="9"][data-track="p"]').classList.contains('lock');
+r=await ev(()=>{const G=window.__G,o={};G.S.gems=100;const g=G.S.gems;document.querySelector('[data-passtier="1"]').click();o.buy1=G.passTier()===9&&G.S.gems===g-15;o.freeOnly=!document.querySelector('[data-pass="9"][data-track="f"]').disabled&&document.querySelector('[data-pass="9"][data-track="p"]').classList.contains('lock');
   const before=G.passState().cf.length;document.getElementById('passAll').click();o.all=G.passState().cf.length===9&&G.passState().cp.length===0&&before===1;
   G.S.gems=5;G.renderTab();o.poor=document.querySelector('[data-passtier="1"]').disabled;G.S.gems=999;G.renderTab();
   document.querySelector('[data-ppage="1"]').click();o.next=/Paliers 11 à 20/.test(document.getElementById('panel').innerText)&&!!document.querySelector('[data-pass="20"].big');return o;});
-T('v11 : acheter 1 palier = 20 gemmes',r.buy1);T('v11 : sans pass payant, seul le gratuit se débloque',r.freeOnly);T('v11 : tout récupérer (gratuit seulement sans pass)',r.all);T('v11 : achat de palier impossible sans gemmes',r.poor);T('v11 : page suivante, palier 20 mis en avant',r.next);
+T('v12 : acheter 1 palier = 15 gemmes',r.buy1);T('v11 : sans pass payant, seul le gratuit se débloque',r.freeOnly);T('v11 : tout récupérer (gratuit seulement sans pass)',r.all);T('v11 : achat de palier impossible sans gemmes',r.poor);T('v11 : page suivante, palier 20 mis en avant',r.next);
 await ev(()=>{window.__G.passXP(0);window.__G.renderTab();});await p.locator('#panel [data-passbuy]').click();await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);await ev(()=>{const G=window.__G;window.__pp=-1;});
 r=await ev(()=>{const G=window.__G;G.setTab('pass');const g=G.S.gems;document.querySelector('[data-ppage="0"]')?.click();const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();const o={one:G.passState().prem&&G.S.gems===g+8&&G.S.spend.eur===4.99};
-  const g2=G.S.gems;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+8*8;return o;});T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
+  const g2=G.S.gems;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+7*8;return o;}); /* v12 : palier 5 = coffre (production + boost), sans gemmes */T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
 await ev(()=>window.__G.setTab('shop'));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
 await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
@@ -257,7 +257,7 @@ await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-con
 T('v10.6 : plus d\'alerte de dépenses, achat direct',await ev(g=>window.__G.S.gems===g+600&&!/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&!/Dépensé ce mois/.test(document.getElementById('panel').innerText),gA));
 await ev(()=>{const G=window.__G;delete G.S.settings.age;G.S.spend=null;G.setTab('shop');});const gB=await ev(()=>window.__G.S.gems);await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 T('v10.5 : achat possible sans âge déclaré (contrôles Google/Apple)',await ev(g=>window.__G.S.gems===g+100&&!/Achats indisponibles/.test(document.getElementById('modal').innerText),gB));
-T('v10 : couleur Saison : non achetable, marquée pass',await ev(()=>{const G=window.__G;G.S.skins=G.S.skins.filter(s=>s!=='saison');G.setTab('shop');const b=document.querySelector('[data-skin="saison"]');const g=G.S.gems;b.click();return /Pass de saison/.test(b.innerText)&&!G.S.skins.includes('saison')&&G.S.gems===g;}));
+T('v12 : couleurs de la saison : non achetables, marquées palier 50 / 100',await ev(()=>{const G=window.__G,k=G.seasonKey();G.S.skins=G.S.skins.filter(s=>!/^s\d/.test(s));G.setTab('shop');const b=document.querySelector(`[data-skin="s${k}"]`),bx=document.querySelector(`[data-skin="s${k}x"]`);const g=G.S.gems;b.click();return !!b&&!!bx&&/50/.test(b.innerText)&&/100/.test(bx.innerText)&&!G.S.skins.includes('s'+k)&&G.S.gems===g&&!document.querySelector('[data-skin="saison"]');}));
 // profil : plafond, confidentialité, âge
 await ev(()=>window.__G.setTab('profile'));
 T('v10 : profil : plus de plafond, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!document.getElementById('setCap')&&!/Âge déclaré/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
@@ -381,6 +381,17 @@ r=await ev(async()=>{const G=window.__G,S=G.S,o={};document.getElementById('veil
   document.getElementById('wpHelp').click();await new Promise(r=>setTimeout(r,50));o.help=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();return o;});
 T('v11.9 jokers : mode d\'emploi et statuts',r.how&&r.new&&r.lock&&r.lab);T('v11.9 jokers : débloquer au clic',r.unl);T('v11.9 jokers : équiper au clic',r.eq);T('v11.9 jokers : niveau suivant « 3 → 4 »',r.diff);
 T('v11.9 armes : « Gemme 1 », pas de Redistribuer sans dépense',r.gem&&r.nores);T('v11.9 armes : Améliorer au clic + bonus affiché',r.wp);T('v11.9 armes : aide des points',r.help);
+// v12 : pass premium, saisons, événement, offre de la semaine (vrais clics)
+r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;G.S.gems=2000;G.setTab('pass');const P=()=>document.getElementById('panel');
+  o.perks=!!P().querySelector('.perks')&&/emplacement de recherche/.test(P().textContent)&&/Saison /.test(P().textContent);o.price=!!P().querySelector('[data-passtier="1"]')&&/15/.test(P().querySelector('[data-passtier="1"]').textContent);
+  o.active=G.premOn()&&!!P().querySelector('.perks.on');
+  G.setTab('atelier');document.querySelector('[data-grp="start"]')?.click();await w(30);o.slot=/grâce au pass/.test(P().textContent);
+  G.setTab('shop');await w(30);const k=G.seasonKey();o.skins=!!P().querySelector(`[data-skin="s${k}"]`)&&!!P().querySelector(`[data-skin="s${k}x"]`);
+  const b=document.getElementById('weekOffer');const g=G.S.gems,c=G.weekOffer().g;b.click();await w(80);o.wo=G.S.gems===g-c&&document.getElementById('weekOffer').disabled;
+  const real=Date.now;const sat=(()=>{let t=real();for(let i=0;i<8;i++){if(G.weekendEvent(t))return t;t+=864e5;}return t;})();Date.now=()=>sat;G.renderTab();o.ev=!!P().querySelector('.evcard.on');G.setTab('quests');o.evq=!!P().querySelector('.evcard');Date.now=real;G.renderTab();
+  return o;});
+T('v12 : pass : avantages premium et prix 15 gemmes',r.perks&&r.price);T('v12 : pass acheté → avantages « Actif »',r.active);T('v12 : atelier : emplacement du pass signalé',r.slot);
+T('v12 : boutique : couleurs de la saison',r.skins);T('v12 : offre de la semaine achetée au clic',r.wo);T('v12 : carte d\'événement le week-end (boutique et quêtes)',r.ev&&r.evq);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);

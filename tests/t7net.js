@@ -94,12 +94,12 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   await ev(A,()=>{window.__G.S.run.sparks=5000;document.getElementById('veil').hidden=true;return window.__G.actAsync('sync');});
   // --- appareil B : même identité → état complet du serveur + résultat de ligue
   const secretA=await ev(A,()=>window.__G.DEV.s);
-  pendingLeague[idA]={week:'w-1',rank:2,size:12,gems:40};
+  pendingLeague[idA]={week:'w-1',rank:2,size:12,gems:40};const gemsBefore=DB.players[idA].state.gems;
   const cB=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cB);const B=await cB.newPage();B.on('pageerror',e=>errs.push('B:'+e.message));
   await B.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:secretA}));
   await B.goto('http://localhost:8766/');await B.waitForTimeout(1800);
   r=await ev(B,()=>{const G=window.__G;return {name:G.S.name,p:G.S.prestiges,gems:G.S.gems,modal:document.getElementById('modal').textContent};});
-  T('appareil B reçoit l\'état serveur',r.name==='Lumen Vif'&&r.p===1);T('résultat de ligue accordé par le serveur au réveil (+40 gemmes)',r.gems>=60&&/sur 12/.test(r.modal));
+  T('appareil B reçoit l\'état serveur',r.name==='Lumen Vif'&&r.p===1);T('résultat de ligue accordé par le serveur au réveil (+40 gemmes)',r.gems===gemsBefore+40&&/sur 12/.test(r.modal));
   // --- mauvais secret
   const cD=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cD);const D=await cD.newPage();D.on('pageerror',e=>errs.push('D:'+e.message));
   await D.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:'mauvais-secret-mauvais'}));
