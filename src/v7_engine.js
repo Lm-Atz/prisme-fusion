@@ -18,7 +18,7 @@ const CFG={
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
   chest:{cap:600,open:300,price:2.99},
   pass:{price:4.99,tiers:100,xp:15,q:{o:10,d:10,w:30,login:10},dupe:150,tierGems:15,tier10:120,perks:{offH:4,slot:1,xp:2},v:2}, // v12 : palier 15 gemmes, lot de 10 à 120 ; avantages premium pendant la saison
-  weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:40,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
+  weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:25,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
   // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
@@ -118,7 +118,7 @@ function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?
 function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
   if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
+function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
 function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
@@ -578,7 +578,7 @@ const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
 function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
 const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
 const seasonLeft=(t=Date.now())=>28-((seasonDay(t)%28)+28)%28; // jours restants, aujourd'hui compris
-function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k||S.pass.v!==CFG.pass.v)S.pass={k,v:CFG.pass.v,xp:S.pass&&S.pass.k===k?Math.min(S.pass.xp|0,CFG.pass.tiers*CFG.pass.xp):0,prem:!!(S.pass&&S.pass.k===k&&S.pass.prem),cf:[],cp:[]};return S.pass;}
+function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k||S.pass.v!==CFG.pass.v)S.pass={k,v:CFG.pass.v,xp:S.pass&&S.pass.k===k?Math.min(S.pass.xp|0,CFG.pass.tiers*CFG.pass.xp):CFG.pass.xp, /* v12.3 : palier 1 offert à chaque nouvelle saison (progression amorcée) */prem:!!(S.pass&&S.pass.k===k&&S.pass.prem),cf:[],cp:[]};return S.pass;}
 /* v12 : avantages du pass payant, actifs pendant sa saison */
 function premOn(){const p=S.pass;return !!(p&&p.prem&&p.k===seasonKey());}
 const slotsN=()=>S.slots+(premOn()?CFG.pass.perks.slot:0);

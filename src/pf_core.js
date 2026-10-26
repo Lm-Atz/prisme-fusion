@@ -25,7 +25,7 @@ function pfMaxSparkPerSec(G){
   const kill=(C.sparks.kill(st)*5*(1+0.15*(S.up.killspark|0))*sm+4*st*(1+0.08*(S.up.loot|0)))*0.5; // ≤ 1 ennemi / 2 s, compté comme boss
   const merge=3*0.15*L*2*sm;                                                  // ≤ 3 fusions manuelles / s
   const star=3*0.15*L*(1+0.5*(L/8))*(1+0.2*8)*sm*0.3;                          // étoiles
-  return (kill+merge+star)*1.5+2;
+  return (kill+merge+star)*2.5+2; // v12.3 : marge élargie (×1,5 → ×2,5) : un joueur très équipé ne doit jamais être pris pour un tricheur ; une triche reste des ordres de grandeur au-dessus
 }
 /* dégâts par seconde plausibles et étape maximale atteignable en dt secondes (joueur parfait, boosters au maximum) */
 function pfMaxDps(G,dt){

@@ -99,7 +99,7 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
   g0=S2.gems;r=pfApply(src2,S2,{action:'pass_all'},t0);T('v12 : tout récupérer : 99 premium + 99 gratuits, 1 360 + 98 gemmes, couleur du palier 50',r.result.ok&&r.result.n===198&&r.state.gems===g0+1360+98&&r.state.skins.includes('s'+k0));S2=r.state;
   {const G=pfMakeEngine(src2,t0);const prem=G.PASS.reduce((a,x)=>a+(x.p.g|0),0),free=G.PASS.reduce((a,x)=>a+(x.f.g|0),0),cost=G.passTierCost(10)*10;T('v12 : paliers achetés rentables avec le pass, gain borné par saison (≤ 400 gemmes)',prem===1440&&prem+free>cost&&prem+free-cost<=400&&free<cost);}
   r=pfApply(src2,S2,{action:'purchase',payload:{id:'pass'},demo:true},t0);T('v10 : pass non rachetable dans la saison',!r.result.ok);
-  r=pfApply(src2,S2,{action:'sync'},t0+29*864e5);T('v10 : nouvelle saison : pass remis à zéro au premier usage',(()=>{const G=pfMakeEngine(src2,t0+29*864e5);G.S=r.state;return G.passState().prem===false&&G.passTier()===0;})());}
+  r=pfApply(src2,S2,{action:'sync'},t0+29*864e5);T('v10 : nouvelle saison : pass remis à zéro au premier usage',(()=>{const G=pfMakeEngine(src2,t0+29*864e5);G.S=r.state;return G.passState().prem===false&&G.passTier()===1; /* v12.3 : palier 1 offert */})());}
  r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+10000);T('pub hors-ligne : doublé une fois',r.result.ok&&r.result.sparks===6480);S=r.state;r=pfApply(src2,S,{action:'ad',payload:{kind:'offline'}},now+230000+5*3600e3+20000);T('…pas deux',r.result.err==='nooff');
 }
 console.log(`t7core : ${ok} OK, ${ko} KO`);

@@ -523,6 +523,20 @@ body{margin:0}
 .atgrp button{flex:1 1 0;min-width:64px}
 .ppbal{margin-top:4px}
 .tbt.more .ico{background:rgba(255,255,255,.1);color:#fff}.tbt.more .ico .i{width:18px;height:18px}.tbt.more.ok .ico{background:var(--beam);color:var(--on-beam,#3a2a06)}
+/* v12.3 — revue ergonomie / psychologie du joueur */
+.badge.soft{width:9px;height:9px;background:var(--mist);opacity:.75;box-shadow:0 0 0 2px var(--night)}
+.tbt .bdot{background:var(--mist);opacity:.8}
+.tbt.newtab .ico{animation:tabpop 800ms cubic-bezier(.34,1.56,.64,1) 3}
+.ribbon.rpop{background:var(--beam);color:var(--on-beam,#3a2a06)}
+.offer.pop{box-shadow:inset 0 0 0 2px var(--beam),0 4px 0 var(--edge)}
+.chbar{position:relative;height:10px;margin:6px 0 2px;border-radius:999px;background:var(--night);overflow:visible}
+.chbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gem),#ff8ce0)}
+.chbar b{position:absolute;top:-3px;width:2px;height:16px;background:var(--beam);border-radius:2px}
+.chn{font:800 12px var(--body)!important;color:var(--mist)}.chn .i{width:12px;height:12px;vertical-align:-2px}
+.offer.chok .b{animation:beat 1.1s ease-in-out infinite}
+.b.stk .was{display:block;font:800 11px var(--body);opacity:.7;text-decoration:line-through;line-height:1}
+.pnext{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:8px 0 0;font-size:13px;color:var(--mist)}.pnext .i{width:14px;height:14px}.pnext b{color:var(--text,#fff);display:inline-flex;align-items:center;gap:3px}.pnext small{display:inline-flex;align-items:center;gap:2px;color:var(--gem);font-weight:800}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -754,6 +768,7 @@ Object.assign(I18N.fr,{"skin_emeraude": "Émeraude", "skin_saphir": "Saphir", "s
 Object.assign(I18N.fr,{"at_res": "Recherches", "at_refr": "Réfraction", "at_res_sub": "Définitives, payées en étincelles. Elles prennent du temps : lance-les et reviens plus tard.", "at_refr_sub": "Payées en points de réfraction, gagnés à chaque Réfraction. Immédiates et définitives.", "at_auto_note": "Automatisations et Éveil : achat immédiat, gardés pour toujours.", "at_forms": "Formes d'armes", "at_arm_note": "Ces recherches renforcent toutes les armes. Les formes une par une s'améliorent dans l'onglet Réfraction.", "bp_title": "Boosters", "bp_sub": "Pour la partie en cours : achat immédiat en étincelles, remis à zéro à chaque Réfraction.", "bp_main": "Principaux", "bp_more": "Plus", "bp_poor": "Pas assez d'étincelles", "pre_first": "Première Réfraction : +{n} points offerts. Atelier › Réfraction : l'auto-fusion et l'achat automatique, pour toujours."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.fr,{"at_auto_h": "Automatisations", "g_start_d": "Pour toujours : boosters déjà pris au début de chaque partie, plateau plus grand, gains hors ligne."});
 Object.assign(I18N.fr,{"pre_keep_l": "Recherches de l'Atelier (Départ, Jokers, Armes), Grand plateau, automatisations, gemmes, couleurs, pass", "pre_lose_l": "Boosters et améliorations de partie (Attaque, Plateau, Économie), étincelles, étape", "pre_p": "La lumière traverse le prisme : tu repars à l'étape 1 avec un trésor de départ. Les boosters de la partie repartent à zéro ; tout ce qui est dans l'Atelier est gardé.", "pre_pp": "+{n} point{n|s} de réfraction (automatisations, Éveil, formes d'armes)"}); // v12.2 : Réfraction
+Object.assign(I18N.fr,{"hint4": "Bien joué ! Les boosters rendent cette partie plus forte. L'Atelier débloque des améliorations pour toujours.", "hint_refr": "Bientôt la Réfraction (étape {n}) : tu repars de l'étape 1, mais toutes tes étincelles rapportent plus, pour toujours. Tes boosters repartent à zéro, l'Atelier est gardé.", "tb_new": "Nouveau booster : {t}", "sh_pop": "Populaire", "ch_ready": "Prête !", "ch_d": "Se remplit d'une gemme pour deux gagnées en jouant. Contenu exact, sans hasard.", "ch_from": "s'ouvre dès {n}", "ps_nextbig": "Prochaine grosse récompense : palier {n}"}); // v12.3 : revue ergonomie / psychologie
 
 I18N.en={
   _name:'English',_units:['K','M','B','T'],_days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],_dur:['s','min','h','d'],_adj:['Cobalt','Blazing','Crimson','Stellar','Swift','Polar','Fiery','Lunar','Electric','Shadow','Radiant','Quantum'],_noun:['Hexagon','Prism','Pentagon','Comet','Spiral','Vector','Nova','Pulsar','Octagon','Photon','Orbit','Fractal'],
@@ -887,6 +902,7 @@ Object.assign(I18N.en,{"skin_emeraude": "Emerald", "skin_saphir": "Sapphire", "s
 Object.assign(I18N.en,{"at_res": "Research", "at_refr": "Refraction", "at_res_sub": "Permanent, paid with sparks. They take time: start them and come back later.", "at_refr_sub": "Paid with refraction points, earned at each Refraction. Instant and permanent.", "at_auto_note": "Automations and Awakening: instant, kept forever.", "at_forms": "Weapon shapes", "at_arm_note": "This research strengthens every weapon. Individual shapes are upgraded in the Refraction tab.", "bp_title": "Boosters", "bp_sub": "For the current run: instant, paid with sparks, reset at each Refraction.", "bp_main": "Main", "bp_more": "More", "bp_poor": "Not enough sparks", "pre_first": "First Refraction: +{n} free points. Workshop › Refraction: auto-merge and auto-buy, forever."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.en,{"at_auto_h": "Automations", "g_start_d": "Forever: boosters already bought at the start of each run, a bigger board, offline earnings."});
 Object.assign(I18N.en,{"pre_keep_l": "Workshop research (Start, Jokers, Weapons), Big board, automations, gems, colours, pass", "pre_lose_l": "Boosters and run upgrades (Attack, Board, Economy), sparks, stage", "pre_p": "Light passes through the prism: you restart at stage 1 with a starting treasure. Run boosters reset; everything in the Workshop is kept.", "pre_pp": "+{n} refraction point{n|s} (automations, Awakening, weapon shapes)"}); // v12.2 : Réfraction
+Object.assign(I18N.en,{"hint4": "Nice! Boosters make this run stronger. The Workshop unlocks upgrades that last forever.", "hint_refr": "Refraction is coming (stage {n}): you restart at stage 1, but all your sparks are worth more, forever. Boosters reset; the Workshop is kept.", "tb_new": "New booster: {t}", "sh_pop": "Popular", "ch_ready": "Ready!", "ch_d": "Fills with one gem for every two you earn by playing. Exact contents, no luck.", "ch_from": "opens at {n}", "ps_nextbig": "Next big reward: tier {n}"}); // v12.3 : revue ergonomie / psychologie
 I18N.es={
   _name:'Español',_units:['k','M','MM','B'],_days:['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardiente','Lunar','Eléctrico','Sombrío','Radiante','Cuántico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vector','Nova','Púlsar','Octógono','Fotón','Órbita','Fractal'],
   sparks:'chispas',shards:'esquirlas',gems:'gemas',stage:'Etapa {n}',level:'nivel',lvl:'niv. {n}',max:'Máx.',close:'Cerrar',later:'Más tarde',cancel:'Cancelar',
@@ -1019,6 +1035,7 @@ Object.assign(I18N.es,{"skin_emeraude": "Esmeralda", "skin_saphir": "Zafiro", "s
 Object.assign(I18N.es,{"at_res": "Investigación", "at_refr": "Refracción", "at_res_sub": "Permanentes, con chispas. Llevan tiempo: lánzalas y vuelve más tarde.", "at_refr_sub": "Con puntos de refracción, ganados en cada Refracción. Inmediatas y permanentes.", "at_auto_note": "Automatizaciones y Despertar: compra inmediata, para siempre.", "at_forms": "Formas de armas", "at_arm_note": "Estas investigaciones refuerzan todas las armas. Cada forma se mejora en la pestaña Refracción.", "bp_title": "Potenciadores", "bp_sub": "Para la partida actual: compra inmediata con chispas, se reinicia en cada Refracción.", "bp_main": "Principales", "bp_more": "Más", "bp_poor": "No hay chispas suficientes", "pre_first": "Primera Refracción: +{n} puntos de regalo. Taller › Refracción: fusión y compra automáticas, para siempre."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.es,{"at_auto_h": "Automatizaciones", "g_start_d": "Para siempre: potenciadores ya comprados al empezar cada partida, tablero más grande, ganancias sin conexión."});
 Object.assign(I18N.es,{"pre_keep_l": "Investigaciones del Taller (Inicio, Comodines, Armas), Tablero grande, automatizaciones, gemas, colores, pase", "pre_lose_l": "Potenciadores y mejoras de partida (Ataque, Tablero, Economía), chispas, etapa", "pre_p": "La luz atraviesa el prisma: vuelves a la etapa 1 con un tesoro inicial. Los potenciadores de la partida se reinician; todo lo del Taller se conserva.", "pre_pp": "+{n} punto{n|s} de refracción (automatizaciones, Despertar, formas de armas)"}); // v12.2 : Réfraction
+Object.assign(I18N.es,{"hint4": "¡Bien hecho! Los potenciadores refuerzan esta partida. El Taller desbloquea mejoras para siempre.", "hint_refr": "Pronto la Refracción (etapa {n}): vuelves a la etapa 1, pero todas tus chispas valen más, para siempre. Los potenciadores se reinician; el Taller se conserva.", "tb_new": "Nuevo potenciador: {t}", "sh_pop": "Popular", "ch_ready": "¡Lista!", "ch_d": "Se llena con una gema por cada dos que ganas jugando. Contenido exacto, sin azar.", "ch_from": "se abre desde {n}", "ps_nextbig": "Próxima gran recompensa: nivel {n}"}); // v12.3 : revue ergonomie / psychologie
 I18N.de={
   _name:'Deutsch',_units:['Tsd.','Mio.','Mrd.','Bio.'],_days:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],_dur:['s','Min.','Std.','T.'],_adj:['Kobalt','Blitzend','Purpur','Stellar','Flink','Polar','Glühend','Lunar','Elektrisch','Dunkel','Strahlend','Quanten'],_noun:['Sechseck','Prisma','Fünfeck','Komet','Spirale','Vektor','Nova','Pulsar','Achteck','Photon','Orbit','Fraktal'],
   sparks:'Funken',shards:'Splitter',gems:'Edelsteine',stage:'Stufe {n}',level:'Level',lvl:'Lv. {n}',max:'Max',close:'Schließen',later:'Später',cancel:'Abbrechen',
@@ -1151,6 +1168,7 @@ Object.assign(I18N.de,{"skin_emeraude": "Smaragd", "skin_saphir": "Saphir", "ski
 Object.assign(I18N.de,{"at_res": "Forschung", "at_refr": "Brechung", "at_res_sub": "Dauerhaft, mit Funken bezahlt. Sie brauchen Zeit: starten und später wiederkommen.", "at_refr_sub": "Mit Brechungspunkten bezahlt, die du bei jeder Brechung bekommst. Sofort und dauerhaft.", "at_auto_note": "Automatisierungen und Erwachen: sofort, für immer.", "at_forms": "Waffenformen", "at_arm_note": "Diese Forschungen stärken alle Waffen. Einzelne Formen verbesserst du im Tab Brechung.", "bp_title": "Booster", "bp_sub": "Für die laufende Runde: sofort, mit Funken, bei jeder Brechung zurückgesetzt.", "bp_main": "Haupt-Booster", "bp_more": "Mehr", "bp_poor": "Nicht genug Funken", "pre_first": "Erste Brechung: +{n} Gratispunkte. Werkstatt › Brechung: Auto-Fusion und Auto-Kauf, für immer."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.de,{"at_auto_h": "Automatisierungen", "g_start_d": "Für immer: Booster zu Rundenbeginn, größeres Brett, Offline-Ertrag."});
 Object.assign(I18N.de,{"pre_keep_l": "Werkstatt-Forschung (Start, Joker, Waffen), Großes Brett, Automatisierungen, Edelsteine, Farben, Pass", "pre_lose_l": "Booster und Runden-Verbesserungen (Angriff, Brett, Wirtschaft), Funken, Stufe", "pre_p": "Das Licht durchquert das Prisma: Du beginnst wieder bei Stufe 1 mit einem Startschatz. Die Booster der Runde werden zurückgesetzt; alles in der Werkstatt bleibt.", "pre_pp": "+{n} Brechungspunkt{n|e} (Automatisierungen, Erwachen, Waffenformen)"}); // v12.2 : Réfraction
+Object.assign(I18N.de,{"hint4": "Gut gemacht! Booster machen diese Runde stärker. Die Werkstatt schaltet dauerhafte Verbesserungen frei.", "hint_refr": "Bald kommt die Brechung (Stufe {n}): Du beginnst wieder bei Stufe 1, aber alle Funken bringen dauerhaft mehr. Booster werden zurückgesetzt, die Werkstatt bleibt.", "tb_new": "Neuer Booster: {t}", "sh_pop": "Beliebt", "ch_ready": "Bereit!", "ch_d": "Füllt sich mit einem Edelstein für je zwei, die du beim Spielen verdienst. Genauer Inhalt, kein Zufall.", "ch_from": "öffnet ab {n}", "ps_nextbig": "Nächste große Belohnung: Stufe {n}"}); // v12.3 : revue ergonomie / psychologie
 I18N.pt={
   _name:'Português',_units:['mil','mi','bi','tri'],_days:['domingo','segunda','terça','quarta','quinta','sexta','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardente','Lunar','Elétrico','Sombrio','Radiante','Quântico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vetor','Nova','Pulsar','Octógono','Fotão','Órbita','Fractal'],
   sparks:'faíscas',shards:'estilhaços',gems:'gemas',stage:'Etapa {n}',level:'nível',lvl:'nív. {n}',max:'Máx.',close:'Fechar',later:'Mais tarde',cancel:'Cancelar',
@@ -1283,6 +1301,7 @@ Object.assign(I18N.pt,{"skin_emeraude": "Esmeralda", "skin_saphir": "Safira", "s
 Object.assign(I18N.pt,{"at_res": "Pesquisas", "at_refr": "Refração", "at_res_sub": "Permanentes, pagas com faíscas. Levam tempo: inicia-as e volta mais tarde.", "at_refr_sub": "Pagas com pontos de refração, ganhos a cada Refração. Imediatas e permanentes.", "at_auto_note": "Automatizações e Despertar: compra imediata, para sempre.", "at_forms": "Formas das armas", "at_arm_note": "Estas pesquisas reforçam todas as armas. Cada forma melhora-se no separador Refração.", "bp_title": "Reforços", "bp_sub": "Para a partida atual: compra imediata com faíscas, reposta a zero em cada Refração.", "bp_main": "Principais", "bp_more": "Mais", "bp_poor": "Faíscas insuficientes", "pre_first": "Primeira Refração: +{n} pontos oferecidos. Oficina › Refração: fusão e compra automáticas, para sempre."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.pt,{"at_auto_h": "Automatizações", "g_start_d": "Para sempre: reforços já comprados no início de cada partida, tabuleiro maior, ganhos offline."});
 Object.assign(I18N.pt,{"pre_keep_l": "Pesquisas da Oficina (Início, Curingas, Armas), Tabuleiro grande, automatizações, gemas, cores, passe", "pre_lose_l": "Reforços e melhorias da partida (Ataque, Tabuleiro, Economia), faíscas, etapa", "pre_p": "A luz atravessa o prisma: voltas à etapa 1 com um tesouro inicial. Os reforços da partida voltam a zero; tudo o que está na Oficina fica.", "pre_pp": "+{n} ponto{n|s} de refração (automatizações, Despertar, formas das armas)"}); // v12.2 : Réfraction
+Object.assign(I18N.pt,{"hint4": "Boa! Os reforços tornam esta partida mais forte. A Oficina desbloqueia melhorias para sempre.", "hint_refr": "A Refração está a chegar (etapa {n}): voltas à etapa 1, mas todas as faíscas valem mais, para sempre. Os reforços voltam a zero; a Oficina fica.", "tb_new": "Novo reforço: {t}", "sh_pop": "Popular", "ch_ready": "Pronto!", "ch_d": "Enche-se com uma gema por cada duas que ganhas a jogar. Conteúdo exato, sem sorte.", "ch_from": "abre a partir de {n}", "ps_nextbig": "Próxima grande recompensa: nível {n}"}); // v12.3 : revue ergonomie / psychologie
 I18N.it={
   _name:'Italiano',_units:['k','M','Mrd','Bln'],_days:['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'],_dur:['s','min','h','g'],_adj:['Cobalto','Fulminante','Purpureo','Stellare','Vivace','Polare','Ardente','Lunare','Elettrico','Oscuro','Radioso','Quantico'],_noun:['Esagono','Prisma','Pentagono','Cometa','Spirale','Vettore','Nova','Pulsar','Ottagono','Fotone','Orbita','Frattale'],
   sparks:'scintille',shards:'schegge',gems:'gemme',stage:'Livello {n}',level:'grado',lvl:'gr. {n}',max:'Max',close:'Chiudi',later:'Più tardi',cancel:'Annulla',
@@ -1415,6 +1434,7 @@ Object.assign(I18N.it,{"skin_emeraude": "Smeraldo", "skin_saphir": "Zaffiro", "s
 Object.assign(I18N.it,{"at_res": "Ricerche", "at_refr": "Rifrazione", "at_res_sub": "Permanenti, con scintille. Richiedono tempo: avviale e torna più tardi.", "at_refr_sub": "Con punti rifrazione, ottenuti a ogni Rifrazione. Immediate e permanenti.", "at_auto_note": "Automazioni e Risveglio: acquisto immediato, per sempre.", "at_forms": "Forme delle armi", "at_arm_note": "Queste ricerche potenziano tutte le armi. Le singole forme si migliorano nella scheda Rifrazione.", "bp_title": "Potenziamenti", "bp_sub": "Per la partita in corso: acquisto immediato con scintille, azzerato a ogni Rifrazione.", "bp_main": "Principali", "bp_more": "Altro", "bp_poor": "Scintille insufficienti", "pre_first": "Prima Rifrazione: +{n} punti in regalo. Officina › Rifrazione: fusione e acquisto automatici, per sempre."}); // v12.2 : Atelier Recherches / Réfraction, panneau Boosters
 Object.assign(I18N.it,{"at_auto_h": "Automazioni", "g_start_d": "Per sempre: potenziamenti già presi a inizio partita, tabellone più grande, guadagni offline."});
 Object.assign(I18N.it,{"pre_keep_l": "Ricerche dell'Officina (Inizio, Jolly, Armi), Tabellone grande, automazioni, gemme, colori, pass", "pre_lose_l": "Potenziamenti e migliorie di partita (Attacco, Tabellone, Economia), scintille, livello", "pre_p": "La luce attraversa il prisma: riparti dal livello 1 con un tesoro iniziale. I potenziamenti della partita si azzerano; tutto ciò che è nell'Officina resta.", "pre_pp": "+{n} punt{n|o/i} rifrazione (automazioni, Risveglio, forme delle armi)"}); // v12.2 : Réfraction
+Object.assign(I18N.it,{"hint4": "Ottimo! I potenziamenti rendono più forte questa partita. L'Officina sblocca miglioramenti per sempre.", "hint_refr": "Presto la Rifrazione (livello {n}): ripartirai dal livello 1, ma tutte le scintille varranno di più, per sempre. I potenziamenti si azzerano, l'Officina resta.", "tb_new": "Nuovo potenziamento: {t}", "sh_pop": "Popolare", "ch_ready": "Pronto!", "ch_d": "Si riempie di una gemma ogni due guadagnate giocando. Contenuto esatto, niente fortuna.", "ch_from": "si apre da {n}", "ps_nextbig": "Prossima grande ricompensa: livello {n}"}); // v12.3 : revue ergonomie / psychologie
 
 /* ================= utilitaires ================= */
 const $=id=>document.getElementById(id);
@@ -1477,7 +1497,7 @@ const CFG={
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
   chest:{cap:600,open:300,price:2.99},
   pass:{price:4.99,tiers:100,xp:15,q:{o:10,d:10,w:30,login:10},dupe:150,tierGems:15,tier10:120,perks:{offH:4,slot:1,xp:2},v:2}, // v12 : palier 15 gemmes, lot de 10 à 120 ; avantages premium pendant la saison
-  weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:40,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
+  weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:25,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
   // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
@@ -1577,7 +1597,7 @@ function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?
 function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
   if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
+function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
 function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
@@ -2037,7 +2057,7 @@ const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
 function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
 const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
 const seasonLeft=(t=Date.now())=>28-((seasonDay(t)%28)+28)%28; // jours restants, aujourd'hui compris
-function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k||S.pass.v!==CFG.pass.v)S.pass={k,v:CFG.pass.v,xp:S.pass&&S.pass.k===k?Math.min(S.pass.xp|0,CFG.pass.tiers*CFG.pass.xp):0,prem:!!(S.pass&&S.pass.k===k&&S.pass.prem),cf:[],cp:[]};return S.pass;}
+function passState(){const k=seasonKey();if(!S.pass||S.pass.k!==k||S.pass.v!==CFG.pass.v)S.pass={k,v:CFG.pass.v,xp:S.pass&&S.pass.k===k?Math.min(S.pass.xp|0,CFG.pass.tiers*CFG.pass.xp):CFG.pass.xp, /* v12.3 : palier 1 offert à chaque nouvelle saison (progression amorcée) */prem:!!(S.pass&&S.pass.k===k&&S.pass.prem),cf:[],cp:[]};return S.pass;}
 /* v12 : avantages du pass payant, actifs pendant sa saison */
 function premOn(){const p=S.pass;return !!(p&&p.prem&&p.k===seasonKey());}
 const slotsN=()=>S.slots+(premOn()?CFG.pass.perks.slot:0);
@@ -2358,7 +2378,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='12.2 · progression';
+const VERSION='12.3 · ergonomie';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2367,6 +2387,7 @@ const upIcon=u=>u.joker?JICON[u.joker]:UPICON[u.id]||'spark';
 const TYPE_LABEL={get mob(){return t('type_mob')},get mini(){return t('type_mini')},get boss(){return t('type_boss')},get titan(){return t('type_titan')}};
 const RM=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false};
 const motionOK=()=>S.settings.fx&&!RM.matches;
+const DX=10; // v12.3 : dégâts affichés ×10 (purement visuel : « −26 » plutôt que « −2,6 ») ; mêmes unités pour Titan et ligue
 const easeBack=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
 
 /* ================= plateau ================= */
@@ -2514,7 +2535,7 @@ function shotLanded(s){
   if(s.blocked){if(performance.now()-numT>600){numT=performance.now();bfx.nums.push({txt:t('blocked'),t:0,x:BW/2+rnd(-30,30),y:BH*0.3,col:'hsl(192 100% 75%)'});}return;}
   bfx.hitT=1;bfx.recoil=Math.min(1,bfx.recoil+0.6);lastHitT=performance.now()/1000;
   const big=s.crit||(R.E.type!=='titan'&&s.d>=R.E.max*0.1);
-  if(big||performance.now()-numT>350){numT=performance.now();bfx.nums.push({txt:(s.crit?t('crit'):'')+'−'+(s.d<10?dec(s.d,1):fmt(s.d)),t:0,x:BW/2+rnd(-40,40),y:BH*0.36,col:big?'hsl(44 100% 66%)':'hsl(40 100% 96%)',big});}
+  if(big||performance.now()-numT>350){numT=performance.now();bfx.nums.push({txt:(s.crit?t('crit'):'')+'−'+(s.d*DX<1?dec(s.d*DX,1):fmt(Math.round(s.d*DX))),t:0,x:BW/2+rnd(-40,40),y:BH*0.36,col:big?'hsl(44 100% 66%)':'hsl(40 100% 96%)',big});}
   for(let k=0;k<(big?14:4);k++){const a=Math.random()*Math.PI*2,sp=rnd(60,big?260:140);bfx.parts.push({x:BW/2,y:BH*0.52,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rnd(.3,.6),t:0,col:SPEC[k%6],sz:rnd(1.5,3.5)});}
   if(s.crit&&s.d>=R.E.max*0.1)kick('medium');
   if(big)tone(110+Math.min(s.d,1e6)**0.1*20,0.12,'square',0.06);
@@ -2532,7 +2553,7 @@ hooks.harvest=(i,sp)=>{if(Math.random()<0.5)return;const [x,y]=fx.at(i);fx.float
 hooks.tb=k=>{sfx.buy();kick('small');fx.glow=Math.min(1,fx.glow+0.4);if(tutoStep===3)tutoNext();};
 hooks.autoPrestige=()=>{act('prestige',{},()=>doPrestige()||false);};
 hooks.prestige=g=>{track('refraction',{stage:S.run.stage,pts:g});boardCache=null;fx.flash=1;fx.flashCol='127,226,255';kick('huge');sfx.win();for(let i=0;i<R.N*R.N;i++)fx.burst(i,null,4,300);};
-hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><div class="big">${fmt(d)}</div><p>${d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest)})}</p><div class="acts"><button class="b b-gold" data-close>${t('continue')}</button></div>`);};
+hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><div class="big">${fmt(d*DX)}</div><p>${d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest*DX)})}</p><div class="acts"><button class="b b-gold" data-close>${t('continue')}</button></div>`);};
 /* ================= gemme du joueur (accueil) ================= */
 function drawMe(c,size,t,dt){
   c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,size,size);
@@ -2640,14 +2661,14 @@ function boostView(){const sp=S.run.sparks;
     return `<div class="bprow${lk?' lk':''}"><span class="bpic">${ic(upIcon(u))}</span><div style="min-width:0"><b>${u.t}${l?` <em>${t('lvl',{n:l})}</em>`:''}</b><p>${u.d(l)}</p></div>${lk?`<span class="d">${ic('lock')}${t('jk_st_lock',{n:upReq(u)})}</span>`:mx?`<span class="d">${t('max')}</span>`:`<button class="b b-spark sm" data-build="${u.id}" ${sp<c?'disabled':''}>${ic('spark')}${fmt(c)}</button>`}</div>`;}).join('')+`</div>`;}
   return h;}
 function refresh(){
-  roll();evBanner();{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
+  roll();{const tbn=document.querySelectorAll('#tb .tbt[data-tb]').length;if(R&&(tbn!==Object.keys(TBDEF).filter(tbShown).length||!!$('boostBtn')!==moreShown()))renderTB();} /* v12.3 : nouveau booster révélé dès qu'il se débloque */evBanner();if(tab==='home'&&!S.prestiges&&S.bestStage>=25&&$('hint').hidden&&lsGet('prisme-hintr')!=='1'){lsSet('prisme-hintr','1');showHint(t('hint_refr',{n:CFG.prestige.minStage}),7000);} /* v12.3 : la Réfraction expliquée quand elle approche, plus à l'étape 3 */{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
   gemCounter();const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
   navUnlock();
   const rg=$('refrG');if(rg){const on=!S.prestiges&&S.bestStage>=10&&S.run.max<CFG.prestige.minStage;rg.hidden=!on;if(on)rg.textContent=t('refr_gauge',{n:S.run.max,m:CFG.prestige.minStage});}
   $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild().filter(id=>{const k=id+':'+lvlOf(upById(id));if(doneSeen.has(k))return false;doneSeen.add(k);return true;});if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
-  $('bA').hidden=!canBuild;
+  $('bA').hidden=!canBuild;$('bA').classList.add('soft'); // v12.3 : achat possible = pastille discrète (le rouge est réservé aux récompenses)
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
   document.querySelectorAll('[data-ring]').forEach(el=>{const b=inBuild(el.dataset.ring);if(b)el.style.setProperty('--p',(100*Math.min(1,1-(b.until-Date.now())/1000/b.dur))+'%');});
   document.querySelectorAll('[data-rushg]').forEach(el=>{const b=inBuild(el.dataset.rushg);if(b)el.lastChild.textContent=rushGems(b);});
@@ -2660,10 +2681,18 @@ function renderStage(){
   $('stgW').textContent=E.type==='titan'?t('type_titan'):E.type==='boss'?E.name:w.name;
   $('hpWrap').classList.toggle('titan',E.type==='titan');
 }
+/* v12.3 : révélation progressive : 2 boosters au départ, les autres en avançant, « Plus » à l'étape 4 */
+const TB_AT={cad:1,power:1,spark:3,auto:5,birth:8};
+const tbShown=k=>S.prestiges>0||S.bestStage>=(TB_AT[k]||1)||tbLvl(k)>0;
+const moreShown=()=>S.prestiges>0||S.bestStage>=4;
+function tbNewCheck(ks){let seen;try{seen=JSON.parse(localStorage.getItem('prisme-tbseen')||'null');}catch(e){seen=null;}if(!seen){seen=ks.slice();try{localStorage.setItem('prisme-tbseen',JSON.stringify(seen));}catch(e){}return;}
+  const nw=ks.filter(k=>!seen.includes(k));if(!nw.length)return;nw.forEach(k=>seen.push(k));try{localStorage.setItem('prisme-tbseen',JSON.stringify(seen));}catch(e){}
+  if(S.bestStage>1&&!S.prestiges){toast(t('tb_new',{t:TBDEF[nw[0]].t}));setTimeout(()=>{const b=document.querySelector(`.tbt[data-tb="${nw[0]}"]`);if(b)b.classList.add('newtab');},30);}}
 function renderTB(){
   const sp=S.run.sparks;
-  $('tb').innerHTML=Object.keys(TBDEF).map(k=>{const c=tbCost(k),l=tbLvl(k),ok=isFinite(c)&&sp>=c,max=!isFinite(c);
-    return `<button class="tbt ${ok?'ok':''} ${ok&&tutoStep===3?'hot':''}" data-tb="${k}" style="--tc:var(--${TBDEF[k].c})" ${max?'disabled':''} aria-label="${max?t('tb_aria_max',{t:TBDEF[k].t,l,d:TBDEF[k].d}):t('tb_aria',{t:TBDEF[k].t,l,c:fmt(c),d:TBDEF[k].d})}"><span class="lv">${l}</span><span class="ico">${ic(TBDEF[k].i)}</span><span class="lbl">${TBDEF[k].t}</span><b>${max?t('max'):ic('spark')+fmt(c)}</b></button>`;}).join('')+`<button class="tbt more${runUpReady()?' ok':''}" id="boostBtn" aria-label="${t('bp_title')}"><span class="ico">${ic('plus')}</span><span class="lbl">${t('bp_more')}</span>${runUpReady()?'<i class="bdot"></i>':''}</button>`;
+  const ks=Object.keys(TBDEF).filter(tbShown),more=moreShown();$('tb').style.gridTemplateColumns=`repeat(${ks.length},minmax(0,1fr))${more?' 46px':''}`;tbNewCheck(ks);
+  $('tb').innerHTML=ks.map(k=>{const c=tbCost(k),l=tbLvl(k),ok=isFinite(c)&&sp>=c,max=!isFinite(c);
+    return `<button class="tbt ${ok?'ok':''} ${ok&&tutoStep===3?'hot':''}" data-tb="${k}" style="--tc:var(--${TBDEF[k].c})" ${max?'disabled':''} aria-label="${max?t('tb_aria_max',{t:TBDEF[k].t,l,d:TBDEF[k].d}):t('tb_aria',{t:TBDEF[k].t,l,c:fmt(c),d:TBDEF[k].d})}"><span class="lv">${l}</span><span class="ico">${ic(TBDEF[k].i)}</span><span class="lbl">${TBDEF[k].t}</span><b>${max?t('max'):ic('spark')+fmt(c)}</b></button>`;}).join('')+(more?`<button class="tbt more${runUpReady()?' ok':''}" id="boostBtn" aria-label="${t('bp_title')}"><span class="ico">${ic('plus')}</span><span class="lbl">${t('bp_more')}</span>${runUpReady()?'<i class="bdot"></i>':''}</button>`:'');
   renderJok();
 }
 function updTB(){const sp=S.run.sparks;document.querySelectorAll('[data-tb]').forEach(b=>{const c=tbCost(b.dataset.tb);b.classList.toggle('ok',isFinite(c)&&sp>=c);});}
@@ -2839,7 +2868,7 @@ function renderTab(){
     const free=slotsN()-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
     if(!['start','jok','arm'].includes(atGroup))atGroup='start';
     h+=head(t('at_title'),t(atPane==='refr'?'at_refr_sub':'at_res_sub'));
-    h+=`<div class="grp seg atseg" role="tablist"><button data-atpane="res" aria-pressed="${atPane!=='refr'}">${ic('anvil')}${t('at_res')}</button><button data-atpane="refr" aria-pressed="${atPane==='refr'}">${ic('prism')}${t('at_refr')}${refrReady()?'<span class="badge"></span>':''}</button></div>`;
+    h+=`<div class="grp seg atseg" role="tablist"><button data-atpane="res" aria-pressed="${atPane!=='refr'}">${ic('anvil')}${t('at_res')}</button><button data-atpane="refr" aria-pressed="${atPane==='refr'}">${ic('prism')}${t('at_refr')}${refrReady()?'<span class="badge soft"></span>':''}</button></div>`;
     if(atPane==='refr'){
       const spent=Object.keys(S.wp||{}).length;
       h+=`<div class="slotbuy ppbal"><span><b style="font:20px var(--display);color:var(--shard)">${S.pp||0}</b> ${t('wp_pts',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span><button class="qhelp" id="wpHelp" aria-label="${t('wp_help_t')}">?</button></div>`;
@@ -2852,7 +2881,7 @@ function renderTab(){
     }else{
       seenGroup(atGroup);h+=`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
       h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}${premOn()?` <small class="pslot">${ic('crown','ig')}${t('at_slots_pass')}</small>`:''}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
-      h+=`<div class="grp atgrp" role="group" aria-label="${t('at_res')}">${['start','jok','arm'].map(id=>GROUPS.find(g=>g.id===id)).map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpNew(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
+      h+=`<div class="grp atgrp" role="group" aria-label="${t('at_res')}">${['start','jok','arm'].map(id=>GROUPS.find(g=>g.id===id)).map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpNew(g.id)?'<span class="badge soft"></span>':''}</button>`).join('')}</div>`;
       if(atGroup==='start')h+=`<p class="note">${GROUPS.find(g=>g.id==='start').d}</p>`;
     if(atGroup==='jok'){ /* v11.9 : mode d'emploi, statut de chaque joker, prix étiquetés, niveau suivant visible */
       const nj=CFG.build.jslotGems[S.jslots-1];
@@ -2894,7 +2923,7 @@ function renderTab(){
     const allSim=!live&&rows.every(r=>r.me||r.bot); /* tout est simulé (avant le premier Titan) : une seule mention au lieu d'une étiquette par ligne */
     if(allSim)h=h.replace(/(<div class="list" style="gap:4px">)$/,`<p class="simall">${t('lg_allsim')}</p>$1`);
     rows.forEach((r,i)=>{ /* v11.2 : plus de zones de montée/descente (la division dépend de l'étape) */
-      const cls=(r.me?' me':'')+(r.bot?' bot':'')+(i<3?' up':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${r.bot&&!allSim?`<span class="simtag">${t('lg_sim')}</span>`:''}${esc(r.name)}</span><span class="sc">${fmt(r.score)}</span>${r.me||r.bot?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
+      const cls=(r.me?' me':'')+(r.bot?' bot':'')+(i<3?' up':'');h+=`<div class="lg${cls}"><span class="rk">${i+1}</span><canvas width="52" height="52" data-mini="${r.sides}" data-hue="${r.me?'me':r.hue}"></canvas><span class="nm">${r.bot&&!allSim?`<span class="simtag">${t('lg_sim')}</span>`:''}${esc(r.name)}</span><span class="sc">${fmt(r.score*DX)}</span>${r.me||r.bot?'<span></span>':`<button class="rep" data-report="${r.id||i}" aria-label="${t('lg_report',{n:esc(r.name)})}">${ic('flag')}</button>`}</div>`;});
     h+='</div>';
     h+=`<h2 class="sec">${t('lg_rewards')}<small>${t('lg_rewards_sub')}</small></h2><div class="list" style="gap:4px">${CFG.league.tiers.map(([a,b])=>`<div class="lg lgr"><span class="rk">${a===b?a:a+'–'+b}</span><span class="sc">${ic('gem','ig')}${CFG.league.gems(a)}</span><span class="sc">${ic('spark','ie')}${dur(CFG.league.minutes(a)*60)}</span></div>`).join('')}</div>`;
     }
@@ -2904,7 +2933,7 @@ function renderTab(){
     const OART={starter:['box','ie'],loot:['shard','is'],chest:['box','ig'],noads:['tv','ie']};const PKART={g100:['gem'],g600:['gem','gem'],g1300:['gem','gem','gem'],g2800:['box'],g7500:['box','gem'],g16000:['crown']};
     const best=OFFERS.filter(o=>/^g\d/.test(o.id)).reduce((m,o)=>packBonus(o)>packBonus(m)?o:m);
     const art=o=>PKART[o.id]?`<span class="oart pk pk${PKART[o.id].length}">${PKART[o.id].map(n=>ic(n,'ig')).join('')}</span>`:`<span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span>`;
-    const offerRow=o=>{const own=o.once&&o.once(),pk=/^g\d/.test(o.id),bn=pk?packBonus(o):0;return `<div class="offer slab${o.id==='starter'&&!own?' feat':''}${pk&&o===best?' best':''}">${pk&&o===best?`<span class="ribbon">${t('sh_best')}</span>`:''}${art(o)}<div style="min-width:0"><b>${o.t}${bn>0?` <span class="bon">+${bn} %</span>`:''}</b>${pk?'':`<p>${o.d}</p>`}</div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;};
+    const offerRow=o=>{const own=o.once&&o.once(),pk=/^g\d/.test(o.id),bn=pk?packBonus(o):0,pop=o.id==='g600',ch=o.id==='chest',chOk=ch&&o.avail();return `<div class="offer slab${o.id==='starter'&&!own?' feat':''}${pk&&o===best?' best':''}${pop?' pop':''}${chOk?' feat chok':''}">${pk&&o===best?`<span class="ribbon">${t('sh_best')}</span>`:''}${pop?`<span class="ribbon rpop">${t('sh_pop')}</span>`:''}${chOk?`<span class="ribbon rpop">${t('ch_ready')}</span>`:''}${art(o)}<div style="min-width:0"><b>${o.t}${bn>0?` <span class="bon">+${bn} %</span>`:''}</b>${pk?'':ch?`<p>${t('ch_d')}</p><div class="chbar"><i style="width:${Math.min(100,100*chestG()/CFG.chest.cap)}%"></i><b style="left:${100*CFG.chest.open/CFG.chest.cap}%"></b></div><p class="chn">${ic('gem','ig')}${grp(chestG())} / ${grp(CFG.chest.cap)}${chOk?'':' · '+t('ch_from',{n:CFG.chest.open})}</p>`:`<p>${o.d}</p>`}</div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):ch&&!chOk?ic('lock')+priceOf(o):priceOf(o)}</button></div>`;}; /* v12.3 : tirelire avec jauge, « Prête ! » dès qu'elle s'ouvre */
     const st=OFFERS.find(o=>o.id==='starter'),stTop=!(st.once&&st.once());
     h+=evCard()+shopGiftHtml()+weekOfferHtml()+(stTop?`<div class="list">${offerRow(st)}</div>`:'')+passCard(); /* v11.2 : le pack de départ remonte tant qu'il n'est pas pris */
     h+=`<h2 class="sec">${t('sh_gems')}</h2>${!S.firstX2?`<div class="x2bar">${ic('star','ig')}${t('sh_x2_p')}</div>`:''}<div class="list">${OFFERS.filter(o=>/^g\d/.test(o.id)).map(offerRow).join('')}</div>`;
@@ -2934,7 +2963,7 @@ function renderTab(){
     h+=`<label class="switch slab">${t('pr_sound')}<input type="checkbox" id="setSound" ${S.settings.sound?'checked':''}></label>`;
     h+=`<label class="switch slab">${t('pr_fx')}<input type="checkbox" id="setFx" ${S.settings.fx?'checked':''}></label><label class="switch slab">${t('pr_stats')}<input type="checkbox" id="setStats" ${S.settings.stats!==false?'checked':''}></label>${LN()?`<label class="switch slab">${t('pr_notif')}<input type="checkbox" id="setNotif" ${S.settings.notif?'checked':''}></label><button class="b sm ntest" id="notifTest">${ic('clock')}${t('nt_test')}</button>`:''}</div><p class="note">${t('pr_stats_p')}</p>`;
     h+=`<button class="b" style="width:100%;margin-bottom:8px" id="privBtn">${ic('shield')}${t('pv_title')}</button>`;
-    h+=`<h2 class="sec">${t('pr_stats')}</h2><div class="stats"><div class="stat slab"><b>${S.bestStage}</b><span>${t('pr_best')}</span></div><div class="stat slab"><b>${S.prestiges}</b><span>${t('pr_pres')}</span></div><div class="stat slab"><b>${fmt(S.st.merges)}</b><span>${t('pr_merges',{n:fmt(S.st.manual)})}</span></div><div class="stat slab"><b>${fmt(S.st.kills)}</b><span>${t('pr_kills',{n:S.st.bosses})}</span></div><div class="stat slab"><b>${fmt(S.st.titanBest)}</b><span>${t('pr_titan')}</span></div><div class="stat slab"><b>${S.st.bought}</b><span>${t('pr_res')}</span></div></div>`;
+    h+=`<h2 class="sec">${t('pr_stats')}</h2><div class="stats"><div class="stat slab"><b>${S.bestStage}</b><span>${t('pr_best')}</span></div><div class="stat slab"><b>${S.prestiges}</b><span>${t('pr_pres')}</span></div><div class="stat slab"><b>${fmt(S.st.merges)}</b><span>${t('pr_merges',{n:fmt(S.st.manual)})}</span></div><div class="stat slab"><b>${fmt(S.st.kills)}</b><span>${t('pr_kills',{n:S.st.bosses})}</span></div><div class="stat slab"><b>${fmt(S.st.titanBest*DX)}</b><span>${t('pr_titan')}</span></div><div class="stat slab"><b>${S.st.bought}</b><span>${t('pr_res')}</span></div></div>`;
     const bk=Object.keys(S.bestiary).map(Number).sort((a,b)=>a-b);
     h+=`<h2 class="sec">${t('pr_bestiary')}<small>${t('pr_beaten',{n:bk.length})}</small></h2><div class="list" style="gap:4px">${bk.length?bk.map(n=>{const e=enemyFor(n);return `<div class="best"><canvas width="88" height="88" style="width:44px;height:44px" data-foe="${n}"></canvas><span>${t('pr_stage',{n:e.name,s:n})}</span><span>${e.type==='boss'?t('pr_in',{n:S.bestiary[n]}):t('pr_guard')}</span></div>`;}).join(''):'<p class="note">'+t('pr_bestiary_empty')+'</p>'}</div>`;
     h+=accountHtml();
@@ -3095,7 +3124,9 @@ const EVICON={spark:'spark',joker:'star',build:'clock',gift:'box'};
 /* v12 : offre de la semaine, renouvelée chaque lundi */
 function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();const [y,m,d,dw]=dparts(now);const mon=Date.UTC(y,m,d+((8-dw)%7||7))-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000;
   const parts=[o.m?`${ic('spark','ie')}${t('sh_pack',{t:dur(o.m*60)})}`:'',o.b?`${ic('bolt','ie')}${t('sh_gemboost',{n:o.b})}`:''].filter(Boolean).join(' + ');
-  return `<div class="offer slab wo"><span class="oart">${ic('star','ig')}</span><div style="min-width:0"><b>${t('wo_title')}</b><p>${parts}</p><p class="sub">${got?t('wo_got'):t('wo_new',{t:dur((mon-now)/1000)})}</p></div><button class="b b-gem sm" id="weekOffer" ${got||S.gems<o.g?'disabled':''}>${got?ic('check'):ic('gem')+o.g}</button></div>`;}
+  return `<div class="offer slab wo"><span class="oart">${ic('star','ig')}</span><div style="min-width:0"><b>${t('wo_title')}</b><p>${parts}</p><p class="sub">${got?t('wo_got'):t('wo_new',{t:dur((mon-now)/1000)})}</p></div><button class="b b-gem sm stk" id="weekOffer" ${got||S.gems<o.g?'disabled':''}>${got?ic('check'):`${woRef(o)>o.g?`<s class="was">${woRef(o)}</s>`:''}<span>${ic('gem')}${o.g}</span>`}</button></div>`;}
+/* prix habituel de l'offre : production au tarif du pack de 4 h, boost au tarif du boost en gemmes */
+const woRef=o=>{const pk=CFG.sparkShop.packs.find(p=>p.min===240)||CFG.sparkShop.packs[0];return Math.round((o.m||0)*pk.g/pk.min+(o.b||0)*CFG.boost.gemsPrice/CFG.boost.gemsH);};
 function shopGiftHtml(){
   let h=`<div class="offer slab sgift"><span class="oart">${ic('box','ig')}</span><div style="min-width:0"><b>${t('sg_title')}</b><p>${t('sg_p',{n:shopGiftG()})}</p></div><button class="b b-gem sm" id="shopGift" ${S.day.sgift?'disabled':''}>${S.day.sgift?t('sg_done'):t('claim')}</button></div>`;
   return h;
@@ -3109,6 +3140,7 @@ function passView(){
   h+=`<div class="pass slab"><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(T*X))}%"></i></div><p class="sub">${t('ps_lvl',{n,m:T,x:n>=T?X:p.xp%X,y:X})}</p>`;
   if(!p.prem)h+=`<button class="b b-gold" style="width:100%" data-passbuy="1">${ic('crown')}${t('ps_buy',{p:priceOf(o)})}</button>`;
   if(n<T){const k10=Math.min(10,T-n);h+=`<div class="row pbuy"><button class="b b-gem sm" data-passtier="1" ${S.gems<passTierCost(1)?'disabled':''}>${t('ps_plus',{n:1})} ${ic('gem')}${passTierCost(1)}</button><button class="b b-gem sm" data-passtier="${k10}" ${S.gems<passTierCost(k10)?'disabled':''}>${t('ps_plus',{n:k10})} ${ic('gem')}${passTierCost(k10)}</button></div>${p.prem?'':`<p class="sub">${t('ps_buy_free')}</p>`}`;}
+  {const nb=PASS.findIndex((r,i)=>i>=n&&(r.p.skin||r.p.g>=50||r.p.chest));if(nb>=0){const r=PASS[nb].p;h+=`<p class="pnext">${ic('star','ig')}${t('ps_nextbig',{n:nb+1})} <b>${rwHtml(r)}${r.b?` ${ic('bolt','ie')}${r.b} h`:''}</b>${p.prem?'':` <small>${ic('crown','ig')}${t('ps_prem')}</small>`}</p>`;}} /* v12.3 : prochaine grosse récompense */
   if(passClaimable())h+=`<button class="b b-gold" style="width:100%" id="passAll">${ic('check')}${t('ps_all')}</button>`;
   h+=`</div>`;
   /* v12 : avantages du premium, visibles avant l'achat et marqués « Actif » ensuite */
@@ -3213,15 +3245,14 @@ function frame(now){
       if(E.type==='titan'){$('hpBar').style.width='100%';$('hpLag').style.width='0';}
       else{const v=Math.max(0,E.hp)/E.max;if(v>hpLagV)hpLagV=v;else if(t-lastHitT>0.35)hpLagV+=(v-hpLagV)*Math.min(1,dt*5);$('hpBar').style.width=(100*v)+'%';$('hpLag').style.width=(100*hpLagV)+'%';}
       $('hpWrap').classList.toggle('shield',!!E.shieldL&&R.t>=R.breakUntil);
-      const tm=$('tmr');if(R.mode==='boss'){tm.hidden=false;tm.className='tmr'+(R.bossT<10?' late':'');tm.innerHTML=ic('clock')+Math.ceil(R.bossT)+' '+(I18N[LANG]._dur||I18N.fr._dur)[0];}else if(R.mode==='titan'){tm.hidden=false;tm.className='tmr';tm.innerHTML=fmt(R.titanDmg)+' · '+Math.ceil(R.titanT)+' '+(I18N[LANG]._dur||I18N.fr._dur)[0];}else tm.hidden=true;
+      const tm=$('tmr');if(R.mode==='boss'){tm.hidden=false;tm.className='tmr'+(R.bossT<10?' late':'');tm.innerHTML=ic('clock')+Math.ceil(R.bossT)+' '+(I18N[LANG]._dur||I18N.fr._dur)[0];}else if(R.mode==='titan'){tm.hidden=false;tm.className='tmr';tm.innerHTML=fmt(R.titanDmg*DX)+' · '+Math.ceil(R.titanT)+' '+(I18N[LANG]._dur||I18N.fr._dur)[0];}else tm.hidden=true;
       $('cSp').textContent=fmt(S.run.sparks);
       updTB();updJok();tutoTick();giftTick(dt);
       const fill=R.cells.filter(Boolean).length/R.cells.length;
       if(R.mode==='farm')Music.target=Math.min(1,Math.max(fill*0.9,R.combo/6,0.25));
     }
   }
-  
-  else if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt);
+  if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt); // v12.3 : rattaché par erreur au bloc de jeu en v11.8 (gemme du profil invisible)
   uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
   syncT+=dt;if(syncT>90){syncT=0;if(netReady){act('sync');flushEv();}} // 90 s : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
