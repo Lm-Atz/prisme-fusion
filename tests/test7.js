@@ -18,7 +18,10 @@ let r=await ev(()=>{const G=window.__G,R=G.R;R.paused=true;const S=G.S;const o={
   return o;});
 T('plateau 4x4 au départ',r.N===4);T('3 gemmes au départ',r.cells===3);T('fusion manuelle',r.mv==='merge'&&r.l2===2);T('la fusion ne frappe pas',r.noStrike);T('les gemmes tirent en continu',r.dmg>0);T('étincelles gagnées',r.sparks>0);T('compteur manuel',r.manual===1);
 T('gemmes différentes : retour',r.back==='back');T('aimant vers gemme compatible',r.snap===6);T('aimant : pas vers gemme différente',r.snapNone===null);
-T('achat booster',r.buy===true&&r.iv);T('force augmente les dégâts',r.pm);T('achat Niveau à 300',r.poor===true);T('sans étincelles pas d\'achat',r.poor2===false);
+T('achat booster',r.buy===true&&r.iv);
+T('force augmente les dégâts',r.pm);T('achat Niveau à 300',r.poor===true);T('sans étincelles pas d\'achat',r.poor2===false);
+r=await ev(()=>{const G=window.__G;const L=G.LANG;G.setLang('de');const o={d:G.DAILY.map(q=>q.t).join('|'),w:G.WEEKLY.map(q=>q.t).join('|'),sk:G.SKINS.map(k=>k.label).join('|'),pk:[0,1,2,3].map(i=>G.packSparks(G.CFG.sparkShop.packs[i]))};G.setLang(L);o.fr=G.WEEKLY[0].t;return o;});
+T('v11.8 : quêtes du jour/semaine traduites',!/Vaincre|Fusionner|Affronter|Faire 3/.test(r.d+r.w)&&/Gegner|Titan/.test(r.w));T('v11.8 : couleurs traduites (Gold)',/Gold/.test(r.sk));T('v11.8 : retour en français',/Vaincre/.test(r.fr));T('v11.8 : plancher des packs proportionnel à la durée',r.pk[3]>=r.pk[0]*20&&r.pk[0]>=200);
 
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('board');S.bestStage=5;o.l5=G.upLocked?undefined:null;o.lock12=S.bestStage<12&&!!document;S.up.board=1;G.newRun();o.n5=G.R.N;S.up.board=2;G.newRun();o.n6=G.R.N;S.up.board=0;G.newRun();o.n4=G.R.N;
   o.k1=G.CFG.sparks.kill(1),o.k16=G.CFG.sparks.kill(16);o.ref=0.8*Math.pow(1.18,16);return o;});

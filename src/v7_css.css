@@ -224,3 +224,7 @@ body{margin:0}
 .slot.hero .herol{margin-bottom:0}
 .pcard .oart{width:48px;height:48px}.pcard .oart .i{width:30px;height:30px}
 .ntest{width:100%;margin-top:2px}
+/* v11.8 — vérification à l'œil */
+.grp.seg button{flex:1 1 0;padding:0 14px} /* Ligue / Guilde : le texte ne touche plus le bord */
+.b[data-build] small{white-space:nowrap} /* durée de recherche sur une seule ligne */
+.langbtn{font-weight:700} /* même graisse que les autres réglages */

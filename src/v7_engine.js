@@ -27,7 +27,7 @@ const CFG={
   sparkShop:{packs:[{g:20,min:30},{g:50,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
-const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.assign(w,{get n(){return t('w'+i)}}));
+const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.defineProperty(w,'n',{get(){return t('w'+i)},enumerable:true}));
 const worldOf=n=>Math.floor((n-1)/10)+1;
 function worldInfo(w){const b=WORLDS[(w-1)%WORLDS.length];const cyc=Math.floor((w-1)/WORLDS.length);return {name:b.n+(cyc?' '+['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(cyc-1,8)]:''),h:b.h,k:b.k,col:`hsl(${b.h} 100% 62%)`};}
 
@@ -98,7 +98,7 @@ const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0
 for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k)}});Object.defineProperty(TBDEF[k],'d',{get(){return t('tb_'+k+'_d')}});}
 
 /* ================= état du joueur ================= */
-const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'},{id:'saison',price:0,pass:true,c:'#7dff6a'}].map(k=>Object.assign(k,{get label(){return t('skin_'+k.id)}}));
+const SKINS=[{id:'cyan',price:0,c:'#3ef2ff'},{id:'rose',price:100,c:'#ff3ec8'},{id:'or',price:200,c:'#ffd23e'},{id:'prisme',price:400,c:'rainbow'},{id:'saison',price:0,pass:true,c:'#7dff6a'}].map(k=>Object.defineProperty(k,'label',{get(){return t('skin_'+k.id)},enumerable:true}));
 function fresh(){
   const now=Date.now();
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
@@ -133,7 +133,7 @@ function giftOK(){roll();return true;}
 const pushBase=sp=>pushWin(R.baseWin,R.t,sp/(boosted()?2:1),CFG.rate.window);
 const rateMin=()=>(S.run.brate||0)*60; // étincelles par minute, référence des pubs et des packs
 const adSparks=kind=>Math.max(CFG.ads.floor[kind],Math.floor(rateMin()*CFG.ads[kind+'Min']));
-const packSparks=p=>Math.max(CFG.ads.floor.shop,Math.floor(rateMin()*p.min));
+const packSparks=p=>Math.max(Math.round(CFG.ads.floor.shop*p.min/30),Math.floor(rateMin()*p.min)); /* v11.8 : plancher proportionnel à la durée (avant : 200 pour tous les packs) */
 function buyPack(i){roll();const p=CFG.sparkShop.packs[i];if(!p||S.gems<p.g)return false;if((S.day.spMin||0)+p.min>CFG.sparkShop.capMin)return 'cap';S.gems-=p.g;S.day.spMin=(S.day.spMin||0)+p.min;S.run.sparks+=packSparks(p);return true;}
 function giftTake(gf){roll();S.day.gifts=(S.day.gifts||0)+1;S.st.gifts=(S.st.gifts||0)+1;S.day.ads++;if(gf.k==='s')S.run.sparks+=gf.v;else if(gf.k==='sp')S.run.sparks+=gf.v;else if(gf.k==='g'){const v=Math.max(0,Math.min(gf.v,CFG.gift.gemCap-(S.day.gg|0)));S.gems+=v;S.day.gg=(S.day.gg|0)+v;chestFill(v);}else give({b:gf.v});}
 /* coffre de gemmes : se remplit d'une gemme pour deux gemmes gratuites gagnées (jamais avec les gemmes achetées) */
@@ -419,7 +419,7 @@ const DPOOL=[
   {k:'q_combo',a:{n:8},v:()=>S.day.combo,n:8,r:{b:1}},
   {k:'q_pre1',v:()=>S.day.prestiges,n:1,r:{g:15}},
   {k:'q_kill',a:{n:60},v:()=>S.day.kills,n:60,r:{s:300}},
-].map(q=>Object.assign(q,{get t(){return t(q.k,q.a)}}));
+].map(q=>Object.defineProperty(q,'t',{get(){return t(q.k,q.a)},enumerable:true})); /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 const dayHash=k=>{let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return h;};
 let DAILY=[];
 function pickDaily(){const h=dayHash(S.day.k),base=DPOOL.slice(0,4),extra=DPOOL.slice(4);const a=base[h%4],b=base[(h>>2)%4]===a?base[(h%4+1)%4]:base[(h>>2)%4];
@@ -429,7 +429,7 @@ const WEEKLY=[
   {k:'q_titan4',v:()=>S.week.titans,n:4,r:{b:4}},
   {k:'q_top10',v:()=>myRank()<=10?1:0,n:1,r:{g:30}},
   {k:'q_pre3',v:()=>S.week.prestiges,n:3,r:{s:2000}},
-].map(q=>Object.assign(q,{get t(){return t(q.k,q.a)}}));
+].map(q=>Object.defineProperty(q,'t',{get(){return t(q.k,q.a)},enumerable:true})); /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 const bossTotal=()=>S.st.bosses;
 const jokersOwned=()=>Object.keys(S.jk).length;
 const maxJokerLvl=()=>Math.max(0,...Object.values(S.jk));
@@ -512,7 +512,7 @@ const GPOOL=[
   {k:'q_kill',a:{n:100},v:()=>S.day.kills,n:100,p:30},
   {k:'q_pre1',v:()=>S.day.prestiges,n:1,p:30},
   {k:'gq_titan',v:()=>S.day.titans,n:1,p:30},
-].map(q=>Object.assign(q,{get t(){return t(q.k,q.a)}}));
+].map(q=>Object.defineProperty(q,'t',{get(){return t(q.k,q.a)},enumerable:true})); /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 /* 3 quêtes par jour, une par niveau de points (10/20/30), tirées de la date : identiques sur le téléphone et le serveur */
 function guildQuests(){roll();const h=dayHash(S.day.k+'g'),out=[];CFG.guild.pts.forEach((pts,lvl)=>{let pool=GPOOL.map((q,i)=>({q,i})).filter(x=>x.q.p===pts&&(x.q.k!=='gq_titan'||isTitanDay()));const x=pool[(h>>(lvl*3))%pool.length];out.push({i:x.i,t:x.q.t,p:Math.min(x.q.v(),x.q.n),n:x.q.n,pts,done:(S.day.gq||[]).includes(x.i)});});return out;}
 /* valide une quête de guilde : renvoie ses points (0 si non remplie, déjà validée ou absente du tirage du jour) */
