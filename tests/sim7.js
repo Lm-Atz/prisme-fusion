@@ -12,7 +12,7 @@ const PROFILE=args.p||'moyen';
 if(args.hp)G.CFG.enemy.hp=n=>400*Math.pow(+args.hp,n-1)*(n%10===0?6:n%5===0?2.2:1);
 if(args.bg){G.CFG.tb.birth.g=+args.bg;}if(args.bm)G.CFG.tb.birth.max=+args.bm;
 if(args.sm)G.CFG.sparks.merge=l=>Math.pow(+args.sm,l-1);if(args.kill)G.CFG.sparks.kill=+args.kill;
-if(args.pg)G.CFG.tb.power.g=+args.pg;if(args.cg)G.CFG.tb.cad.g=+args.cg;
+if(args.pg)G.CFG.tb.power.g=+args.pg;if(args.rc)G.CFG.refr.runCost=+args.rc;if(args.tx)G.CFG.build.timeX=+args.tx;if(args.pm)G.CFG.tb.power.m=+args.pm;if(args.smm)G.CFG.tb.spark.m=+args.smm;if(args.cg)G.CFG.tb.cad.g=+args.cg;
 const PROF={actif:{sessions:[[8,600],[12,480],[18,600],[21,900]],mps:1.3,ads:true,buyAds:3},moyen:{sessions:[[8,240],[13,180],[20,420]],mps:1.0,ads:true,buyAds:1},casual:{sessions:[[20,300]],mps:0.8,ads:false,buyAds:0}}[PROFILE];
 // priorités de recherche (id → poids), le bot prend la meilleure abordable
 const PRIO={cadence:8,rang:6,eveil:5,brule:4,aura:4,st_cad:9,st_power:9,st_auto:8,au_merge:10,st_spark:7,st_bank:5,power:8,spark:8,loot:9,prod:5,cap:3,off:6,au_buy:9,au_boss:7,au_exped:8,au_prestige:6,au_joker:5,au_titan:4,crit:6,combo:2,bossdmg:7,pierce:4,lucky:5,chain:5,gold:4,board:8,sursis:6,killspark:6,catal:3,st_birth:9};
@@ -22,7 +22,7 @@ function mergeOnce(){const R=G.R;const seen={};const cells=R.cells.map((c,i)=>[c
 function buyBoosters(){let n=0;const floor=S().run.sparks*0.5;for(let k=0;k<20;k++){if(S().run.sparks<floor)break;const keys=['cad','birth','auto','power','spark'];let best=null,bc=Infinity;for(const key of keys){const c=G.tbCost(key);const w={cad:1,birth:0.8,auto:0.9,power:0.9,spark:1}[key];if(c*w<bc){bc=c*w;best=key;}}if(best&&G.buyTB(best))n++;else break;}return n;}
 function research(){G.tickBuild(NOW);G.restoreAll(NOW);let guard=0;while(S().build.length<S().slots&&guard++<200){let best=null,bs=0;for(const u of G.ALLUP){if(G.upLocked(u)||G.inBuild(u.id)||G.isPP(u))continue;const c=G.upCost(u);if(!isFinite(c)||c>S().run.sparks)continue;const pr=(PRIO[u.id]||3)/(1+G.lvlOf(u)*0.15);const sc=pr/Math.pow(c/Math.max(1,S().run.sparks),0.3);if(sc>bs){bs=sc;best=u;}}if(!best)break;G.startBuild(best.id,NOW);}
   for(const j of G.JOKERS)if(G.jokerAvail(j)&&!S().jk[j.id]&&S().run.sparks>=j.sh*2)G.unlockJoker(j.id,'s');}
-const AUTO_ORDER=['au_merge','au_buy','au_boss','au_exped','au_prestige','au_joker','au_titan'];let autoSpent=0,wpSpent=0;
+const AUTO_ORDER=['au_merge','au_buy','au_boss','au_exped','au_prestige','au_joker','au_titan','eveil'];let autoSpent=0,wpSpent=0;
 function spendPP(){for(let k=0;k<40;k++){const pp=S().pp||0;if(pp<=0)break;
   const au=AUTO_ORDER.map(id=>G.upById(id)).find(u=>!G.upLocked(u)&&isFinite(G.upCost(u))&&G.upCost(u)<=pp);
   let best=-1,bc=99;for(let i=0;i<8;i++){const c=G.wpCost(i);if(c<bc){bc=c;best=i;}}

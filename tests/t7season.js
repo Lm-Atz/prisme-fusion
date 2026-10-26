@@ -18,7 +18,7 @@ const act=(S,action,payload,t,extra)=>pfApply(src,S,Object.assign({action,payloa
  // étincelles ×2
  {const t=when.spark,G=eng(t),Gw=eng(t+3*D);const S=fresh(t);G.S=S;Gw.S=JSON.parse(JSON.stringify(S));T('événement étincelles : multiplicateur ×2',Math.abs(G.sparkMult()/Gw.sparkMult()-2)<1e-9);}
  // recherches 2× plus rapides (le serveur fixe la fin de la recherche)
- {const t=when.build,S=fresh(t),r=act(S,'build',{id:'eco_sp'},t);const Gw=eng(t+3*D);Gw.S=fresh(t+3*D);const u=Gw.upById('eco_sp')||Gw.ALLUP.find(x=>x.g==='eco');
+ {const t=when.build,S=fresh(t),r=act(S,'build',{id:'st_cad'},t);const Gw=eng(t+3*D);Gw.S=fresh(t+3*D);const u=Gw.upById('st_cad');
   const S2=fresh(t),id=u.id,r2=act(S2,'build',{id},t),b=r2.state.build.find(x=>x.id===id);const S3=fresh(t+3*D),r3=act(S3,'build',{id},t+3*D),b3=r3.state.build.find(x=>x.id===id);
   T('événement recherches : durée divisée par 2 côté serveur',b&&b3&&Math.abs(b.dur*2-b3.dur)<=1);}
  // jokers

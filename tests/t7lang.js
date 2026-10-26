@@ -8,7 +8,7 @@ for(const lang of ['fr','en','es','de','pt','it']){
   await p.evaluate(()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.S.st.tuto=3;G.tutoStep=0;document.getElementById('hint').hidden=true;G.S.bestStage=32;G.S.run.max=32;G.S.prestiges=2;G.S.pp=3;G.S.shards=5000;G.S.gems=100;G.S.jk.chameleon=1;G.S.equip=['chameleon'];G.CFG.titan.days=[0,1,2,3,4,5,6];G.startRun();G.refresh();});
   const texts=[];
   for(const tab of ['home','atelier','quests','clan','shop','profile']){await p.evaluate(t=>window.__G.setTab(t),t=tab);await p.waitForTimeout(150);
-    if(tab==='atelier'){for(const g of ['start','auto','atk','grid','eco','jok','arm']){await p.evaluate(g=>{document.querySelector(`[data-grp="${g}"]`).click();},g);texts.push(await p.evaluate(()=>document.getElementById('panel').innerText));}}
+    if(tab==='atelier'){await p.evaluate(()=>document.querySelector('[data-atpane="res"]').click());for(const g of ['start','jok','arm']){await p.evaluate(g=>{document.querySelector(`[data-grp="${g}"]`).click();},g);texts.push(await p.evaluate(()=>document.getElementById('panel').innerText));}await p.evaluate(()=>document.querySelector('[data-atpane="refr"]').click());texts.push(await p.evaluate(()=>document.getElementById('panel').innerText));await p.evaluate(()=>window.__G.setTab('boost'));texts.push(await p.evaluate(()=>document.getElementById('panel').innerText));} // v12.2 : Recherches, Réfraction, Boosters
     texts.push(await p.evaluate(()=>document.body.innerText));
     if(lang==='de'&&tab==='home'){await p.screenshot({path:'v7l-de-home.png'});}
     if(lang==='de'&&tab==='atelier'){await p.screenshot({path:'v7l-de-atelier.png'});}

@@ -7,12 +7,12 @@ const CFG={
   enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
    bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
-    cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40},spark:{c0:50,g:1.5,max:30}},
+    cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40,m:1.12},spark:{c0:50,g:1.5,max:30,m:1.08}}, // v12.2 : m = effet par niveau (Force et Gain absorbent Puissance et Étincelles)
   prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
-  refr:{reset:['atk','grid','eco'],memCost:0.5,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
+  refr:{reset:['atk','grid','eco'],memCost:0.5,runCost:3,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
-  build:{gemSec:300,adCut:1800,slotGems:[300,600],jslotGems:[200,400]},
+  build:{timeX:1.5,gemSec:300,adCut:1800,slotGems:[300,600],jslotGems:[200,400]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
@@ -63,9 +63,9 @@ const UPG=[
   {id:'au_boss',g:'auto',get t(){return t('u_au_boss')},d:k=>t('u_au_boss_d',{n:Math.max(10,60-10*(k+1))}),c:k=>4000*Math.pow(1.45,k),time:T(1800,1.3),max:5,req:20},
   {id:'au_prestige',g:'auto',get t(){return t('u_au_prestige')},d:k=>t('u_au_prestige_d',{n:[100,50,25,10,5][Math.min(k,4)]}),c:k=>30000*Math.pow(1.6,k),time:T(14400,1.3),max:5,req:30},
   {id:'au_exped',g:'auto',get t(){return t('u_au_exped')},d:k=>t('u_au_exped_d',{n:2*(k+1)}),c:k=>15000*Math.pow(1.7,k),time:T(7200,1.3),max:10,req:25},
+  {id:'eveil',g:'refr',get t(){return t('u_eveil')},d:k=>t('u_eveil_d',{n:10*(k+1)}),c:()=>0,time:()=>0,max:10,req:30}, // v12.2 : Éveil payé en points de réfraction
   {id:'au_titan',g:'auto',get t(){return t('u_au_titan')},d:k=>t('u_au_titan_d',{n:k+1}),c:k=>20000*Math.pow(1.55,k),time:T(10800,1.3),max:5,req:35},
   // Attaque
-  {id:'power',g:'atk',get t(){return t('u_power')},d:k=>t('u_power_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>80*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
   {id:'crit',g:'atk',get t(){return t('u_crit')},d:k=>t('u_crit_d',{n:2*(k+1)}),c:k=>500*Math.pow(1.5,k),time:T(120,1.3),max:25,req:8},
   {id:'combo',g:'atk',get t(){return t('u_combo')},d:k=>t('u_combo_d',{n:5+(k+1)}),c:k=>400*Math.pow(1.5,k),time:T(90,1.3),max:20,req:6},
   {id:'bossdmg',g:'atk',get t(){return t('u_bossdmg')},d:k=>t('u_bossdmg_d',{n:dec(Math.pow(1.15,k+1),1)}),c:k=>1500*Math.pow(1.55,k),time:T(600,1.3),max:Infinity,req:10},
@@ -74,10 +74,9 @@ const UPG=[
   {id:'lucky',g:'grid',get t(){return t('u_lucky')},d:k=>t('u_lucky_d',{n:3*(k+1)}),c:k=>200*Math.pow(1.45,k),time:T(60,1.25),max:25},
   {id:'chain',g:'grid',get t(){return t('u_chain')},d:k=>t('u_chain_d',{n:3*(k+1)}),c:k=>350*Math.pow(1.5,k),time:T(90,1.3),max:25,req:8},
   {id:'gold',g:'grid',get t(){return t('u_gold')},d:k=>t('u_gold_d',{n:k+1}),c:k=>600*Math.pow(1.55,k),time:T(240,1.3),max:20,req:12},
-  {id:'board',g:'grid',get t(){return t('u_board')},d:k=>k?t('u_board_d1'):t('u_board_d0'),c:k=>[400,60000][k],time:k=>[7200,86400][k],max:2,req:k=>k?30:12},
+  {id:'board',g:'start',get t(){return t('u_board')},d:k=>k?t('u_board_d1'):t('u_board_d0'),c:k=>[400,60000][k],time:k=>[7200,86400][k],max:2,req:k=>k?30:12},
   {id:'sursis',g:'grid',get t(){return t('u_sursis')},d:k=>t('u_sursis_d',{n:k+2}),c:k=>1200*Math.pow(1.7,k),time:T(600,1.3),max:6,req:10},
   // Économie
-  {id:'spark',g:'eco',get t(){return t('u_spark')},d:k=>t('u_spark_d',{n:dec(Math.pow(1.1,k+1),1)}),c:k=>100*Math.pow(1.4,k),time:T(30,1.2),max:Infinity},
   {id:'loot',g:'eco',get t(){return t('u_loot')},d:k=>t('u_loot_d',{n:8*(k+1)}),c:k=>300*Math.pow(1.4,k),time:T(120,1.25),max:Infinity},
   {id:'off',g:'start',get t(){return t('u_off')},d:k=>t('u_off_d',{n:2+k+1}),c:k=>500*Math.pow(1.6,k),time:T(900,1.3),max:Infinity,req:5},
   {id:'killspark',g:'eco',get t(){return t('u_killspark')},d:k=>t('u_killspark_d',{n:15*(k+1)}),c:k=>800*Math.pow(1.45,k),time:T(300,1.25),max:Infinity,req:10},
@@ -87,7 +86,6 @@ const UPG=[
 const ARMUP=[
   {id:'cadence',g:'arm',get t(){return t('u_cadence')},d:k=>t('u_cadence_d',{n:5*(k+1)}),c:k=>150*Math.pow(1.4,k),time:T(40,1.25),max:Infinity},
   {id:'rang',g:'arm',get t(){return t('u_rang')},d:k=>t('u_rang_d',{n:10*(k+1)}),c:k=>600*Math.pow(1.5,k),time:T(120,1.3),max:Infinity,req:8},
-  {id:'eveil',g:'arm',get t(){return t('u_eveil')},d:k=>t('u_eveil_d',{n:10*(k+1)}),c:k=>3000*Math.pow(1.7,k),time:T(900,1.35),max:Infinity,req:20},
   {id:'brule',g:'arm',get t(){return t('u_brule')},d:k=>t('u_brule_d',{n:3+(k+1)}),c:k=>800*Math.pow(1.6,k),time:T(300,1.3),max:Infinity,req:12},
   {id:'aura',g:'arm',get t(){return t('u_aura')},d:k=>t('u_aura_d',{n:25+10*(k+1)}),c:k=>1200*Math.pow(1.6,k),time:T(300,1.3),max:Infinity,req:16},
 ];
@@ -95,7 +93,7 @@ UPG.push(...ARMUP);
 const JOKERS=[['chameleon',8,1500,50,14,l=>t('j_chameleon_d',{p:l>=4?t('j_two'):t('j_one'),n:1+l})],['magnet',12,4000,100,22,l=>t('j_magnet_d',{n:2+l})],['surge',16,9000,100,20,l=>t('j_surge_d',{n:6+2*l})],['frost',22,20000,150,18,l=>t('j_frost_d',{n:8+2*l})],['prism',28,45000,200,22,l=>t('j_prism_d',{n:2+l})],['meteor',35,100000,200,28,l=>t('j_meteor_d',{x:l>1?', ×'+dec(1+0.5*(l-1),1):''})],['breaker',45,250000,250,16,l=>t('j_breaker_d',{n:8+3*l})]].map(([id,lvl,sh,gm,base,d])=>({id,lvl,sh,gm,base,d,get t(){return t('j_'+id)}}));
 const JUPG=JOKERS.map(j=>({id:'j_'+j.id,g:'jok',joker:j.id,get t(){return j.t},d:k=>j.d(k+1),c:k=>j.sh*0.8*Math.pow(2.2,k-1),time:k=>Math.min(86400,Math.round(1200*Math.pow(2.5,k-1))),max:5}));
 const ALLUP=UPG.concat(JUPG);
-const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,k),1)})},birth:{i:'gem',c:'s4',n:k=>t('tb_birth_n',{n:1+k})},auto:{i:'link',c:'s6',n:k=>k?t('tb_auto_n',{n:dec(0.12*k*(1+0.3*S.up.au_merge),2)}):t('tb_auto_0')},power:{i:'swords',c:'s1',n:k=>t('tb_power_n',{n:dec(Math.pow(1.12,k),1)})},spark:{i:'spark',c:'s3',n:k=>t('tb_spark_n',{n:dec(Math.pow(1.08,k),2)})}};
+const TBDEF={cad:{i:'hourglass',c:'s5',n:k=>t('tb_cad_n',{n:dec(CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,k),1)})},birth:{i:'gem',c:'s4',n:k=>t('tb_birth_n',{n:1+k})},auto:{i:'link',c:'s6',n:k=>k?t('tb_auto_n',{n:dec(0.12*k*(1+0.3*S.up.au_merge),2)}):t('tb_auto_0')},power:{i:'swords',c:'s1',n:k=>t('tb_power_n',{n:dec(Math.pow(CFG.tb.power.m,k),1)})},spark:{i:'spark',c:'s3',n:k=>t('tb_spark_n',{n:dec(Math.pow(CFG.tb.spark.m,k),2)})}};
 for(const k in TBDEF){Object.defineProperty(TBDEF[k],'t',{get(){return t('tb_'+k)}});Object.defineProperty(TBDEF[k],'d',{get(){return t('tb_'+k+'_d')}});}
 
 /* ================= état du joueur ================= */
@@ -117,7 +115,7 @@ let S=fresh();
 const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
-function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&u.g==='auto'){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return true;}); // v9.4 : automatisation en cours = acquise
+function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
   if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
@@ -154,11 +152,11 @@ function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.lo
 /* ================= atelier : chantiers ================= */
 const upById=id=>ALLUP.find(x=>x.id===id);
 const lvlOf=u=>u.joker?(S.jk[u.joker]||0):(S.up[u.id]||0);
-const isPP=u=>u.g==='auto'; // automatisations : points de réfraction, sans délai, permanentes
+const isPP=u=>u.g==='auto'||u.g==='refr'; // v12.2 : automatisations et Éveil // automatisations : points de réfraction, sans délai, permanentes
 const memLvl=id=>(S.mem&&S.mem[id])||0;
-const inMem=u=>!u.joker&&CFG.refr.reset.includes(u.g)&&lvlOf(u)<memLvl(u.id); // niveau déjà atteint avant une Réfraction
-const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:isPP(u)?CFG.refr.ppAuto(lvlOf(u)):u.c(lvlOf(u))*(inMem(u)?CFG.refr.memCost:1);
-const upTime=u=>isPP(u)||inMem(u)?0:Math.round(u.time(lvlOf(u))*(evOn('build')?0.5:1)/bonusMul('res')); // v12 : week-end recherches 2× plus rapides
+const inMem=()=>false; // v12.2 : plus de « mémoire » : les améliorations de partie sont immédiates // niveau déjà atteint avant une Réfraction
+const upCost=u=>(u.joker&&!S.jk[u.joker])||lvlOf(u)>=u.max?Infinity:isPP(u)?CFG.refr.ppAuto(lvlOf(u)):u.c(lvlOf(u))*(CFG.refr.reset.includes(u.g)?CFG.refr.runCost:1); // v12.2 : améliorations de partie immédiates, prix ajusté (runCost)
+const upTime=u=>isPP(u)||CFG.refr.reset.includes(u.g)?0:Math.round(Math.min(2592000,u.time(lvlOf(u))*CFG.build.timeX)*(evOn('build')?0.5:1)/bonusMul('res')); // plafond 30 jours maintenu // v12 : week-end recherches 2× plus rapides
 const upAfford=u=>isPP(u)?(S.pp||0)>=upCost(u):S.run.sparks>=upCost(u);
 const upReq=u=>typeof u.req==='function'?u.req(lvlOf(u)):u.req;
 const upLocked=u=>upReq(u)&&S.bestStage<upReq(u);
@@ -200,9 +198,9 @@ function autoBuyTick(dt){if(!S.up.au_buy)return;R.buyT=(R.buyT||0)+dt;const ever
 const spawnLevel=()=>1+tbLvl('birth');
 const spawnInterval=()=>Math.max(CFG.board.spawnMin,CFG.board.spawn0*Math.pow(CFG.board.spawnDecay,tbLvl('cad'))/bonusMul('cad'));
 const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.up.au_merge);};
-const powerMult=()=>Math.pow(1.12,tbLvl('power'))*Math.pow(1.1,S.up.power)*(boosted()?2:1)*bonusMul('dmg');
+const powerMult=()=>Math.pow(CFG.tb.power.m,tbLvl('power'))*(boosted()?2:1)*bonusMul('dmg');
 const refMult=()=>1+CFG.prestige.mult*S.prestiges; // multiplicateur permanent d'étincelles gagné à chaque Réfraction
-const sparkMult=()=>Math.pow(1.08,tbLvl('spark'))*Math.pow(1.1,S.up.spark)*(boosted()?2:1)*refMult()*(evOn('spark')?2:1)*bonusMul('sp'); // v12 : week-end étincelles ×2 ; v12.1 : couleurs et médailles
+const sparkMult=()=>Math.pow(CFG.tb.spark.m,tbLvl('spark'))*(boosted()?2:1)*refMult()*(evOn('spark')?2:1)*bonusMul('sp'); // v12 : week-end étincelles ×2 ; v12.1 : couleurs et médailles
 const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
 const boardN=()=>4+S.up.board;
 

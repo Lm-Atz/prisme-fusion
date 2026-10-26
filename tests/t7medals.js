@@ -29,7 +29,7 @@ const near=(a,b)=>Math.abs(a-b)<1e-9*Math.max(1,Math.abs(b));
  r=act(S,'purchase',{id:'g100'},t);T('pas d\'achat de couleur en euros (seulement des offres de gemmes)',!G.OFFERS.some(o=>/^skin|rubis|solaire/.test(o.id)));}
 // --- effets de chaque type de bonus dans le moteur
 {const t=MON,G=eng(t),S=fresh(t);G.S=S;S.skins=['cyan','emeraude','saphir','obsidienne'];
- const u=G.ALLUP.find(x=>x.g==='eco'&&isFinite(G.upCost(x)));S.skin='cyan';const t0=G.upTime(u),si0=G.spawnInterval(),off0=(S.lastSeen=t-3*3600e3,S.run.srate=1,G.offlineGains(t).sparks);S.jk={surge:3};const j0=G.jokerNeed('surge');
+ const u=G.ALLUP.find(x=>x.g==='start'&&isFinite(G.upCost(x)));S.skin='cyan';const t0=G.upTime(u),si0=G.spawnInterval(),off0=(S.lastSeen=t-3*3600e3,S.run.srate=1,G.offlineGains(t).sparks);S.jk={surge:3};const j0=G.jokerNeed('surge');
  S.skin='emeraude';T('Émeraude : recherches 8 % plus rapides',G.upTime(u)<t0);
  S.skin='saphir';T('Saphir : gemmes qui apparaissent plus vite',G.spawnInterval()<si0||G.spawnInterval()===G.CFG.board.spawnMin);
  S.skin='obsidienne';T('Obsidienne : jokers plus rapides et gains hors ligne +10 %',G.jokerNeed('surge')<=j0&&G.offlineGains(t).sparks>off0);}

@@ -60,9 +60,9 @@ T('aucune anomalie pour un joueur honnête très actif',anomalies.length===0);if
  r=pfApply(src2,S,{action:'sync'},now+200000);T('recherche appliquée au terme',r.state.up.st_cad===1&&r.state.build.length===0);S=r.state;
  r=pfApply(src2,S,{action:'pack',payload:{i:0}},now+200000);T('pack 20 gemmes : étincelles créditées',r.result.ok&&r.state.gems===S.gems-20&&r.state.run.sparks>=S.run.sparks+200);if(!r.result.ok)console.log(r.result,S.gems);S=r.state;
  S.day.spMin=1440;r=pfApply(src2,S,{action:'pack',payload:{i:0}},now+200000);T('plafond 24 h / jour',r.result.err==='cap');S.day.spMin=0;
- S.run.max=35;S.run.stage=35;S.up.power=3;r=pfApply(src2,S,{action:'prestige'},now+200000);T('réfraction : ×1,2, 2 points (+50 %) + 2 offerts, trésor',r.result.ok&&r.state.prestiges===1&&r.state.pp===4&&r.state.run.stage===1&&r.state.run.sparks>=600);S=r.state;
- T('réfraction : Attaque remise à zéro, mémorisée',S.up.power===0&&S.mem.power===3);
- r=pfApply(src2,S,{action:'restore'},now+200000);T('serveur : Tout restaurer',r.result.ok&&r.result.n===3&&r.state.up.power===3&&r.state.run.sparks<S.run.sparks);S=r.state;
+ S.run.max=35;S.run.stage=35;S.up.crit=3;r=pfApply(src2,S,{action:'prestige'},now+200000);T('réfraction : ×1,2, 2 points (+50 %) + 2 offerts, trésor',r.result.ok&&r.state.prestiges===1&&r.state.pp===4&&r.state.run.stage===1&&r.state.run.sparks>=600);S=r.state;
+ T('v12.2 : réfraction : Attaque remise à zéro',S.up.crit===0);
+ S.run.sparks=1e6;r=pfApply(src2,S,{action:'build',payload:{id:'crit'}},now+200000);T('v12.2 : serveur : amélioration de partie immédiate, sans emplacement ni minuteur, prix ×3',r.result.ok!==false&&r.state.up.crit===1&&r.state.build.length===S.build.length&&Math.abs((S.run.sparks-r.state.run.sparks)-500*3)<1e-6);S=r.state;
  r=pfApply(src2,S,{action:'restore'},now+200000);T('serveur : rien à restaurer → refus',!r.result.ok);
  r=pfApply(src2,S,{action:'build',payload:{id:'au_merge'}},now+200000);T('serveur : automatisation payée en points, immédiate',r.result.ok&&r.state.up.au_merge===1&&r.state.pp===3&&r.state.build.length===0);S=r.state;
  r=pfApply(src2,S,{action:'prestige'},now+200000);T('réfraction à l\'étape 1 refusée',r.result.err==='stage');

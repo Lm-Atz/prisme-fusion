@@ -123,9 +123,9 @@ r=await ev(()=>{const G=window.__G,S=G.S;G.startRun();const R=G.R;const o={};R.c
 T('8 armes par forme, cycle de 8',r.w);T('rang',r.rank);T('points de prestige par étape',r.pp);T('dépenser un point dans une arme',r.buy);T('l\'arme améliorée est plus forte',r.pow);T('coût croissant',r.buy2&&r.poor);T('redistribuer en gemmes',r.reset);T('pentagone brûle',r.burn);T('octogone gèle le chrono',r.freeze);T('étoile rapporte des étincelles',r.star);T('hexagone charge les jokers',r.hex);T('losange : aura',r.aura);T('combo manuel accélère les tirs',r.combo);
 // --- atelier, quêtes, calendrier, boutique
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=500;
-  o.start=G.startBuild('st_cad');o.busy=G.startBuild('st_power');S.slots=2;o.two=G.startBuild('power');o.locked=G.startBuild('au_prestige');
+  o.start=G.startBuild('st_cad');o.busy=G.startBuild('st_power');S.slots=2;o.two=G.startBuild('st_spark');o.locked=G.startBuild('au_prestige');
   const bld=S.build[0];o.rush=G.rushGems(bld)>=1;o.rushed=G.rushBuild('st_cad')&&S.up.st_cad>0;
-  o.ad=G.adBuild('power');o.n=G.ALLUP.length;o.groups=G.GROUPS.length;o.max=Math.max(...G.UPG.map(u=>u.max));
+  o.ad=G.adBuild('st_spark');o.n=G.ALLUP.length;o.groups=G.GROUPS.length;o.max=Math.max(...G.UPG.map(u=>u.max));
   o.q=G.questView();o.onb3=o.q.onb.length===3;o.onbTotal=G.ONB.length;o.daily=o.q.d.length===4;o.week=o.q.w.length===4;
   S.st.manual=10;const g=S.gems;o.claim=G.claim('o',0)&&S.gems===g+10;o.claimTwice=G.claim('o',0)===false;
   o.login=G.loginState().day===1;o.claimL=G.claimLogin()&&!G.claimLogin();
@@ -134,19 +134,19 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=5
   o.gemBoost=G.buyGemItem('boost');o.skin=G.buySkin('rose')&&S.skin==='rose';
   return o;});
 T('recherche lancée',r.start==='ok');T('un seul emplacement',r.busy==='slots');T('2e emplacement',r.two==='ok');T('recherche verrouillée par étape',r.locked==='locked');T('accélérer en gemmes',r.rush&&r.rushed);T('pub −30 min',r.ad);
-T('≥ 40 recherches',r.n>=40);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
+T('≥ 38 recherches (v12.2 : Puissance et Étincelles fusionnées dans Force et Gain)',r.n>=38);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
 // --- interface
 await ev(()=>{document.getElementById('veil').hidden=true;const G=window.__G;G.S.st.tuto=3;G.tutoStep=0;document.getElementById('hint').hidden=true;G.S.st.namePrompted=true;G.startRun();G.refresh();G.renderTB();});
 T('pas d\'énergie',await ev(()=>!document.getElementById('cE')));
 T('un seul écran : jeu visible, pas d\'accueil',await ev(()=>!document.getElementById('game').hidden&&!document.getElementById('home')));
-T('5 tuiles booster',await p.locator('.tbt').count()===5);
+T('5 tuiles booster + bouton Plus',await p.locator('.tbt[data-tb]').count()===5&&await p.locator('#boostBtn').count()===1);
 T('pas de barre d\'attaque ni de texte PV',await ev(()=>!document.getElementById('atkBar')&&!document.getElementById('hpTxt')));
 await ev(()=>{window.__G.S.run.sparks=5000;window.__G.renderTB();});
 await p.locator('[data-tb="power"]').click();T('clic tuile achète',await ev(()=>window.__G.S.run.tb.power>=1));
 await p.locator('.nav [data-tab="quests"]').click();await p.waitForTimeout(100);T('panneau quêtes',await ev(()=>!document.getElementById('panel').hidden));
 await ev(()=>{window.__G.S.st.kills=3;window.__G.renderTab();});const q=p.locator('.quest[data-claim]').first();T('quête prête cliquable',await q.count()===1);const gm=await ev(()=>window.__G.S.gems);await q.click();T('toucher la quête la récupère',await ev(g=>window.__G.S.gems>g||window.__G.S.run.sparks>0,gm));
 await p.locator('#panel .quit').click();T('fermer le panneau',await ev(()=>document.getElementById('panel').hidden&&window.__G.tab==='home'));
-await p.locator('.nav [data-tab="atelier"]').click();await p.waitForTimeout(100);T('7 boutons de famille',await p.locator('.grp button').count()===7);
+await p.locator('.nav [data-tab="atelier"]').click();await p.waitForTimeout(100);T('v12.2 : Atelier : 2 vues + 3 familles',await p.locator('.atseg button').count()===2&&await p.locator('.atgrp button').count()===3);
 await p.locator('[data-updetail="st_power"]').click();T('détail recherche',await ev(()=>!document.getElementById('veil').hidden&&document.getElementById('modal').textContent.includes('Force de départ')));
 await p.locator('#modal [data-close]').click();await p.locator('#panel .quit').click();
 await p.locator('#pillG').click();T('gemmes → boutique',await ev(()=>window.__G.tab==='shop'));
@@ -165,43 +165,47 @@ const small=await ev(()=>{const bad=[];document.querySelectorAll('#game button,.
 const txt=await ev(()=>{const bad=[];document.querySelectorAll('#game *').forEach(e=>{if(!e.children.length&&e.textContent.trim()){const fs=parseFloat(getComputedStyle(e).fontSize);if(fs<12)bad.push(e.textContent.trim().slice(0,15)+':'+fs);}});return bad;});T('textes ≥ 12 px : '+txt.join(','),txt.length===0);
 T('pas de débordement',await ev(()=>document.documentElement.scrollHeight<=innerHeight));
 // recherches infinies, cadeaux
-r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('power');S.up.power=200;o.inf=isFinite(G.upCost(u))&&G.upCost(u)>0&&G.upTime(u)<=2592000&&G.upTime(u)>86400;S.up.power=0;o.crit=G.upById('crit').max===25;o.board=G.upById('board').max===2;
+r=await ev(()=>{const G=window.__G,S=G.S;const o={};const u=G.upById('st_power');const l0=S.up.st_power;S.up.st_power=200;o.inf=isFinite(G.upCost(u))&&G.upCost(u)>0&&G.upTime(u)<=2592000&&G.upTime(u)>86400;S.up.st_power=l0;o.crit=G.upById('crit').max===25;o.board=G.upById('board').max===2;
   S.bestStage=40;S.day.gifts=0;{const no=G.NET.on;G.NET.on=false;G.forceGift();G.NET.on=no;}o.shown=!!G.gift&&!document.getElementById('gift').hidden;const k=G.gift&&G.gift.k;document.getElementById('gift').click();o.modal=document.getElementById('modal').textContent.length>0;const sh=S.run.sparks,gm=S.gems,sp=S.run.sparks;document.getElementById('giftGo').click();o.k=k;o.before={sh,gm,sp};return o;});
 T('recherches infinies, durée plafonnée à 30 j',r.inf);T('probabilités et plateau restent plafonnés',r.crit&&r.board);T('bulle cadeau affichée',r.shown);T('cadeau : modale',r.modal);
 await p.waitForTimeout(3500);T('cadeau reçu après la pub',await ev(b=>{const S=window.__G.S;return S.day.gifts===1&&(S.run.sparks>b.sh||S.gems>b.gm||S.run.sparks>b.sp||S.boostUntil>Date.now());},r.before));
 T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.gifts=999;const ok=G.giftOK();G.S.day.gifts=0;return ok;}));
 // secousses : pas de cumul
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));
-// v9.4 Réfraction : Attaque/Plateau/Économie remis à zéro et mémorisés, automatisations en points, rachat instantané
+// v12.2 Réfraction : améliorations de partie (Attaque/Plateau/Économie) immédiates et remises à zéro, définitives gardées, points pour Auto/Éveil/Formes
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.bestStage=60;S.run.max=45;S.pp=0;S.gems=500;S.build=[];S.slots=1;
-  S.up.power=5;S.up.board=1;S.up.spark=4;S.up.loot=2;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.up.off=2;S.mem={};
-  S.build.push({id:'crit',until:Date.now()+9e6,dur:9e6});S.up.crit=1;
+  S.up.board=1;S.up.loot=2;S.up.lucky=3;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.up.off=2;S.up.crit=1;
   G.growBoard&&G.growBoard();o.N0=G.R.N;
   const pp0=G.ppGain(45);o.ppGain=pp0===Math.floor(1.5*2.5);
   o.g=G.doPrestige()>0;
-  o.reset=S.up.power===0&&S.up.board===0&&S.up.spark===0&&S.up.loot===0&&S.up.crit===0;
-  o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1&&S.up.off===2; // v9.5 : la Veille est permanente
-  o.mem=S.mem.power===5&&S.mem.board===1&&S.mem.spark===4&&S.mem.crit===2; // la recherche en cours compte comme acquise
-  o.buildGone=!S.build.length;o.shrunk=G.R.N===4&&G.R.cells.length===16;
-  const u=G.upById('power');o.memTag=G.inMem(u);o.half=Math.abs(G.upCost(u)-u.c(0)*0.5)<1e-9;o.instant=G.upTime(u)===0;
-  S.run.sparks=1e9;S.slots=1;S.build=[{id:'lucky',until:Date.now()+9e6,dur:9e6}]; // emplacement occupé : le rachat en mémoire passe quand même
-  o.buyMem=G.startBuild('power')==='ok'&&S.up.power===1&&S.build.length===1;
-  const sp=S.run.sparks;o.n=G.restoreAll();o.all=S.up.power===5&&S.up.board===1&&S.up.spark===4&&S.up.loot===2&&S.up.crit===2&&G.R.N===5;o.paid=S.run.sparks<sp;
-  o.noMem=!G.inMem(u)&&G.upTime(u)>0;
-  // automatisations : points de réfraction, sans délai
+  o.reset=S.up.loot===0&&S.up.crit===0&&S.up.lucky===0;
+  o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1&&S.up.off===2&&S.up.board===1&&G.R.N===5; // le Grand plateau est maintenant définitif
+  const u=G.upById('crit');o.noMem=!G.inMem(u);o.instant=G.upTime(u)===0;o.price=Math.abs(G.upCost(u)-u.c(0)*3)<1e-9;
+  S.run.sparks=1e9;S.slots=1;S.build=[{id:'st_spark',until:Date.now()+9e6,dur:9e6}]; // emplacement occupé : l'amélioration de partie passe quand même
+  o.buyRun=G.startBuild('crit')==='ok'&&S.up.crit===1&&S.build.length===1;
+  o.noDup=!G.upById('power')&&!G.upById('spark');
+  // automatisations et Éveil : points de réfraction, sans délai
   const a=G.upById('au_buy');S.pp=0;o.ppCost=G.isPP(a)&&G.upCost(a)===1&&G.upTime(a)===0;o.poor=G.startBuild('au_buy')==='poor';S.pp=2;o.auto=G.startBuild('au_buy')==='ok'&&S.up.au_buy===1&&S.pp===1;
   S.up.au_buy=6;o.cost3=G.upCost(a)===3;S.up.au_buy=1;
-  // migration : une automatisation en cours de recherche (ancien système) devient acquise
-  const m=G.migrate({up:{au_boss:1},build:[{id:'au_boss',until:1,dur:1},{id:'power',until:1,dur:1}],day:{gq:[]}});o.conv=m.up.au_boss===2&&m.build.length===1&&m.build[0].id==='power'&&m.mem&&typeof m.mem==='object';
+  const e=G.upById('eveil');S.pp=1;S.up.eveil=0;o.eveil=G.isPP(e)&&G.upCost(e)===1&&G.startBuild('eveil')==='ok'&&S.up.eveil===1&&S.pp===0;
+  // migration : automatisation ou amélioration de partie en cours = acquise ; recherche supprimée retirée
+  const m=G.migrate({up:{au_boss:1,crit:0},build:[{id:'au_boss',until:1,dur:1},{id:'power',until:1,dur:1},{id:'crit',until:1,dur:1},{id:'st_cad',until:1,dur:1}],day:{gq:[]}});o.conv=m.up.au_boss===2&&m.up.crit===1&&m.build.length===1&&m.build[0].id==='st_cad';
   return o;});
-T('Réfraction : +50 % de points',r.ppGain);T('Réfraction effectuée',r.g);T('Attaque/Plateau/Économie remis à zéro',r.reset);T('Départ, Armes, Automatisation gardés',r.kept);T('niveaux mémorisés (recherche en cours comprise)',r.mem);T('recherches remises à zéro retirées des emplacements',r.buildGone);T('le plateau rétrécit avec la recherche Plateau',r.shrunk);
-T('mémoire : moitié prix',r.memTag&&r.half);T('mémoire : instantané',r.instant);T('mémoire : sans emplacement libre',r.buyMem);T('Tout restaurer : tous les niveaux revenus',r.n>0&&r.all&&r.paid);T('au-delà de la mémoire : prix et durée normaux',r.noMem);
-T('automatisation : 1 point, immédiat',r.ppCost&&r.poor&&r.auto);T('automatisation : 3 points au plus',r.cost3);T('migration : automatisation en cours acquise',r.conv);
-await ev(()=>{const G=window.__G;G.S.up.power=0;G.S.mem.power=3;G.setTab('atelier');document.querySelector('[data-grp="atk"]').click();});
-r=await ev(()=>({bar:!!document.getElementById('restoreAll'),tag:!!document.querySelector('.tile.inmem .tmem'),txt:document.getElementById('panel').innerText}));
-T('Atelier : barre « Tout restaurer » et repère mémoire',r.bar&&r.tag&&/en mémoire/.test(r.txt));
-await ev(()=>document.getElementById('restoreAll').click());T('bouton Tout restaurer',await ev(()=>window.__G.S.up.power===3));
-await ev(()=>document.querySelector('[data-grp="auto"]').click());T('onglet Automatisation : solde de points',await ev(()=>/point/.test(document.getElementById('panel').innerText)&&!!document.querySelector('[data-build="au_merge"] .i')));
+T('Réfraction : +50 % de points',r.ppGain);T('Réfraction effectuée',r.g);T('v12.2 : Attaque/Plateau/Économie remis à zéro',r.reset);T('v12.2 : Départ, Armes, Auto, Veille et Grand plateau gardés',r.kept);
+T('v12.2 : améliorations de partie : plus de mémoire, immédiates, prix ×3',r.noMem&&r.instant&&r.price);T('v12.2 : achat sans emplacement libre',r.buyRun);T('v12.2 : Puissance et Étincelles fusionnées',r.noDup);
+T('automatisation : 1 point, immédiat',r.ppCost&&r.poor&&r.auto);T('automatisation : 3 points au plus',r.cost3);T('v12.2 : Éveil en points de réfraction',r.eveil);T('v12.2 : migration des recherches en cours',r.conv);
+// v12.2 : interface : panneau Boosters et Atelier Réfraction (vrais clics)
+await ev(()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.S.run.sparks=1e7;G.setTab('home');G.renderTB();});
+await p.locator('#boostBtn').click();await p.waitForTimeout(80);
+r=await ev(()=>{const P=document.getElementById('panel');return {open:window.__G.tab==='boost'&&!P.hidden,rows:P.querySelectorAll('.bprow').length,secs:P.querySelectorAll('h2.sec').length};});
+T('v12.2 : bouton Plus → panneau Boosters (5 boosters + 3 familles)',r.open&&r.rows>=15&&r.secs===4);
+r=await ev(async()=>{const G=window.__G,S=G.S,w=ms=>new Promise(z=>setTimeout(z,ms));const c0=S.up.crit,tb0=S.run.tb.power,sp=S.run.sparks;document.querySelector('#panel [data-build="crit"]').click();await w(60);document.querySelector('#panel [data-bptb="power"]').click();await w(60);return {crit:S.up.crit===c0+1,tb:S.run.tb.power===tb0+1,paid:S.run.sparks<sp,still:G.tab==='boost'};});
+T('v12.2 : achats immédiats dans le panneau (amélioration + booster)',r.crit&&r.tb&&r.paid&&r.still);
+await ev(()=>{const G=window.__G;G.S.pp=3;G.setTab('atelier');});await p.locator('[data-atpane="refr"]').click();await p.waitForTimeout(60);
+r=await ev(()=>{const P=document.getElementById('panel');return {pts:/points de réfraction/.test(P.innerText),auto:!!P.querySelector('[data-build="au_merge"]'),eveil:!!P.querySelector('[data-build="eveil"],[data-updetail="eveil"]'),forms:P.querySelectorAll('[data-wp]').length===8,noSpark:!P.querySelector('#balSp')};});
+T('v12.2 : Atelier › Réfraction : points, automatisations, Éveil, 8 formes, aucune étincelle',r.pts&&r.auto&&r.eveil&&r.forms&&r.noSpark);
+await p.locator('[data-atpane="res"]').click();await p.waitForTimeout(60);
+T('v12.2 : Atelier › Recherches : étincelles + emplacements, pas de points',await ev(()=>{const P=document.getElementById('panel');return !!P.querySelector('#balSp')&&!P.querySelector('[data-wp]')&&!P.querySelector('[data-build="crit"]');}));
 await ev(()=>{const G=window.__G;G.S.offerAt=Date.now()-3600e3;G.S.starter=false;G.setTab('shop');});
 T('boutique : pas de compte à rebours sur le pack de départ',await ev(()=>!/visible encore/.test(document.getElementById('panel').innerText)));
 await ev(()=>window.__G.setTab('home'));
@@ -296,14 +300,13 @@ await ev(()=>window.__G.setTab('home'));
 T('v10.9 : aucun « ≈ € » en boutique, Atelier et Profil',await ev(()=>{const G=window.__G;let ok=true;for(const tb of ['shop','atelier','profile']){G.setTab(tb);const x=document.getElementById('panel').innerText;if(/≈\s*[\d.,\s\u202f]+\s*(€|\$)/.test(x)||[...document.querySelectorAll('#panel .eur')].some(e=>/€|\$/.test(e.textContent))||/100 gemmes =/.test(x))ok=false;}G.setTab('home');return ok;}));
 // v11 : Atelier séparé, Réfraction claire, petits textes des boutons, débordements
 r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;G.S.bestStage=50;G.S.prestiges=Math.max(1,G.S.prestiges);G.setTab('atelier');const pn=document.getElementById('panel');
-  const keep=[...pn.querySelectorAll('.grpk.keep [data-grp]')].map(b=>b.dataset.grp),cyc=[...pn.querySelectorAll('.grpk.cyc [data-grp]')].map(b=>b.dataset.grp);
-  o.rows=keep.join()==='start,auto,jok,arm'&&cyc.join()==='atk,grid,eco'&&cyc.every(g=>G.CFG.refr.reset.includes(g))&&keep.every(g=>!G.CFG.refr.reset.includes(g));
-  pn.querySelector('[data-grp="atk"]').click();await new Promise(z=>setTimeout(z,30));o.tagC=[...document.querySelectorAll('#panel .tile')].every(t=>t.querySelector('.ttag.cyc'));
+  document.querySelector('#panel [data-atpane="res"]')?.click();await new Promise(z=>setTimeout(z,30));const keep=[...document.querySelectorAll('#panel .atgrp [data-grp]')].map(b=>b.dataset.grp);
+  o.rows=keep.join()==='start,jok,arm'&&keep.every(g=>!G.CFG.refr.reset.includes(g));o.tagC=true;
   document.querySelector('#panel [data-grp="start"]').click();await new Promise(z=>setTimeout(z,30));o.tagK=[...document.querySelectorAll('#panel .tile')].every(t=>t.querySelector('.ttag.keep'));
   const f=document.querySelector('#panel .b small');o.font=!f||/Lilita/.test(getComputedStyle(f).fontFamily);G.setTab('home');
   G.S.run.max=35;G.renderActs();document.getElementById('prest').click();const m=document.getElementById('modal');o.pre=!!m.querySelector('.prek .keep')&&!!m.querySelector('.prek .cyc')&&/Tu gardes/.test(m.innerText)&&/Tu repars à zéro/.test(m.innerText);m.querySelector('[data-close]').click();
   G.setTab('shop');const sm=[...document.querySelectorAll('#panel .b small')];o.adFont=sm.length>0&&sm.every(e=>/Lilita/.test(getComputedStyle(e).fontFamily));G.setTab('home');return o;});
-T('v11 : Atelier : rangée « Définitives » et rangée « Remises à zéro »',r.rows);T('v11 : étiquette cyan sur les recherches remises à zéro',r.tagC);T('v11 : étiquette or sur les recherches gardées',r.tagK);
+T('v12.2 : Atelier › Recherches : Départ, Jokers, Armes (toutes définitives)',r.rows);T('v11 : étiquette or sur les recherches gardées',r.tagK);
 T('v11 : Réfraction : « Tu gardes » / « Tu repars à zéro »',r.pre);T('v11 : petits textes des boutons dans la police du jeu',r.font&&r.adFont);
 r=await ev(async()=>{const G=window.__G,o=[];const lang0=G.LANG;for(const lg of ['fr','de','pt']){G.setLang(lg);for(const tb of ['shop','pass','quests','profile','atelier']){G.setTab(tb);document.querySelectorAll('#panel button,#panel .b').forEach(e=>{if(!e.offsetParent)return;const R=e.getBoundingClientRect();e.querySelectorAll('*').forEach(c=>{const q=c.getBoundingClientRect();if(q.width&&(q.right>R.right+2||q.left<R.left-2))o.push(lg+'/'+tb+': '+c.textContent.trim().slice(0,25));});});}}G.setLang(lang0);G.setTab('home');return o;});
 T('v11 : aucun texte qui déborde de son bouton (fr, de, pt) '+r.slice(0,3).join(' | '),r.length===0);
@@ -369,13 +372,13 @@ T('hors-ligne : pause et écran',await ev(()=>{const G=window.__G;G.setOnline(fa
 await p.setViewportSize({width:375,height:667});await p.waitForTimeout(300);T('375×667 sans débordement',await ev(()=>document.documentElement.scrollHeight<=innerHeight&&document.getElementById('board').getBoundingClientRect().width>=180));
 // v11.9 : onglets Jokers et Armes en vrais clics
 await p.setViewportSize({width:390,height:844});
-r=await ev(async()=>{const G=window.__G,S=G.S,o={};document.getElementById('veil').hidden=true;S.bestStage=20;S.jk={};S.equip=[];S.jslots=1;S.run.sparks=1e7;S.pp=5;S.wp={};G.setTab('atelier');
+r=await ev(async()=>{const G=window.__G,S=G.S,o={};document.getElementById('veil').hidden=true;S.bestStage=20;S.jk={};S.equip=[];S.jslots=1;S.run.sparks=1e7;S.pp=5;S.wp={};G.setTab('atelier');document.querySelector('[data-atpane="res"]').click();await new Promise(r=>setTimeout(r,30));
   document.querySelector('[data-grp="jok"]').click();await new Promise(r=>setTimeout(r,50));const P=document.getElementById('panel');
   o.how=!!P.querySelector('.howto li');o.new=!!P.querySelector('.jst.new');o.lock=!!P.querySelector('.jst.lock');o.lab=!!P.querySelector('.jlab');
   P.querySelector('[data-unlock="chameleon:s"]').click();await new Promise(r=>setTimeout(r,50));o.unl=(G.S.jk.chameleon|0)===1&&!!document.querySelector('#panel .jst.eq'); /* débloquer équipe d'office s'il reste une place */
   document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));const off=!G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.own');document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));o.eq=off&&G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.eq');
   S.jk.magnet=1;G.setTab('atelier');o.diff=/3 → 4/.test(document.getElementById('panel').textContent);
-  document.querySelector('[data-grp="arm"]').click();await new Promise(r=>setTimeout(r,50));const Q=document.getElementById('panel');
+  document.querySelector('[data-atpane="refr"]').click();await new Promise(r=>setTimeout(r,50));const Q=document.getElementById('panel'); /* v12.2 : les formes sont dans Atelier › Réfraction */
   o.gem=/Gemme 1/.test(Q.textContent);o.nores=!document.getElementById('wpReset');
   Q.querySelector('[data-wp="0"]').click();await new Promise(r=>setTimeout(r,50));o.wp=S.wp[0]===1&&S.pp===4&&/effet \+20/.test(document.getElementById('panel').textContent)&&!!document.getElementById('wpReset');
   document.getElementById('wpHelp').click();await new Promise(r=>setTimeout(r,50));o.help=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();return o;});
@@ -385,7 +388,7 @@ T('v11.9 armes : « Gemme 1 », pas de Redistribuer sans dépense',r.gem&&r.nore
 r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;G.S.gems=2000;G.setTab('pass');const P=()=>document.getElementById('panel');
   o.perks=!!P().querySelector('.perks')&&/emplacement de recherche/.test(P().textContent)&&/Saison /.test(P().textContent);o.price=!!P().querySelector('[data-passtier="1"]')&&/15/.test(P().querySelector('[data-passtier="1"]').textContent);
   o.active=G.premOn()&&!!P().querySelector('.perks.on');
-  G.setTab('atelier');document.querySelector('[data-grp="start"]')?.click();await w(30);o.slot=/grâce au pass/.test(P().textContent);
+  G.setTab('atelier');document.querySelector('[data-atpane="res"]')?.click();await w(20);document.querySelector('[data-grp="start"]')?.click();await w(30);o.slot=/grâce au pass/.test(P().textContent);
   G.setTab('shop');await w(30);const k=G.seasonKey();o.skins=!!P().querySelector(`[data-skin="s${k}"]`)&&!!P().querySelector(`[data-skin="s${k}x"]`);
   const b=document.getElementById('weekOffer');const g=G.S.gems,c=G.weekOffer().g;b.click();await w(80);o.wo=G.S.gems===g-c&&document.getElementById('weekOffer').disabled;
   const real=Date.now;const sat=(()=>{let t=real();for(let i=0;i<8;i++){if(G.weekendEvent(t))return t;t+=864e5;}return t;})();Date.now=()=>sat;G.renderTab();o.ev=!!P().querySelector('.evcard.on');G.setTab('quests');o.evq=!!P().querySelector('.evcard');Date.now=real;G.renderTab();

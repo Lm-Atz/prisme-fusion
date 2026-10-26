@@ -1,4 +1,4 @@
-const VERSION='12.1 · médailles';
+const VERSION='12.2 · progression';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -214,6 +214,17 @@ function medalsHtml0(){const tot=['dmg','sp','cad','res','jok','off'].map(k=>[k,
   h+=`<div class="medals">`+MEDALS.map(m=>{const l=medalLvl(m.id),rd=medalReady(m),v=m.v(),nx=m.th[Math.min(l,3)],cur=medalBonusOf(m,l),nb=l<4?medalBonusOf(m,l+1):cur;
     return `<div class="medal slab${rd?' rd':''}${l>=4?' mx':''}" style="--mc:${MEDAL_COL[l]}"><span class="mart2">${ic(m.ic)}${l?`<i>${'◆'.repeat(l)}</i>`:''}</span><div style="min-width:0"><b>${m.t}</b><small class="mrk">${t('md_r'+l)}${cur?' · '+t('bn_'+m.k,{n:dec(cur*100,1)}):''}</small>${l<4?`<div class="qbar"><i style="width:${Math.min(100,100*v/nx)}%"></i><span>${fmt(Math.min(v,nx))} / ${fmt(nx)}</span></div><small class="mnx">${t('md_'+m.id+'_d',{n:fmt(nx)})} → ${t('md_r'+(l+1))} · ${t('bn_'+m.k,{n:dec(nb*100,1)})} · ${ic('gem','ig')}${MEDAL_GEMS[l]}</small>`:`<small class="mnx">${t('md_max')}</small>`}</div>${rd?`<button class="b b-gold sm" data-medal="${m.id}">${t('md_claim')}</button>`:''}</div>`;}).join('')+`</div>`;
   return h;}
+/* v12.2 : panneau Boosters : tout ce qui s'achète en étincelles pour la partie en cours, immédiat, remis à zéro à la Réfraction */
+const RUNG=['atk','grid','eco'];
+const runUpReady=()=>UPG.some(u=>RUNG.includes(u.g)&&!upLocked(u)&&isFinite(upCost(u))&&upCost(u)<=S.run.sparks);
+function boostView(){const sp=S.run.sparks;
+  let h=`<header class="phead"><div><h1 class="ttl">${t('bp_title')}</h1><p class="sub">${t('bp_sub')}</p></div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
+  h+=`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(sp)}</b><span>${t('at_bal')}</span></div>`;
+  h+=`<h2 class="sec subsec">${t('bp_main')}</h2><div class="list bplist">`+Object.keys(TBDEF).map(k=>{const d=TBDEF[k],l=tbLvl(k),c=tbCost(k),mx=!isFinite(c);
+    return `<div class="bprow" style="--tc:var(--${d.c})"><span class="bpic">${ic(d.i)}</span><div style="min-width:0"><b>${d.t} <em>${t('lvl',{n:l})}</em></b><p>${d.n(l)}${mx?'':` → <span class="jnext">${d.n(l+1)}</span>`}</p></div>${mx?`<span class="d">${t('max')}</span>`:`<button class="b b-spark sm" data-bptb="${k}" ${sp<c?'disabled':''}>${ic('spark')}${fmt(c)}</button>`}</div>`;}).join('')+`</div>`;
+  for(const g of RUNG){h+=`<h2 class="sec subsec">${GROUPS.find(x=>x.id===g).t}</h2><div class="list bplist">`+UPG.filter(u=>u.g===g).map(u=>{const l=lvlOf(u),c=upCost(u),lk=upLocked(u),mx=l>=u.max;
+    return `<div class="bprow${lk?' lk':''}"><span class="bpic">${ic(upIcon(u))}</span><div style="min-width:0"><b>${u.t}${l?` <em>${t('lvl',{n:l})}</em>`:''}</b><p>${u.d(l)}</p></div>${lk?`<span class="d">${ic('lock')}${t('jk_st_lock',{n:upReq(u)})}</span>`:mx?`<span class="d">${t('max')}</span>`:`<button class="b b-spark sm" data-build="${u.id}" ${sp<c?'disabled':''}>${ic('spark')}${fmt(c)}</button>`}</div>`;}).join('')+`</div>`;}
+  return h;}
 function refresh(){
   roll();evBanner();{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
   gemCounter();const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
@@ -238,7 +249,7 @@ function renderStage(){
 function renderTB(){
   const sp=S.run.sparks;
   $('tb').innerHTML=Object.keys(TBDEF).map(k=>{const c=tbCost(k),l=tbLvl(k),ok=isFinite(c)&&sp>=c,max=!isFinite(c);
-    return `<button class="tbt ${ok?'ok':''} ${ok&&tutoStep===3?'hot':''}" data-tb="${k}" style="--tc:var(--${TBDEF[k].c})" ${max?'disabled':''} aria-label="${max?t('tb_aria_max',{t:TBDEF[k].t,l,d:TBDEF[k].d}):t('tb_aria',{t:TBDEF[k].t,l,c:fmt(c),d:TBDEF[k].d})}"><span class="lv">${l}</span><span class="ico">${ic(TBDEF[k].i)}</span><span class="lbl">${TBDEF[k].t}</span><b>${max?t('max'):ic('spark')+fmt(c)}</b></button>`;}).join('');
+    return `<button class="tbt ${ok?'ok':''} ${ok&&tutoStep===3?'hot':''}" data-tb="${k}" style="--tc:var(--${TBDEF[k].c})" ${max?'disabled':''} aria-label="${max?t('tb_aria_max',{t:TBDEF[k].t,l,d:TBDEF[k].d}):t('tb_aria',{t:TBDEF[k].t,l,c:fmt(c),d:TBDEF[k].d})}"><span class="lv">${l}</span><span class="ico">${ic(TBDEF[k].i)}</span><span class="lbl">${TBDEF[k].t}</span><b>${max?t('max'):ic('spark')+fmt(c)}</b></button>`;}).join('')+`<button class="tbt more${runUpReady()?' ok':''}" id="boostBtn" aria-label="${t('bp_title')}"><span class="ico">${ic('plus')}</span><span class="lbl">${t('bp_more')}</span>${runUpReady()?'<i class="bdot"></i>':''}</button>`;
   renderJok();
 }
 function updTB(){const sp=S.run.sparks;document.querySelectorAll('[data-tb]').forEach(b=>{const c=tbCost(b.dataset.tb);b.classList.toggle('ok',isFinite(c)&&sp>=c);});}
@@ -262,7 +273,7 @@ $('jok').addEventListener('click',e=>{const b=e.target.closest('[data-jk]');if(!
 let tbHold=null,tbHeld=false;
 $('tb').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-tb]');if(!b)return;tbHeld=false;clearTimeout(tbHold);tbHold=setTimeout(()=>{tbHeld=true;tbDetail(b.dataset.tb);},450);});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>$('tb').addEventListener(ev,()=>clearTimeout(tbHold)));
-$('tb').addEventListener('click',e=>{const b=e.target.closest('[data-tb]');if(!b||!R||tbHeld)return;audio();Music.start();if(buyTB(b.dataset.tb)){renderTB();save();}else{const c=tbCost(b.dataset.tb);if(isFinite(c)){b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}}});
+$('tb').addEventListener('click',e=>{if(e.target.closest('#boostBtn')){goTab('boost');return;}const b=e.target.closest('[data-tb]');if(!b||!R||tbHeld)return;audio();Music.start();if(buyTB(b.dataset.tb)){renderTB();save();}else{const c=tbCost(b.dataset.tb);if(isFinite(c)){b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}}});
 function tbDetail(k){const d=TBDEF[k],l=tbLvl(k),c=tbCost(k);modal(`<div class="mart" style="color:var(--${d.c})">${ic(d.i)}</div><h2>${d.t}</h2><p style="color:var(--light)">${d.d}.</p><p>${t('tb_lvl',{n:l,v:d.n(l)})}${isFinite(c)?'<br>'+t('tb_lvl',{n:l+1,v:d.n(l+1)}):''}</p><p style="color:var(--mist);font-size:13px">${t('tb_note',{t:d.t})}</p><div class="acts">${isFinite(c)?`<button class="b b-gold" data-buytb="${k}" ${S.run.sparks>=c?'':'disabled'}>${ic('spark')}${t('tb_buy',{c:fmt(c)})}</button>`:''}<button class="b" data-close>${t('close')}</button></div>`);}
 $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!R)return;audio();
   if(b.id==='chal'){if(challengeBoss()){renderStage();renderActs();}}
@@ -297,7 +308,8 @@ function tutoNext(){
 }
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;track('tuto',{s:3,sec:Math.round((Date.now()-sessStart)/1000)});showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
-let atGroup='start';
+let atGroup='start',atPane='res';
+const refrReady=()=>(S.pp||0)>0&&(UPG.some(u=>isPP(u)&&!upLocked(u)&&isFinite(upCost(u))&&upCost(u)<=S.pp)||WEAPONS.some((w,i)=>wpCost(i)<=S.pp));
 const canStart=u=>!upLocked(u)&&!inBuild(u.id)&&isFinite(upCost(u))&&upAfford(u)&&(upTime(u)<=0||S.build.length<slotsN());
 /* v11.2 : pastille de famille = recherche nouvellement débloquée et pas encore vue (plus « tu peux acheter », qui allumait tout) */
 let SEEN=null;
@@ -309,7 +321,8 @@ const grpReady=g=>ALLUP.some(u=>u.g===g&&canStart(u))||(g==='jok'&&JOKERS.some(j
 /* bouton d'achat d'une recherche : étincelles + durée, mémoire (instantané, moitié prix) ou points de réfraction */
 function buyBtn(u,free,big){const c=upCost(u),pp=isPP(u),mem=inMem(u),off=!upAfford(u)||(!pp&&!mem&&free<1);
   if(pp)return `<button class="b b-gold ${big?'':'sm'}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('prism')}${big?t('at_pp',{c}):c}</span>${big?'':`<small>${t('at_now')}</small>`}</button>`;
-  return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+dur(upTime(u))}</small>`}</button>`;}
+  return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+durS(upTime(u))}</small>`}</button>`;}
+const durS=s=>{if(s<86400)return dur(s);const U=(I18N[LANG]._dur||I18N.fr._dur);return dec(s/86400,1)+'\u00a0'+U[3];}; // v12.2 : durée courte dans les boutons (« 1,5 j »)
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
   return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
@@ -404,19 +417,29 @@ function markHero(){const pn=$('panel');pn.dataset.acc=tab;const hdef=HERO[tab];
 function jDiff(a,b,n){const A=a.split(' '),B=b.split(' ');if(A.length!==B.length)return esc(a)+` <span class="jnext">${esc(t('jk_next',{n,d:b}))}</span>`;let o=[],i=0;while(i<A.length){if(A[i]===B[i]){o.push(esc(A[i]));i++;continue;}let k=i;while(k<A.length&&A[k]!==B[k])k++;o.push(`<span class="jnext" title="${esc(t('j_lvlbtn',{n}))}">${esc(A.slice(i,k).join(' '))} → ${esc(B.slice(i,k).join(' '))}</span>`);i=k;}return o.join(' ');}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
-  document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab)));
+  document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab==='boost'?'home':tab)));
   if(home){requestAnimationFrame(resize);return;}
   const p=$('tabPanel');let h='';
   const head=(ttl,sub)=>`<header class="phead"><div><h1 class="ttl">${ttl}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
-  if(tab==='atelier'){
+  if(tab==='atelier'){ /* v12.2 : deux vues, une monnaie chacune : Recherches (étincelles + minuteurs, définitives) et Réfraction (points) */
     const free=slotsN()-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
-    seenGroup(atGroup);h+=head(t('at_title'))+`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
-    h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}${premOn()?` <small class="pslot">${ic('crown','ig')}${t('at_slots_pass')}</small>`:''}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
-    {const gb=g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpNew(g.id)?'<span class="badge"></span>':''}</button>`,cyc=g=>CFG.refr.reset.includes(g.id); /* v11 : définitives / remises à zéro, séparées */
-    h+=`<div class="grpk keep"><p class="grpl">${ic('shield')}${t('at_keep')}</p><div class="grp" role="group" aria-label="${t('at_keep')}">${GROUPS.filter(g=>!cyc(g)).map(gb).join('')}</div></div><div class="grpk cyc"><p class="grpl">${ic('prism')}${t('at_cycle')}</p><div class="grp" role="group" aria-label="${t('at_cycle')}">${GROUPS.filter(cyc).map(gb).join('')}</div></div>`;}
-    const mn=memList().length;if(mn){const mc=memTotal();h+=`<div class="slotbuy membar"><span>${ic('bolt')} ${t('at_mem_bar',{n:mn})}</span><button class="b b-spark sm" id="restoreAll" ${S.run.sparks<Math.min(...memList().map(upCost))?'disabled':''}>${t('at_restore')} ${ic('spark')}${fmt(mc)}</button></div>`;}
-    if(atGroup!=='jok'&&atGroup!=='arm')h+=`<p class="note">${GROUPS.find(g=>g.id===atGroup).d}</p>`;
-    if(atGroup==='auto')h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('pp_n',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span></div>`;
+    if(!['start','jok','arm'].includes(atGroup))atGroup='start';
+    h+=head(t('at_title'),t(atPane==='refr'?'at_refr_sub':'at_res_sub'));
+    h+=`<div class="grp seg atseg" role="tablist"><button data-atpane="res" aria-pressed="${atPane!=='refr'}">${ic('anvil')}${t('at_res')}</button><button data-atpane="refr" aria-pressed="${atPane==='refr'}">${ic('prism')}${t('at_refr')}${refrReady()?'<span class="badge"></span>':''}</button></div>`;
+    if(atPane==='refr'){
+      const spent=Object.keys(S.wp||{}).length;
+      h+=`<div class="slotbuy ppbal"><span><b style="font:20px var(--display);color:var(--shard)">${S.pp||0}</b> ${t('wp_pts',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span><button class="qhelp" id="wpHelp" aria-label="${t('wp_help_t')}">?</button></div>`;
+      h+=`<h2 class="sec subsec">${t('at_auto_h')}</h2><p class="note">${t('at_auto_note')}</p><div class="tiles">${UPG.filter(u=>u.g==='auto'||u.g==='refr').map(u=>tileHtml(u,free)).join('')}</div>`;
+      h+=`<h2 class="sec subsec">${t('at_forms')}</h2>`;
+      h+=`<div class="howto slab"><p>${t('wp_how')}</p></div>`;
+      h+=`<div class="list" style="gap:6px;margin-bottom:8px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><small class="wgem">${t('wp_gem',{n:i+1})}</small><b>${w.t} <span>· ${w.fx}</span></b><p>${w.d}</p><p class="wlv ${k?'on':''}">${k?t('wp_fx',{k,e:20*k,d:8*k}):t('wp_fx0')}</p></div><button class="b ${S.pp>=c?'b-gold':''} sm wbtn" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}"><span>${t('wp_up')}</span><small>${t('wp_cost',{n:c})}</small></button></div>`;}).join('')}</div>`;
+      if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
+      if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
+    }else{
+      seenGroup(atGroup);h+=`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b><span>${t('at_bal')}</span></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
+      h+=`<div class="slotbuy"><span>${t('at_slots',{n:S.slots})}${premOn()?` <small class="pslot">${ic('crown','ig')}${t('at_slots_pass')}</small>`:''}</span>${nextSlot!=null?`<button class="b b-gem sm" id="buySlot" ${S.gems<nextSlot?'disabled':''}>${ic('plus')}${t('at_slot')} ${ic('gem')}${nextSlot}</button>`:''}</div>`;
+      h+=`<div class="grp atgrp" role="group" aria-label="${t('at_res')}">${['start','jok','arm'].map(id=>GROUPS.find(g=>g.id===id)).map(g=>`<button data-grp="${g.id}" aria-pressed="${atGroup===g.id}">${ic(GICON[g.id])}${g.t}${grpNew(g.id)?'<span class="badge"></span>':''}</button>`).join('')}</div>`;
+      if(atGroup==='start')h+=`<p class="note">${GROUPS.find(g=>g.id==='start').d}</p>`;
     if(atGroup==='jok'){ /* v11.9 : mode d'emploi, statut de chaque joker, prix étiquetés, niveau suivant visible */
       const nj=CFG.build.jslotGems[S.jslots-1];
       h+=`<div class="howto slab"><b>${t('jk_how')}</b><ol><li>${ic('lock')}<span>${t('jk_s1')}</span></li><li>${ic('check')}<span>${t('jk_s2')}</span></li><li>${ic('bolt')}<span>${t('jk_s3')}</span></li></ol></div>`;
@@ -429,13 +452,10 @@ function renderTab(){
         h+=`<div class="jcard slab ${on?'on':''} ${!av&&!l?'locked':''}"><span class="jart">${ic(JICON[j.id])}</span><div style="min-width:0"><div class="jhead"><b>${j.t}</b>${l?`<span class="jl">${t('j_lvl',{n:l})}</span>`:''}${st}</div><p>${l&&l<5?jDiff(j.d(l),j.d(l+1),l+1):j.d(Math.max(1,l))}</p>${meta}${btns?`<div class="jbtns">${btns}</div>`:''}</div></div>`;});
       h+=`</div><h2 class="sec subsec">${t('jk_research')}</h2>`;
     }
-    if(atGroup==='arm'){const spent=Object.keys(S.wp||{}).length; /* v11.9 : forme = niveau de gemme, bonus chiffrés, bouton « Améliorer · n pts », règles détaillées derrière « ? » */
-      h+=`<div class="howto slab"><p>${t('wp_how')}</p></div>`;
-      h+=`<div class="slotbuy"><span><b style="font:18px var(--display);color:var(--beam)">${S.pp||0}</b> ${t('wp_pts',{n:S.pp||0}).replace(/^\d+\s*/,'')}</span><button class="qhelp" id="wpHelp" aria-label="${t('wp_help_t')}">?</button></div>`;
-      h+=`<div class="list" style="gap:6px;margin-bottom:8px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><small class="wgem">${t('wp_gem',{n:i+1})}</small><b>${w.t} <span>· ${w.fx}</span></b><p>${w.d}</p><p class="wlv ${k?'on':''}">${k?t('wp_fx',{k,e:20*k,d:8*k}):t('wp_fx0')}</p></div><button class="b ${S.pp>=c?'b-gold':''} sm wbtn" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}"><span>${t('wp_up')}</span><small>${t('wp_cost',{n:c})}</small></button></div>`;}).join('')}</div>`;
-      if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
-      h+=`<h2 class="sec subsec">${t('wp_research')}</h2>`;}
-    h+=`<div class="tiles">${UPG.filter(u=>u.g===atGroup).map(u=>tileHtml(u,free)).join('')}</div>`;
+      if(atGroup==='arm')h+=`<p class="note">${t('at_arm_note')}</p>`;
+      h+=`<div class="tiles">${UPG.filter(u=>u.g===atGroup).map(u=>tileHtml(u,free)).join('')}</div>`;
+    }
+  }else if(tab==='boost'){h+=boostView();
   }else if(tab==='quests'){
     const v=questView();
     const qrow=q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-claim="${q.kind}:${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div>${rewardHtml(q.r)}</div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;};
@@ -526,7 +546,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('veil').hidden&&
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
 $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>goTab('shop'));
-function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));if(LN()&&S.settings.notif==null)setTimeout(notifPrompt,900);}}else if(r==='slots'){if(S.slots-1<CFG.build.slotGems.length&&ctxOnce('slots'))ctxSlots();else toast(t('at_busy'));}save();refresh();renderTab();return r;}
+function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(RUNG.includes(upById(id).g)){sfx.buy();if(R)renderTB();}else if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));if(LN()&&S.settings.notif==null)setTimeout(notifPrompt,900);}}else if(r==='slots'){if(S.slots-1<CFG.build.slotGems.length&&ctxOnce('slots'))ctxSlots();else toast(t('at_busy'));}save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
   const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
@@ -540,6 +560,8 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='buySlot'){if(act('slot',{},()=>buySlot())){sfx.chord();toast(t('at_newslot'));}save();refresh();renderTab();}
   else if(el.id==='buyJSlot'){if(act('jslot',{},()=>buyJSlot())){sfx.chord();toast(t('at_newjslot'));}save();refresh();renderTab();}
   else if(el.dataset.grp){atGroup=el.dataset.grp;renderTab();}
+  else if(el.dataset.atpane){atPane=el.dataset.atpane;renderTab();}
+  else if(el.dataset.bptb){if(buyTB(el.dataset.bptb)){sfx.buy();renderTB();save();renderTab();}else toast(t('bp_poor'));}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
   else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(gainFx(el,()=>act('claim',{kind:k,i:+i},()=>claim(k,+i)))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
