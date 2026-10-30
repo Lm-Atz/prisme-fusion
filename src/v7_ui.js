@@ -1,4 +1,4 @@
-const VERSION='12.8 · charge';
+const VERSION='12.9 · événements';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -317,6 +317,7 @@ function giftTick(dt){
     actAsync('gift_offer').then(d=>{giftAsk=false;if(d&&d.ok&&d.result&&d.result.ok&&d.result.gift)show(d.result.gift);else if(d&&d.result&&d.result.wait)giftNext=giftT+d.result.wait;else giftNext=giftT+60;}).catch(()=>{giftAsk=false;giftNext=giftT+60;});}
 }
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
+$('evChip').addEventListener('click',()=>{audio();track('evpk_open',{e:weekendEvent()});evPackModal();});
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('close')}</button></div>`,()=>{if(gift){gift=null;$('gift').hidden=true;giftNext=0;}});});
 /* ----- tutoriel ----- */
 let tutoStep=0,hpLagV=1,hintT=null;
@@ -344,7 +345,7 @@ function buyBtn(u,free,big){const c=upCost(u),pp=isPP(u),mem=inMem(u),off=!upAff
   return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+durS(upTime(u))}</small>`}</button>`;}
 const durS=s=>{if(s<86400)return dur(s);const U=(I18N[LANG]._dur||I18N.fr._dur);return dec(s/86400,1)+'\u00a0'+U[3];}; // v12.2 : durée courte dans les boutons (« 1,5 j »)
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
-  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
+  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts">${(S.rt|0)>0?`<button class="b b-gold sm" data-rush="${b.id}" aria-label="${t('rt_use')}">${ic('clock')}<span>×${S.rt}</span></button>`:`<button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button>`}<button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
   const k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id);
   let foot;
@@ -508,9 +509,9 @@ function renderTab(){
     const art=o=>PKART[o.id]?`<span class="oart pk pk${PKART[o.id].length}">${PKART[o.id].map(n=>ic(n,'ig')).join('')}</span>`:`<span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span>`;
     const offerRow=o=>{const own=o.once&&o.once(),pk=/^g\d/.test(o.id),bn=pk?packBonus(o):0,pop=o.id==='g600',ch=o.id==='chest',chOk=ch&&o.avail();return `<div class="offer slab${o.id==='starter'&&!own?' feat':''}${pk&&o===best?' best':''}${pop?' pop':''}${chOk?' feat chok':''}">${pk&&o===best?`<span class="ribbon">${t('sh_best')}</span>`:''}${pop?`<span class="ribbon rpop">${t('sh_pop')}</span>`:''}${chOk?`<span class="ribbon rpop">${t('ch_ready')}</span>`:''}${art(o)}<div style="min-width:0"><b>${o.t}${bn>0?` <span class="bon">+${bn} %</span>`:''}</b>${pk?'':ch?`<div class="chbar"><i style="width:${Math.min(100,100*chestG()/CFG.chest.cap)}%"></i><b style="left:${100*CFG.chest.open/CFG.chest.cap}%"></b></div><p class="chn">${ic('gem','ig')}${grp(chestG())} / ${grp(CFG.chest.cap)}${chOk?'':' · '+ic('lock')+grp(CFG.chest.open)}</p>`:o.id==='starter'?`<p class="pnow">${ic('gem','ig')}300 + ${ic('bolt','ie')}×2 6 h</p>`:''}</div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):ch&&!chOk?ic('lock')+priceOf(o):priceOf(o)}</button></div>`;}; /* v12.3 : tirelire avec jauge, « Prête ! » dès qu'elle s'ouvre */
     const st=OFFERS.find(o=>o.id==='starter'),stTop=!(st.once&&st.once());
-    h+=evCard()+shopGiftHtml()+weekOfferHtml()+(stTop?`<div class="list">${offerRow(st)}</div>`:'')+passCard(); /* v11.2 : le pack de départ remonte tant qu'il n'est pas pris */
+    h+=evCard()+evPackHtml()+shopGiftHtml()+weekOfferHtml()+(stTop?`<div class="list">${offerRow(st)}</div>`:'')+passCard(); /* v11.2 : le pack de départ remonte tant qu'il n'est pas pris */
     h+=`<h2 class="sec">${t('sh_gems')}</h2>${!S.firstX2?`<div class="x2bar">${ic('star','ig')}${t('sh_x2_p')}</div>`:''}<div class="list">${OFFERS.filter(o=>/^g\d/.test(o.id)).map(offerRow).join('')}</div>`;
-    h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&o.id!=='pass'&&!(o.id==='starter'&&stTop)).map(offerRow).join('')}</div>`;
+    h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&!/^ev\d/.test(o.id)&&o.id!=='pass'&&!(o.id==='starter'&&stTop)).map(offerRow).join('')}</div>`;
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><button class="b b-gold sm stk" id="adBoost" ${adLeft('boost')?'':'disabled'}>${ic('tv')}${t('sh_watch')}<small class="eur">${t('ad_left',{n:adLeft('boost')})}</small></button></div>`;
     h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}</button></div></div>`;
@@ -638,6 +639,7 @@ $('panel').addEventListener('change',e=>{
 $('modal').addEventListener('click',e=>{
   const el=e.target.closest('button');if(!el)return;audio();
   if(el.hasAttribute('data-close'))closeModal();
+  else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);} // v12.9 : packs du week-end depuis la fenêtre de l'accueil
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
   else if(el.dataset.confirm&&!payGate(el.dataset.confirm,!!el.dataset.over)){}
@@ -699,6 +701,14 @@ function evCard(){const now=Date.now(),e=weekendEvent(now),dw=dparts(now)[3];con
   if(dw===4||dw===5){const n=nextEvent(now),st=nextMid()+(dw===4?864e5:0);return `<div class="evcard slab"><span class="oart">${ic(EVICON[n],'ie')}</span><div style="min-width:0"><b>${t('ev_'+n)}</b></div><span class="evt">${t('ev_soon',{t:dur((st-now)/1000)})}</span></div>`;}
   return '';}
 const EVICON={spark:'spark',joker:'star',build:'clock',gift:'box'};
+/* v12.9 : packs du week-end : contenu en icônes, 3 paliers, 1 achat chacun par événement */
+function evRw(i){const r=evPackR(i);return `<span class="rew">${ic('gem','ig')}${grp(r.g)}${r.b?` ${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:''}${r.rt?` ${ic('clock','ie')}×${r.rt}`:''}${r.m?` ${ic('spark','ie')}${dur(r.m*60)}`:''}</span>`;}
+function evEnd(now=Date.now()){const [y,m,d,dw]=dparts(now);return Date.UTC(y,m,d+1)-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000+(dw===6?864e5:0);}
+function evPackHtml(){const e=weekendEvent();if(!e)return '';return `<div class="list evpk">${[0,1,2].map(i=>{const o=OFFERS.find(x=>x.id==='ev'+(i+1)),own=evBought(i);return `<div class="offer slab${i===2&&!own?' best':''}">${i===2&&!own?`<span class="ribbon">${t('sh_best')}</span>`:''}<span class="oart">${ic(EVICON[e],'ie')}</span><div style="min-width:0"><p class="pnow">${evRw(i)}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;}).join('')}</div>`;}
+const evPackLeft=()=>!!weekendEvent()&&[0,1,2].some(i=>!evBought(i));
+function evPackModal(){const e=weekendEvent();if(!e)return;modal(`<div class="mart" style="color:var(--beam)">${ic(EVICON[e])}</div><h2>${t('ev_'+e)}</h2><p class="sub">${ic('clock')} ${t('ev_ends',{t:dur((evEnd()-Date.now())/1000)})}</p>${evPackHtml()}<div class="acts"><button class="b" data-close>${t('later')}</button></div>`);}
+function evChip(){const c=$('evChip');if(!c)return;const on=tab==='home'&&S.bestStage>=5&&evPackLeft();c.hidden=!on;if(!on)return;const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
+  if($('veil').hidden&&!giftAsk&&S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());evPackModal();}} /* une seule fois par événement */
 /* v12 : offre de la semaine, renouvelée chaque lundi */
 function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();const [y,m,d,dw]=dparts(now);const mon=Date.UTC(y,m,d+((8-dw)%7||7))-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000;
   const parts=[o.m?`${ic('spark','ie')}${t('sh_pack',{t:dur(o.m*60)})}`:'',o.b?`${ic('bolt','ie')}${t('sh_gemboost',{n:o.b})}`:''].filter(Boolean).join(' + ');
@@ -831,7 +841,7 @@ function frame(now){
     }
   }
   if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt); // v12.3 : rattaché par erreur au bloc de jeu en v11.8 (gemme du profil invisible)
-  uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
+  uiT+=dt;if(uiT>0.5){uiT=0;refresh();evChip();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
   syncT+=dt;if(syncT>180){syncT=0;if(netReady){act('sync');}} // v12.8 : 180 s (avant 90 s) : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
   netT+=dt;if(netT>30){netT=0;probeNet();}
@@ -894,3 +904,4 @@ netBoot();
 /* ----- bouton Retour Android (Capacitor) ----- */
 try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){if($('adn'))return;closeModal();return;} /* v11.6 : la pub simulée ne se ferme pas au bouton Retour */if(tab!=='home'){goTab('home');return;}soundBg(true);save();if(netReady)act('sync',{bye:true});if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}
 })();
+

@@ -135,3 +135,5 @@ Object.assign(I18N.it,{"hint1": "Trascina su una gemma uguale", "hint2": "Più g
 Object.assign(I18N.it,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.it,{"md_season_d": "Raggiungere il livello 50 del pass {n} volt{n|a/e}"}); // v12.6
 Object.assign(I18N.it,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n}%"}); // v12.7
+
+Object.assign(I18N.it,{"evp_t": "Pacchetto {e}", "evp_aria": "Offerta del weekend", "rt_use": "Termina con un gettone"}); // v12.9 : packs du week-end

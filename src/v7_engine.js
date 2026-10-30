@@ -17,6 +17,7 @@ const CFG={
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
   chest:{cap:600,open:300,price:2.99},
+  evPack:{price:[0.99,4.99,9.99],g:[150,900,2000],spark:[3,8,24],build:[1,3,8],joker:[120,480,1440],gift:[60,350,800]}, // v12.9 : packs du week-end (1 achat par palier et par événement) : gemmes + bonus du thème (heures ×2, jetons de recherche, minutes de production, gemmes en plus)
   pass:{price:4.99,tiers:100,xp:15,q:{o:10,d:10,w:30,login:10},dupe:150,tierGems:15,tier10:120,perks:{offH:4,slot:1,xp:2},v:2}, // v12 : palier 15 gemmes, lot de 10 à 120 ; avantages premium pendant la saison
   weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:25,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
@@ -178,7 +179,7 @@ const memList=()=>UPG.filter(u=>inMem(u)&&!upLocked(u)&&!inBuild(u.id));
 const memTotal=()=>memList().reduce((a,u)=>{let c=0;for(let k=lvlOf(u);k<Math.min(memLvl(u.id),u.max);k++)c+=u.c(k)*CFG.refr.memCost;return a+c;},0);
 function restoreAll(now=Date.now()){let n=0;for(let i=0;i<2000;i++){let best=null,bc=Infinity;for(const u of memList()){const c=upCost(u);if(c<bc){bc=c;best=u;}}if(!best||S.run.sparks<bc)break;if(startBuild(best.id,now)!=='ok')break;n++;}return n;}
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
-function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
+function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;if((S.rt|0)>0){S.rt--;b.until=now;tickBuild(now);return true;} /* v12.9 : jeton de recherche (pack du week-end) avant les gemmes */const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
 function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
@@ -441,7 +442,12 @@ function pickWeekly(){const h=dayHash('w'+S.week.k);WEEKLY.length=0;let ids=Arra
 const EVENTS=['spark','joker','build','gift'];
 function weekendEvent(t=Date.now()){const dw=dparts(t)[3];if(dw!==6&&dw!==0)return null;const wk=Math.floor((seasonDay(t)-(dw===0?1:0))/7);return EVENTS[((wk%EVENTS.length)+EVENTS.length)%EVENTS.length];}
 function nextEvent(t=Date.now()){const dw=dparts(t)[3];const toSat=(6-dw+7)%7;return weekendEvent(t+toSat*864e5)||EVENTS[0];}
-const evOn=(id,t)=>weekendEvent(t)===id; /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
+const evOn=(id,t)=>weekendEvent(t)===id;
+/* v12.9 : packs payants de l'événement du week-end. Clé = samedi de l'événement : chaque week-end est un nouvel événement. */
+const evKey=(t=Date.now())=>weekendEvent(t)?dayKey(t-(dparts(t)[3]===0?864e5:0)):null;
+function evBought(i){const k=evKey();return !!(k&&S.evp&&S.evp.k===k&&Array.isArray(S.evp.b)&&S.evp.b.includes(i));}
+function evPackR(i,e=weekendEvent()){const P=CFG.evPack,r={g:P.g[i]};if(e==='spark')r.b=P.spark[i];else if(e==='build')r.rt=P.build[i];else if(e==='joker')r.m=P.joker[i];else if(e==='gift')r.g+=P.gift[i];return r;}
+function evPackGive(i){const e=weekendEvent(),k=evKey();if(!e)return;const r=evPackR(i,e);S.gems+=r.g;if(r.b)give({b:r.b});if(r.rt)S.rt=(S.rt|0)+r.rt;if(r.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*r.m/30),Math.floor(rateMin()*r.m));if(!S.evp||S.evp.k!==k)S.evp={k,b:[]};S.evp.b.push(i);} /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 const bossTotal=()=>S.st.bosses;
 const jokersOwned=()=>Object.keys(S.jk).length;
 const maxJokerLvl=()=>Math.max(0,...Object.values(S.jk));
@@ -557,7 +563,7 @@ const OFFERS=[
   {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
   {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),h:CFG.pass.perks.offH,d:seasonLeft()})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
-].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
+].concat([0,1,2].map(i=>({id:'ev'+(i+1),price:CFG.evPack.price[i],ev:i,avail:()=>!!weekendEvent()&&!evBought(i),give(){evPackGive(i);},get t(){return t('evp_t',{e:t('ev_'+(weekendEvent()||nextEvent()))})},get d(){return typeof evRw==='function'?evRw(i):''}}))).concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
 const GEM_REF={n:100,price:0.99};
 const packBonus=o=>Math.floor(100*((o.n/o.price)/(GEM_REF.n/GEM_REF.price))-100+1e-9);

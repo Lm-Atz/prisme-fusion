@@ -135,3 +135,5 @@ Object.assign(I18N.en,{"hint1": "Drag onto a matching gem", "hint2": "Bigger = s
 Object.assign(I18N.en,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.en,{"md_season_d": "Reach pass tier 50 {n} time{n|s}"}); // v12.6
 Object.assign(I18N.en,{"u_st_bank": "Treasure", "u_st_bank_d": "Treasure +{n}%"}); // v12.7
+
+Object.assign(I18N.en,{"evp_t": "{e} pack", "evp_aria": "Weekend offer", "rt_use": "Finish with a token"}); // v12.9 : packs du week-end

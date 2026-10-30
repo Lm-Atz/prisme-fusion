@@ -562,6 +562,13 @@ body{margin:0}
 .ppager .b{position:relative}.ppager .badge.rd{position:absolute;top:2px;right:2px;margin:0}
 #panel h2.sec .badge.rd{top:0;margin:0 auto 0 8px}
 .atseg button.lockd{opacity:.55}.atseg button.lockd small{font:800 11px var(--body);margin-left:2px}
+
+/* v12.9 : pastille de l'événement du week-end (accueil) → packs */
+.evchip{position:absolute;left:16px;top:calc(50% - 160px);z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:56px;padding:8px 8px 6px;border-radius:16px;border:0;cursor:pointer;background:linear-gradient(180deg,#ffe3a1,var(--beam));box-shadow:0 4px 0 var(--beam-edge),0 0 18px rgba(255,200,87,.45);color:var(--on-beam);font:inherit}
+.evchip .i{width:26px;height:26px}
+.evchip small{font-size:11px;font-weight:700;line-height:1;white-space:nowrap}
+.evchip:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.evpk{margin-top:8px}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -614,6 +621,7 @@ body{margin:0}
     </div>
     <div class="hint" id="hint" hidden></div>
     <button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button>
+    <button class="evchip" id="evChip" hidden data-i18n-aria="evp_aria"></button>
     <div class="boardwrap" id="bw"><canvas id="board" data-i18n-aria="board_aria"></canvas></div>
     <div class="jok" id="jok" hidden></div>
     <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b><small id="rateMin"></small><small id="refrG" hidden></small></div>
@@ -799,6 +807,8 @@ Object.assign(I18N.fr,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} 
 Object.assign(I18N.fr,{"md_season_d": "Atteindre le palier 50 du pass {n} fois"}); // v12.6
 Object.assign(I18N.fr,{"u_st_bank": "Trésor", "u_st_bank_d": "Trésor +{n} %"}); // v12.7
 
+Object.assign(I18N.fr,{"evp_t": "Pack {e}", "evp_aria": "Offre du week-end", "rt_use": "Terminer avec un jeton"}); // v12.9 : packs du week-end
+
 I18N.en={
   _name:'English',_units:['K','M','B','T'],_days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],_dur:['s','min','h','d'],_adj:['Cobalt','Blazing','Crimson','Stellar','Swift','Polar','Fiery','Lunar','Electric','Shadow','Radiant','Quantum'],_noun:['Hexagon','Prism','Pentagon','Comet','Spiral','Vector','Nova','Pulsar','Octagon','Photon','Orbit','Fractal'],
   sparks:'sparks',shards:'shards',gems:'gems',stage:'Stage {n}',level:'level',lvl:'lv. {n}',max:'Max',close:'Close',later:'Later',cancel:'Cancel',
@@ -936,6 +946,8 @@ Object.assign(I18N.en,{"hint1": "Drag onto a matching gem", "hint2": "Bigger = s
 Object.assign(I18N.en,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.en,{"md_season_d": "Reach pass tier 50 {n} time{n|s}"}); // v12.6
 Object.assign(I18N.en,{"u_st_bank": "Treasure", "u_st_bank_d": "Treasure +{n}%"}); // v12.7
+
+Object.assign(I18N.en,{"evp_t": "{e} pack", "evp_aria": "Weekend offer", "rt_use": "Finish with a token"}); // v12.9 : packs du week-end
 I18N.es={
   _name:'Español',_units:['k','M','MM','B'],_days:['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardiente','Lunar','Eléctrico','Sombrío','Radiante','Cuántico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vector','Nova','Púlsar','Octógono','Fotón','Órbita','Fractal'],
   sparks:'chispas',shards:'esquirlas',gems:'gemas',stage:'Etapa {n}',level:'nivel',lvl:'niv. {n}',max:'Máx.',close:'Cerrar',later:'Más tarde',cancel:'Cancelar',
@@ -1073,6 +1085,8 @@ Object.assign(I18N.es,{"hint1": "Arrastra sobre una gema igual", "hint2": "Más 
 Object.assign(I18N.es,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.es,{"md_season_d": "Llegar al nivel 50 del pase {n} {n|vez/veces}"}); // v12.6
 Object.assign(I18N.es,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n} %"}); // v12.7
+
+Object.assign(I18N.es,{"evp_t": "Pack {e}", "evp_aria": "Oferta del fin de semana", "rt_use": "Terminar con una ficha"}); // v12.9 : packs du week-end
 I18N.de={
   _name:'Deutsch',_units:['Tsd.','Mio.','Mrd.','Bio.'],_days:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],_dur:['s','Min.','Std.','T.'],_adj:['Kobalt','Blitzend','Purpur','Stellar','Flink','Polar','Glühend','Lunar','Elektrisch','Dunkel','Strahlend','Quanten'],_noun:['Sechseck','Prisma','Fünfeck','Komet','Spirale','Vektor','Nova','Pulsar','Achteck','Photon','Orbit','Fraktal'],
   sparks:'Funken',shards:'Splitter',gems:'Edelsteine',stage:'Stufe {n}',level:'Level',lvl:'Lv. {n}',max:'Max',close:'Schließen',later:'Später',cancel:'Abbrechen',
@@ -1210,6 +1224,8 @@ Object.assign(I18N.de,{"hint1": "Auf einen gleichen Edelstein ziehen", "hint2": 
 Object.assign(I18N.de,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.de,{"md_season_d": "{n}-mal Passstufe 50 erreichen"}); // v12.6
 Object.assign(I18N.de,{"u_st_bank": "Schatz", "u_st_bank_d": "Schatz +{n} %"}); // v12.7
+
+Object.assign(I18N.de,{"evp_t": "{e}-Paket", "evp_aria": "Wochenend-Angebot", "rt_use": "Mit Marke beenden"}); // v12.9 : packs du week-end
 I18N.pt={
   _name:'Português',_units:['mil','mi','bi','tri'],_days:['domingo','segunda','terça','quarta','quinta','sexta','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardente','Lunar','Elétrico','Sombrio','Radiante','Quântico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vetor','Nova','Pulsar','Octógono','Fotão','Órbita','Fractal'],
   sparks:'faíscas',shards:'estilhaços',gems:'gemas',stage:'Etapa {n}',level:'nível',lvl:'nív. {n}',max:'Máx.',close:'Fechar',later:'Mais tarde',cancel:'Cancelar',
@@ -1347,6 +1363,8 @@ Object.assign(I18N.pt,{"hint1": "Arrasta para uma gema igual", "hint2": "Maior =
 Object.assign(I18N.pt,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.pt,{"md_season_d": "Chegar ao nível 50 do passe {n} {n|vez/vezes}"}); // v12.6
 Object.assign(I18N.pt,{"u_st_bank": "Tesouro", "u_st_bank_d": "Tesouro +{n}%"}); // v12.7
+
+Object.assign(I18N.pt,{"evp_t": "Pacote {e}", "evp_aria": "Oferta do fim de semana", "rt_use": "Terminar com uma ficha"}); // v12.9 : packs du week-end
 I18N.it={
   _name:'Italiano',_units:['k','M','Mrd','Bln'],_days:['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'],_dur:['s','min','h','g'],_adj:['Cobalto','Fulminante','Purpureo','Stellare','Vivace','Polare','Ardente','Lunare','Elettrico','Oscuro','Radioso','Quantico'],_noun:['Esagono','Prisma','Pentagono','Cometa','Spirale','Vettore','Nova','Pulsar','Ottagono','Fotone','Orbita','Frattale'],
   sparks:'scintille',shards:'schegge',gems:'gemme',stage:'Livello {n}',level:'grado',lvl:'gr. {n}',max:'Max',close:'Chiudi',later:'Più tardi',cancel:'Annulla',
@@ -1485,6 +1503,8 @@ Object.assign(I18N.it,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} 
 Object.assign(I18N.it,{"md_season_d": "Raggiungere il livello 50 del pass {n} volt{n|a/e}"}); // v12.6
 Object.assign(I18N.it,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n}%"}); // v12.7
 
+Object.assign(I18N.it,{"evp_t": "Pacchetto {e}", "evp_aria": "Offerta del weekend", "rt_use": "Termina con un gettone"}); // v12.9 : packs du week-end
+
 /* ================= utilitaires ================= */
 const $=id=>document.getElementById(id);
 const U=()=>I18N[LANG]._units||I18N.fr._units;
@@ -1545,6 +1565,7 @@ const CFG={
   interstitialEvery:4,wpReset:50,
   gift:{every:[150,300],show:45,gemCap:30}, // v9.8 : au plus 30 gemmes par jour venant des cadeaux
   chest:{cap:600,open:300,price:2.99},
+  evPack:{price:[0.99,4.99,9.99],g:[150,900,2000],spark:[3,8,24],build:[1,3,8],joker:[120,480,1440],gift:[60,350,800]}, // v12.9 : packs du week-end (1 achat par palier et par événement) : gemmes + bonus du thème (heures ×2, jetons de recherche, minutes de production, gemmes en plus)
   pass:{price:4.99,tiers:100,xp:15,q:{o:10,d:10,w:30,login:10},dupe:150,tierGems:15,tier10:120,perks:{offH:4,slot:1,xp:2},v:2}, // v12 : palier 15 gemmes, lot de 10 à 120 ; avantages premium pendant la saison
   weekOffer:[{id:'prod',g:60,m:240},{id:'boost',g:25,b:6},{id:'mix',g:50,m:120,b:3}], // v11 : 100 paliers de 15 points ; un palier s'achète 20 gemmes (plus cher que ce qu'il rapporte)
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
@@ -1706,7 +1727,7 @@ const memList=()=>UPG.filter(u=>inMem(u)&&!upLocked(u)&&!inBuild(u.id));
 const memTotal=()=>memList().reduce((a,u)=>{let c=0;for(let k=lvlOf(u);k<Math.min(memLvl(u.id),u.max);k++)c+=u.c(k)*CFG.refr.memCost;return a+c;},0);
 function restoreAll(now=Date.now()){let n=0;for(let i=0;i<2000;i++){let best=null,bc=Infinity;for(const u of memList()){const c=upCost(u);if(c<bc){bc=c;best=u;}}if(!best||S.run.sparks<bc)break;if(startBuild(best.id,now)!=='ok')break;n++;}return n;}
 const rushGems=(b,now=Date.now())=>Math.max(1,Math.ceil((b.until-now)/1000/CFG.build.gemSec));
-function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
+function rushBuild(id,now=Date.now()){const b=inBuild(id);if(!b)return false;if((S.rt|0)>0){S.rt--;b.until=now;tickBuild(now);return true;} /* v12.9 : jeton de recherche (pack du week-end) avant les gemmes */const g=rushGems(b,now);if(S.gems<g)return false;S.gems-=g;b.until=now;tickBuild(now);return true;}
 function adBuild(id,now=Date.now()){roll();const b=inBuild(id);if(!b)return false;S.day.buildAds++;b.until-=CFG.build.adCut*1000;tickBuild(now);return true;}
 function buySlot(){const i=S.slots-1;if(i>=CFG.build.slotGems.length)return false;const g=CFG.build.slotGems[i];if(S.gems<g)return false;S.gems-=g;S.slots++;return true;}
 const jokerById=id=>JOKERS.find(j=>j.id===id);
@@ -1969,7 +1990,12 @@ function pickWeekly(){const h=dayHash('w'+S.week.k);WEEKLY.length=0;let ids=Arra
 const EVENTS=['spark','joker','build','gift'];
 function weekendEvent(t=Date.now()){const dw=dparts(t)[3];if(dw!==6&&dw!==0)return null;const wk=Math.floor((seasonDay(t)-(dw===0?1:0))/7);return EVENTS[((wk%EVENTS.length)+EVENTS.length)%EVENTS.length];}
 function nextEvent(t=Date.now()){const dw=dparts(t)[3];const toSat=(6-dw+7)%7;return weekendEvent(t+toSat*864e5)||EVENTS[0];}
-const evOn=(id,t)=>weekendEvent(t)===id; /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
+const evOn=(id,t)=>weekendEvent(t)===id;
+/* v12.9 : packs payants de l'événement du week-end. Clé = samedi de l'événement : chaque week-end est un nouvel événement. */
+const evKey=(t=Date.now())=>weekendEvent(t)?dayKey(t-(dparts(t)[3]===0?864e5:0)):null;
+function evBought(i){const k=evKey();return !!(k&&S.evp&&S.evp.k===k&&Array.isArray(S.evp.b)&&S.evp.b.includes(i));}
+function evPackR(i,e=weekendEvent()){const P=CFG.evPack,r={g:P.g[i]};if(e==='spark')r.b=P.spark[i];else if(e==='build')r.rt=P.build[i];else if(e==='joker')r.m=P.joker[i];else if(e==='gift')r.g+=P.gift[i];return r;}
+function evPackGive(i){const e=weekendEvent(),k=evKey();if(!e)return;const r=evPackR(i,e);S.gems+=r.g;if(r.b)give({b:r.b});if(r.rt)S.rt=(S.rt|0)+r.rt;if(r.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*r.m/30),Math.floor(rateMin()*r.m));if(!S.evp||S.evp.k!==k)S.evp={k,b:[]};S.evp.b.push(i);} /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 const bossTotal=()=>S.st.bosses;
 const jokersOwned=()=>Object.keys(S.jk).length;
 const maxJokerLvl=()=>Math.max(0,...Object.values(S.jk));
@@ -2085,7 +2111,7 @@ const OFFERS=[
   {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
   {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),h:CFG.pass.perks.offH,d:seasonLeft()})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
-].concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
+].concat([0,1,2].map(i=>({id:'ev'+(i+1),price:CFG.evPack.price[i],ev:i,avail:()=>!!weekendEvent()&&!evBought(i),give(){evPackGive(i);},get t(){return t('evp_t',{e:t('ev_'+(weekendEvent()||nextEvent()))})},get d(){return typeof evRw==='function'?evRw(i):''}}))).concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
 const GEM_REF={n:100,price:0.99};
 const packBonus=o=>Math.floor(100*((o.n/o.price)/(GEM_REF.n/GEM_REF.price))-100+1e-9);
@@ -2437,7 +2463,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='12.8 · charge';
+const VERSION='12.9 · événements';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2810,6 +2836,7 @@ function giftTick(dt){
     actAsync('gift_offer').then(d=>{giftAsk=false;if(d&&d.ok&&d.result&&d.result.ok&&d.result.gift)show(d.result.gift);else if(d&&d.result&&d.result.wait)giftNext=giftT+d.result.wait;else giftNext=giftT+60;}).catch(()=>{giftAsk=false;giftNext=giftT+60;});}
 }
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
+$('evChip').addEventListener('click',()=>{audio();track('evpk_open',{e:weekendEvent()});evPackModal();});
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('close')}</button></div>`,()=>{if(gift){gift=null;$('gift').hidden=true;giftNext=0;}});});
 /* ----- tutoriel ----- */
 let tutoStep=0,hpLagV=1,hintT=null;
@@ -2837,7 +2864,7 @@ function buyBtn(u,free,big){const c=upCost(u),pp=isPP(u),mem=inMem(u),off=!upAff
   return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+durS(upTime(u))}</small>`}</button>`;}
 const durS=s=>{if(s<86400)return dur(s);const U=(I18N[LANG]._dur||I18N.fr._dur);return dec(s/86400,1)+'\u00a0'+U[3];}; // v12.2 : durée courte dans les boutons (« 1,5 j »)
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
-  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts"><button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button><button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
+  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts">${(S.rt|0)>0?`<button class="b b-gold sm" data-rush="${b.id}" aria-label="${t('rt_use')}">${ic('clock')}<span>×${S.rt}</span></button>`:`<button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button>`}<button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
   const k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id);
   let foot;
@@ -3001,9 +3028,9 @@ function renderTab(){
     const art=o=>PKART[o.id]?`<span class="oart pk pk${PKART[o.id].length}">${PKART[o.id].map(n=>ic(n,'ig')).join('')}</span>`:`<span class="oart">${ic(OART[o.id][0],OART[o.id][1])}</span>`;
     const offerRow=o=>{const own=o.once&&o.once(),pk=/^g\d/.test(o.id),bn=pk?packBonus(o):0,pop=o.id==='g600',ch=o.id==='chest',chOk=ch&&o.avail();return `<div class="offer slab${o.id==='starter'&&!own?' feat':''}${pk&&o===best?' best':''}${pop?' pop':''}${chOk?' feat chok':''}">${pk&&o===best?`<span class="ribbon">${t('sh_best')}</span>`:''}${pop?`<span class="ribbon rpop">${t('sh_pop')}</span>`:''}${chOk?`<span class="ribbon rpop">${t('ch_ready')}</span>`:''}${art(o)}<div style="min-width:0"><b>${o.t}${bn>0?` <span class="bon">+${bn} %</span>`:''}</b>${pk?'':ch?`<div class="chbar"><i style="width:${Math.min(100,100*chestG()/CFG.chest.cap)}%"></i><b style="left:${100*CFG.chest.open/CFG.chest.cap}%"></b></div><p class="chn">${ic('gem','ig')}${grp(chestG())} / ${grp(CFG.chest.cap)}${chOk?'':' · '+ic('lock')+grp(CFG.chest.open)}</p>`:o.id==='starter'?`<p class="pnow">${ic('gem','ig')}300 + ${ic('bolt','ie')}×2 6 h</p>`:''}</div><button class="b b-gold sm" data-offer="${o.id}" ${own||(o.avail&&!o.avail())?'disabled':''}>${own?t('sh_own'):ch&&!chOk?ic('lock')+priceOf(o):priceOf(o)}</button></div>`;}; /* v12.3 : tirelire avec jauge, « Prête ! » dès qu'elle s'ouvre */
     const st=OFFERS.find(o=>o.id==='starter'),stTop=!(st.once&&st.once());
-    h+=evCard()+shopGiftHtml()+weekOfferHtml()+(stTop?`<div class="list">${offerRow(st)}</div>`:'')+passCard(); /* v11.2 : le pack de départ remonte tant qu'il n'est pas pris */
+    h+=evCard()+evPackHtml()+shopGiftHtml()+weekOfferHtml()+(stTop?`<div class="list">${offerRow(st)}</div>`:'')+passCard(); /* v11.2 : le pack de départ remonte tant qu'il n'est pas pris */
     h+=`<h2 class="sec">${t('sh_gems')}</h2>${!S.firstX2?`<div class="x2bar">${ic('star','ig')}${t('sh_x2_p')}</div>`:''}<div class="list">${OFFERS.filter(o=>/^g\d/.test(o.id)).map(offerRow).join('')}</div>`;
-    h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&o.id!=='pass'&&!(o.id==='starter'&&stTop)).map(offerRow).join('')}</div>`;
+    h+=`<h2 class="sec">${t('sh_offers')}</h2><div class="list">${OFFERS.filter(o=>!/^g\d/.test(o.id)&&!/^ev\d/.test(o.id)&&o.id!=='pass'&&!(o.id==='starter'&&stTop)).map(offerRow).join('')}</div>`;
     const bl=S.boostUntil-Date.now();
     h+=`<h2 class="sec">${t('sh_boost')}<small>${bl>0?t('sh_active',{t:dur(bl/1000)}):t('sh_inactive')}</small></h2><div class="gitems"><div class="gitem slab"><span class="oart">${ic('tv','ie')}</span><b>${t('sh_adboost',{n:CFG.boost.adH})}</b><button class="b b-gold sm stk" id="adBoost" ${adLeft('boost')?'':'disabled'}>${ic('tv')}${t('sh_watch')}<small class="eur">${t('ad_left',{n:adLeft('boost')})}</small></button></div>`;
     h+=`<div class="gitem slab"><span class="oart">${ic('bolt','ie')}</span><b>${t('sh_gemboost',{n:CFG.boost.gemsH})}</b><button class="b b-gem sm" data-gem="boost" ${S.gems<CFG.boost.gemsPrice?'disabled':''}>${ic('gem')}${CFG.boost.gemsPrice}</button></div></div>`;
@@ -3131,6 +3158,7 @@ $('panel').addEventListener('change',e=>{
 $('modal').addEventListener('click',e=>{
   const el=e.target.closest('button');if(!el)return;audio();
   if(el.hasAttribute('data-close'))closeModal();
+  else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);} // v12.9 : packs du week-end depuis la fenêtre de l'accueil
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
   else if(el.dataset.confirm&&!payGate(el.dataset.confirm,!!el.dataset.over)){}
@@ -3192,6 +3220,14 @@ function evCard(){const now=Date.now(),e=weekendEvent(now),dw=dparts(now)[3];con
   if(dw===4||dw===5){const n=nextEvent(now),st=nextMid()+(dw===4?864e5:0);return `<div class="evcard slab"><span class="oart">${ic(EVICON[n],'ie')}</span><div style="min-width:0"><b>${t('ev_'+n)}</b></div><span class="evt">${t('ev_soon',{t:dur((st-now)/1000)})}</span></div>`;}
   return '';}
 const EVICON={spark:'spark',joker:'star',build:'clock',gift:'box'};
+/* v12.9 : packs du week-end : contenu en icônes, 3 paliers, 1 achat chacun par événement */
+function evRw(i){const r=evPackR(i);return `<span class="rew">${ic('gem','ig')}${grp(r.g)}${r.b?` ${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:''}${r.rt?` ${ic('clock','ie')}×${r.rt}`:''}${r.m?` ${ic('spark','ie')}${dur(r.m*60)}`:''}</span>`;}
+function evEnd(now=Date.now()){const [y,m,d,dw]=dparts(now);return Date.UTC(y,m,d+1)-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000+(dw===6?864e5:0);}
+function evPackHtml(){const e=weekendEvent();if(!e)return '';return `<div class="list evpk">${[0,1,2].map(i=>{const o=OFFERS.find(x=>x.id==='ev'+(i+1)),own=evBought(i);return `<div class="offer slab${i===2&&!own?' best':''}">${i===2&&!own?`<span class="ribbon">${t('sh_best')}</span>`:''}<span class="oart">${ic(EVICON[e],'ie')}</span><div style="min-width:0"><p class="pnow">${evRw(i)}</p></div><button class="b b-gold sm" data-offer="${o.id}" ${own?'disabled':''}>${own?t('sh_own'):priceOf(o)}</button></div>`;}).join('')}</div>`;}
+const evPackLeft=()=>!!weekendEvent()&&[0,1,2].some(i=>!evBought(i));
+function evPackModal(){const e=weekendEvent();if(!e)return;modal(`<div class="mart" style="color:var(--beam)">${ic(EVICON[e])}</div><h2>${t('ev_'+e)}</h2><p class="sub">${ic('clock')} ${t('ev_ends',{t:dur((evEnd()-Date.now())/1000)})}</p>${evPackHtml()}<div class="acts"><button class="b" data-close>${t('later')}</button></div>`);}
+function evChip(){const c=$('evChip');if(!c)return;const on=tab==='home'&&S.bestStage>=5&&evPackLeft();c.hidden=!on;if(!on)return;const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
+  if($('veil').hidden&&!giftAsk&&S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());evPackModal();}} /* une seule fois par événement */
 /* v12 : offre de la semaine, renouvelée chaque lundi */
 function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();const [y,m,d,dw]=dparts(now);const mon=Date.UTC(y,m,d+((8-dw)%7||7))-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000;
   const parts=[o.m?`${ic('spark','ie')}${t('sh_pack',{t:dur(o.m*60)})}`:'',o.b?`${ic('bolt','ie')}${t('sh_gemboost',{n:o.b})}`:''].filter(Boolean).join(' + ');
@@ -3324,7 +3360,7 @@ function frame(now){
     }
   }
   if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt); // v12.3 : rattaché par erreur au bloc de jeu en v11.8 (gemme du profil invisible)
-  uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
+  uiT+=dt;if(uiT>0.5){uiT=0;refresh();evChip();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
   syncT+=dt;if(syncT>180){syncT=0;if(netReady){act('sync');}} // v12.8 : 180 s (avant 90 s) : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
   netT+=dt;if(netT>30){netT=0;probeNet();}
@@ -3387,5 +3423,6 @@ netBoot();
 /* ----- bouton Retour Android (Capacitor) ----- */
 try{const CA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(CA&&CA.addListener)CA.addListener('backButton',()=>{if(!$('veil').hidden){if($('adn'))return;closeModal();return;} /* v11.6 : la pub simulée ne se ferme pas au bouton Retour */if(tab!=='home'){goTab('home');return;}soundBg(true);save();if(netReady)act('sync',{bye:true});if(CA.minimizeApp)CA.minimizeApp();});}catch(e){}
 })();
+
 </script>
 </body></html>

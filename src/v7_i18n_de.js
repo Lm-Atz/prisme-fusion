@@ -135,3 +135,5 @@ Object.assign(I18N.de,{"hint1": "Auf einen gleichen Edelstein ziehen", "hint2": 
 Object.assign(I18N.de,{"sh_adboost": "×2 · {n} h", "sh_gemboost": "×2 · {n} h", "sh_adsparks": "{t}", "sh_pack": "{t}", "sh_watch": "", "ad_left": "×{n}", "at_now": ""}); // v12.4 : libellés boutique en icônes
 Object.assign(I18N.de,{"md_season_d": "{n}-mal Passstufe 50 erreichen"}); // v12.6
 Object.assign(I18N.de,{"u_st_bank": "Schatz", "u_st_bank_d": "Schatz +{n} %"}); // v12.7
+
+Object.assign(I18N.de,{"evp_t": "{e}-Paket", "evp_aria": "Wochenend-Angebot", "rt_use": "Mit Marke beenden"}); // v12.9 : packs du week-end

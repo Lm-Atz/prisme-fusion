@@ -342,3 +342,10 @@ body{margin:0}
 .ppager .b{position:relative}.ppager .badge.rd{position:absolute;top:2px;right:2px;margin:0}
 #panel h2.sec .badge.rd{top:0;margin:0 auto 0 8px}
 .atseg button.lockd{opacity:.55}.atseg button.lockd small{font:800 11px var(--body);margin-left:2px}
+
+/* v12.9 : pastille de l'événement du week-end (accueil) → packs */
+.evchip{position:absolute;left:16px;top:calc(50% - 160px);z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:56px;padding:8px 8px 6px;border-radius:16px;border:0;cursor:pointer;background:linear-gradient(180deg,#ffe3a1,var(--beam));box-shadow:0 4px 0 var(--beam-edge),0 0 18px rgba(255,200,87,.45);color:var(--on-beam);font:inherit}
+.evchip .i{width:26px;height:26px}
+.evchip small{font-size:11px;font-weight:700;line-height:1;white-space:nowrap}
+.evchip:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.evpk{margin-top:8px}
