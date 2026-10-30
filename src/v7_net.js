@@ -49,15 +49,17 @@ const actAsync=(action,payload)=>{const snap=simSnap(),sent=S.run.sparks;const e
 async function actNow(action,payload,snap,sent,retry=1,ent=null){
   if(!NET.on)return null;
   const body={id:DEV.id,secret:DEV.s,action,payload:payload||{},sim:snap,tz:-new Date().getTimezoneOffset(),lang:LANG,name:S.name,demo:true};
+  const ev=EVQ.length?EVQ.splice(0,60):null;if(ev)body.ev=ev; /* v12.8 : statistiques jointes à la requête (plus d'appel séparé ni de vérification d'identité en plus) */
+  const evBack=()=>{if(ev)EVQ=ev.concat(EVQ).slice(-200);};
   const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);
   let d=null;
   try{const r=await fetch(`${NET.url}/functions/v1/pf-act`,{method:'POST',headers:{'apikey':NET.key,'Authorization':'Bearer '+NET.key,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal,keepalive:action==='sync'&&!!payload&&payload.bye===true});
-    if(r.status===409&&retry>0){await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1,ent);}
-    if(r.status===429){srvLast=_dateNow();return null;} // trop d'appels : on attend la prochaine synchro, sans alarme
+    if(r.status===409&&retry>0){evBack();await new Promise(z=>setTimeout(z,350));return actNow(action,payload,snap,sent,retry-1,ent);}
+    if(r.status===429){evBack();srvLast=_dateNow();return null;} // trop d'appels : on attend la prochaine synchro, sans alarme
     d=await r.json();}
-  catch(e){srvErr++;return null;}
+  catch(e){evBack();srvErr++;return null;}
   finally{clearTimeout(to);}
-  if(!d||!d.ok){onServer({action,fail:d&&d.err});return d;}
+  if(!d||!d.ok){if(!d||d.err!=='rate')evBack();onServer({action,fail:d&&d.err});return d;}
   srvErr=0;srvLast=_dateNow();netReady=true;syncClock({now:d.now});
   applyServer(d,sent);
   if(ent)pendDrop(ent);{const sp=S.run.sparks;pendReplay();S.run.sparks=sp;} /* les étincelles des actions en attente sont déjà dans « ce qui a bougé » : ne pas les rejouer */
@@ -136,8 +138,8 @@ const netRecover=()=>rpcAuth('pf_recover',{});
 function adoptIdentity(d){try{localStorage.setItem('prisme-dev',JSON.stringify({id:d.id,s:d.s||d.secret}));localStorage.removeItem(KEY);}catch(e){}location.reload();}
 /* mesure : les événements sont mis en file et envoyés par paquets (synchro, mise en arrière-plan, ou 40 en attente) */
 let EVQ=[];
-function track(name,props){if(!NET.on||(S&&S.settings&&S.settings.stats===false))return;EVQ.push({n:String(name).slice(0,40),p:props||{},t:_dateNow()});if(EVQ.length>200)EVQ.splice(0,EVQ.length-200);if(EVQ.length>=40)flushEv();}
-function flushEv(keep){if(!NET.on||!netReady||!EVQ.length)return null;const batch=EVQ.splice(0,60);return rpc('pf_track_batch',Object.assign(auth(),{p_events:batch}),6000,!!keep).catch(()=>{EVQ=batch.concat(EVQ).slice(-200);});}
+function track(name,props){if(!NET.on||(S&&S.settings&&S.settings.stats===false))return;EVQ.push({n:String(name).slice(0,40),p:props||{},t:_dateNow()});if(EVQ.length>200)EVQ.splice(0,EVQ.length-200);}
+function flushEv(){return null;} /* v12.8 : les statistiques partent avec la prochaine requête au serveur (synchro, action, mise en arrière-plan) */
 function idHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return h%360;}
 /* code de transfert : identité appareil encodée (PF1-<base32 id+secret>) pour retrouver sa partie sur un autre appareil */
 const B32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

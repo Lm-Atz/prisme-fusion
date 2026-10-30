@@ -21,7 +21,7 @@ async function loadRules(): Promise<{ core: any; engine: string }> {
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
-// Limites par minute. Un joueur actif : synchro toutes les 90 s + ses actions (achats, quêtes, cadeaux) ≈ 2 à 6 appels/min.
+// Limites par minute. Un joueur actif : synchro toutes les 180 s + ses actions (achats, quêtes, cadeaux) ≈ 1 à 5 appels/min.
 const RATE = { player: 40, ip: 240 };
 async function rateOK(key: string, max: number): Promise<boolean> {
   const r = await sb.rpc("pf_rate", { p_key: key.slice(0, 80), p_max: max });
@@ -38,23 +38,30 @@ Deno.serve(async (req: Request) => {
   const id = String(body.id || ""), secret = String(body.secret || "");
   if (!UUID.test(id) || secret.length < 16 || secret.length > 128) return json({ ok: false, err: "auth" }, 401);
   if (JSON.stringify(body).length > 120000) return json({ ok: false, err: "too_big" }, 413);
-  // 0. limite de débit par adresse IP, avant tout calcul coûteux (bcrypt) : protège la base contre un script en boucle
   const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "?";
-  if (!(await rateOK("ip:" + ip, RATE.ip))) return json({ ok: false, err: "rate" }, 429);
   let core, ENGINE_SRC: string;
   try { ({ core, engine: ENGINE_SRC } = await loadRules()); } catch { return json({ ok: false, err: "rules" }, 503); }
 
-  // 1. authentification (et création du joueur au premier contact) via la RPC existante
-  const hello = await sb.rpc("pf_hello", { p_id: id, p_secret: secret, p_lang: String(body.lang || "fr").slice(0, 5), p_name: String(body.name || "Prisme").slice(0, 16) });
-  if (hello.error) return json({ ok: false, err: hello.error.message === "auth" ? "auth" : "server" }, hello.error.message === "auth" ? 401 : 500);
-
-  // 1 bis. limite de débit par joueur authentifié (un vrai joueur fait 2 à 6 appels par minute)
-  if (!(await rateOK("p:" + id, RATE.player))) return json({ ok: false, err: "rate" }, 429);
-
-  // 2. état autoritaire
-  const row = await sb.from("players").select("state,ver,banned,anom,save").eq("id", id).single();
-  if (row.error || !row.data) return json({ ok: false, err: "player" }, 500);
+  // 1-2. v12.8 : anti-abus (IP), identité (SHA-256), anti-abus (joueur) et lecture de la partie en UN aller-retour (pf_load).
+  //      Repli sur l'ancien chemin en 4 appels si pf_load n'existe pas encore en base (déploiement dans n'importe quel ordre).
+  // deno-lint-ignore no-explicit-any
+  let hello: any, row: any;
+  const ld = await sb.rpc("pf_load", { p_id: id, p_secret: secret, p_lang: String(body.lang || "fr").slice(0, 5), p_name: String(body.name || "Prisme").slice(0, 16), p_ip: ip.slice(0, 60), p_rip: RATE.ip, p_rpl: RATE.player });
+  if (!ld.error && ld.data) {
+    if (ld.data.err === "rate") return json({ ok: false, err: "rate" }, 429);
+    if (ld.data.err === "auth") return json({ ok: false, err: "auth" }, 401);
+    hello = { data: ld.data.hello }; row = { data: { state: ld.data.state, ver: ld.data.ver, banned: ld.data.banned, anom: ld.data.anom, save: ld.data.save } };
+  } else {
+    if (!(await rateOK("ip:" + ip, RATE.ip))) return json({ ok: false, err: "rate" }, 429);
+    hello = await sb.rpc("pf_hello", { p_id: id, p_secret: secret, p_lang: String(body.lang || "fr").slice(0, 5), p_name: String(body.name || "Prisme").slice(0, 16) });
+    if (hello.error) return json({ ok: false, err: hello.error.message === "auth" ? "auth" : "server" }, hello.error.message === "auth" ? 401 : 500);
+    if (!(await rateOK("p:" + id, RATE.player))) return json({ ok: false, err: "rate" }, 429);
+    row = await sb.from("players").select("state,ver,banned,anom,save").eq("id", id).single();
+    if (row.error || !row.data) return json({ ok: false, err: "player" }, 500);
+  }
   if (row.data.banned) return json({ ok: false, err: "banned" }, 403);
+  // v12.8 : statistiques de jeu jointes à la requête (identité déjà vérifiée) ; une panne ici ne bloque jamais le jeu
+  if (Array.isArray(body.ev) && body.ev.length) { try { await sb.rpc("pf_events_add", { p_id: id, p_events: body.ev.slice(0, 60) }); } catch { /* ignoré */ } }
   const stateIn = row.data.state ?? (row.data.save && row.data.save.v === 3 ? row.data.save : null); // reprise des anciennes sauvegardes
   const now = Date.now();
 

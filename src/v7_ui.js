@@ -1,4 +1,4 @@
-const VERSION='12.7 · trésor';
+const VERSION='12.8 · charge';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -833,7 +833,7 @@ function frame(now){
   if(tab==='profile'&&$('me'))drawMe($('me').getContext('2d'),380,t,dt); // v12.3 : rattaché par erreur au bloc de jeu en v11.8 (gemme du profil invisible)
   uiT+=dt;if(uiT>0.5){uiT=0;refresh();if(tab==='home')homeMoments();}
   saveT+=dt;if(saveT>5){saveT=0;save();}
-  syncT+=dt;if(syncT>90){syncT=0;if(netReady){act('sync');flushEv();}} // 90 s : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
+  syncT+=dt;if(syncT>180){syncT=0;if(netReady){act('sync');}} // v12.8 : 180 s (avant 90 s) : les actions passent déjà par le serveur, la synchro ne fait qu'enregistrer la partie
   netT+=dt;if(netT>30){netT=0;probeNet();}
   requestAnimationFrame(frame);
 }

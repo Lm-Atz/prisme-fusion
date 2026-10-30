@@ -14,6 +14,7 @@ function handle(url,a){
   if(fn==='pf_track_batch'){const pl=DB.players[a.p_id];if(!pl||pl.secret!==a.p_secret)return [200,0];for(const e of a.p_events||[])DB.events.push({id:a.p_id,n:e.n,p:e.p});return [200,(a.p_events||[]).length];}
   if(fn==='act'){
     const p=player(a.id,a.secret,a.lang,a.name);if(!p)return [401,{ok:false,err:'auth'}];if(p.banned)return [403,{ok:false,err:'banned'}];
+    if(Array.isArray(a.ev))for(const e of a.ev.slice(0,60))if(typeof e.n==='string')DB.events.push({id:a.id,n:e.n,p:e.p,via:'act'}); // v12.8 : statistiques jointes
     const r=pfApply(ENGINE,p.state,a,now(),false);
     const effects=[];for(const e of (r.result.effects||[])){if(typeof e.titan==='number'){let m=DB.league.find(x=>x.id===a.id);if(!m){m={id:a.id,score:0,best:e.best};DB.league.push(m);}m.score+=e.titan;m.best=Math.max(m.best,e.best);effects.push({titan:true});}if(e.name){p.name=e.name;}if(e.report)DB.reports.push(e.report);}
     let league=null;if(a.action==='hello'&&pendingLeague[a.id]){const lr=pendingLeague[a.id];delete pendingLeague[a.id];const r2=pfApply(ENGINE,r.state,{action:'league',payload:{gems:lr.gems,minutes:pfLeagueMinutes(lr.rank)}},now(),true);r.state=r2.state;league={...lr,sparks:r2.result.sparks};}
@@ -111,11 +112,12 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   down=false;await A.click('#retryNet');await A.waitForTimeout(400);r=await ev(A,()=>window.__G.netOK);T('retour en ligne',r);
   // --- mesure (v9.6) : événements groupés, envoyés à la synchro et au passage en arrière-plan
   await ev(A,()=>{const G=window.__G;G.setTab('shop');G.setTab('home');document.querySelector('.nav [data-tab="quests"]').click();document.querySelector('.nav [data-tab="home"]').click();G.hooks.evolve();G.S.bestStage=10;G.hooks.evolve();G.hooks.bossFled(false);});
-  await ev(A,()=>window.__G.flushEv());await A.waitForTimeout(400);
+  await ev(A,()=>window.__G.actAsync('sync'));await A.waitForTimeout(400); // v12.8 : les statistiques partent avec la synchro
   let names=DB.events.filter(e=>e.id===idA).map(e=>e.n);
   T('mesure : session et ouverture envoyées',names.includes('session')&&names.includes('open'));
   T('mesure : onglet, étape 10 et boss raté envoyés',names.includes('tab')&&DB.events.some(e=>e.n==='stage'&&e.p.n===10)&&names.includes('boss_fail'));
   T('mesure : file vidée après envoi',await ev(A,()=>window.__G.EVQ.length===0));
+  T('v12.8 : plus d\'appel séparé pf_track_batch (statistiques dans la requête de jeu)',DB.events.filter(e=>e.id===idA).every(e=>e.via==='act')&&!calls.includes('pf_track_batch'));
   await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(500);
   T('mesure : fin de session envoyée en arrière-plan, avec sa durée',DB.events.some(e=>e.id===idA&&e.n==='session_end'&&e.p.sec>=0));
   await ev(A,()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'));});await A.waitForTimeout(300);
