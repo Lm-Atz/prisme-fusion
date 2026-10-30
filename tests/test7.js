@@ -134,7 +134,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=5
   o.gemBoost=G.buyGemItem('boost');o.skin=G.buySkin('rose')&&S.skin==='rose';
   return o;});
 T('recherche lancée',r.start==='ok');T('un seul emplacement',r.busy==='slots');T('2e emplacement',r.two==='ok');T('recherche verrouillée par étape',r.locked==='locked');T('accélérer en gemmes',r.rush&&r.rushed);T('pub −30 min',r.ad);
-T('≥ 38 recherches (v12.2 : Puissance et Étincelles fusionnées dans Force et Gain)',r.n>=38);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
+T('≥ 37 recherches (v12.2 fusion Force/Gain, v12.7 Butin → Trésor)',r.n>=37);T('7 familles',r.groups===7);T('niveaux max élevés',r.max>=50);T('3 premiers pas visibles',r.onb3);T('50 premiers pas',r.onbTotal===50);T('4 quêtes du jour',r.daily);T('4 hebdo',r.week);T('récupérer une quête',r.claim);T('pas deux fois',r.claimTwice);T('calendrier jour 1',r.login&&r.claimL);T('pack de départ',r.buy&&r.boostx2);T('boost ×2 en gemmes',r.gemBoost);T('skin',r.skin);
 // --- interface
 await ev(()=>{document.getElementById('veil').hidden=true;const G=window.__G;G.S.st.tuto=3;G.tutoStep=0;document.getElementById('hint').hidden=true;G.S.st.namePrompted=true;G.startRun();G.refresh();G.renderTB();});
 T('pas d\'énergie',await ev(()=>!document.getElementById('cE')));
@@ -174,11 +174,11 @@ T('pas de plafond de cadeaux par jour',await ev(()=>{const G=window.__G;G.S.day.
 T('critiques en rafale : tremblement plafonné',await ev(()=>{const G=window.__G;G.fx.trauma=0;for(let i=0;i<40;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);for(let i=0;i<40;i++){const s=G.fx.shots.shift();if(s)s.t=1;}for(let i=0;i<30;i++)G.hooks.hit(0,1e9,false,true,G.WEAPONS[4]);return G.fx.trauma<=0.6;}));
 // v12.2 Réfraction : améliorations de partie (Attaque/Plateau/Économie) immédiates et remises à zéro, définitives gardées, points pour Auto/Éveil/Formes
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.bestStage=60;S.run.max=45;S.pp=0;S.gems=500;S.build=[];S.slots=1;
-  S.up.board=1;S.up.loot=2;S.up.lucky=3;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.up.off=2;S.up.crit=1;
+  S.up.board=1;S.up.st_bank=2;S.up.lucky=3;S.up.st_cad=3;S.up.cadence=2;S.up.au_merge=1;S.up.off=2;S.up.crit=1;
   G.growBoard&&G.growBoard();o.N0=G.R.N;
   const pp0=G.ppGain(45);o.ppGain=pp0===Math.floor(1.5*2.5);
   o.g=G.doPrestige()>0;
-  o.reset=S.up.loot===0&&S.up.crit===0&&S.up.lucky===0;
+  o.reset=S.up.crit===0&&S.up.lucky===0&&S.up.st_bank===2;
   o.kept=S.up.st_cad===3&&S.up.cadence===2&&S.up.au_merge===1&&S.up.off===2&&S.up.board===1&&G.R.N===5; // le Grand plateau est maintenant définitif
   const u=G.upById('crit');o.noMem=!G.inMem(u);o.instant=G.upTime(u)===0;o.price=Math.abs(G.upCost(u)-u.c(0)*3)<1e-9;
   S.run.sparks=1e9;S.slots=1;S.build=[{id:'st_spark',until:Date.now()+9e6,dur:9e6}]; // emplacement occupé : l'amélioration de partie passe quand même
@@ -198,7 +198,7 @@ T('automatisation : 1 point, immédiat',r.ppCost&&r.poor&&r.auto);T('automatisat
 await ev(()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.S.run.sparks=1e7;G.setTab('home');G.renderTB();});
 await p.locator('#boostBtn').click();await p.waitForTimeout(80);
 r=await ev(()=>{const P=document.getElementById('panel');return {open:window.__G.tab==='boost'&&!P.hidden,rows:P.querySelectorAll('.bprow').length,secs:P.querySelectorAll('h2.sec').length};});
-T('v12.2 : bouton Plus → panneau Boosters (5 boosters + 3 familles)',r.open&&r.rows>=15&&r.secs===4);
+T('v12.2 : bouton Plus → panneau Boosters (5 boosters + 3 familles)',r.open&&r.rows>=14&&r.secs===4);
 r=await ev(async()=>{const G=window.__G,S=G.S,w=ms=>new Promise(z=>setTimeout(z,ms));const c0=S.up.crit,tb0=S.run.tb.power,sp=S.run.sparks;document.querySelector('#panel [data-build="crit"]').click();await w(60);document.querySelector('#panel [data-bptb="power"]').click();await w(60);return {crit:S.up.crit===c0+1,tb:S.run.tb.power===tb0+1,paid:S.run.sparks<sp,still:G.tab==='boost'};});
 T('v12.2 : achats immédiats dans le panneau (amélioration + booster)',r.crit&&r.tb&&r.paid&&r.still);
 await ev(()=>{const G=window.__G;G.S.pp=3;G.setTab('atelier');});await p.locator('[data-atpane="refr"]').click();await p.waitForTimeout(60);
@@ -446,6 +446,11 @@ r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeo
   const sv={p:S.prestiges,pp:S.pp,b:S.bestStage};S.prestiges=0;S.pp=0;G.setTab('atelier');await w(20);const rb=document.querySelector('[data-atpane="refr"]');o.lock=rb.getAttribute('aria-disabled')==='true';rb.click();await w(20);o.stay=!document.querySelector('#panel [data-wp]');
   S.bestStage=2;G.navUnlock();S.day.sgift=0;G.refresh();o.noDot=document.getElementById('bS').hidden;S.prestiges=sv.p;S.pp=sv.pp;S.bestStage=sv.b;G.navUnlock();G.refresh();G.setTab('home');return o;});
 T('v12.6 : pass ouvert depuis Quêtes → on y revient (onglet Quêtes allumé)',r.navQ&&r.backQ);T('v12.6 : Atelier › Réfraction verrouillé avant la 1re Réfraction',r.lock&&r.stay);T('v12.6 : pas de pastille sur un onglet verrouillé',r.noDot);
+// v12.7 : un seul bonus de trésor, définitif
+r=await ev(()=>{const G=window.__G,S=G.S,o={};const sv=Object.assign({},S.up),sp=S.prestiges,mx=S.run.max,lx=S.lootX2;S.lootX2=false;S.run.max=40;S.up.st_bank=0;const g0=G.prestigeGain();S.up.st_bank=5;const g5=G.prestigeGain();
+  o.pct=Math.abs(g5/g0-1.4)<0.01;o.noButin=!G.upById('loot');o.def=G.upById('st_bank').g==='start';const before=S.up.st_bank;G.doPrestige();o.kept=S.up.st_bank===before&&Math.abs(S.run.sparks-g5)<1;
+  Object.assign(S.up,sv);S.lootX2=lx;S.run.max=mx;return o;});
+T('v12.7 : Trésor +8 % par niveau sur le trésor de Réfraction',r.pct);T('v12.7 : Butin supprimé, Trésor dans Atelier › Départ',r.noButin&&r.def);T('v12.7 : Trésor gardé après la Réfraction, plus de montant fixe',r.kept);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);

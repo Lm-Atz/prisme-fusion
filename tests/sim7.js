@@ -15,7 +15,7 @@ if(args.sm)G.CFG.sparks.merge=l=>Math.pow(+args.sm,l-1);if(args.kill)G.CFG.spark
 if(args.pg)G.CFG.tb.power.g=+args.pg;if(args.rc)G.CFG.refr.runCost=+args.rc;if(args.tx)G.CFG.build.timeX=+args.tx;if(args.pm)G.CFG.tb.power.m=+args.pm;if(args.smm)G.CFG.tb.spark.m=+args.smm;if(args.cg)G.CFG.tb.cad.g=+args.cg;
 const PROF={actif:{sessions:[[8,600],[12,480],[18,600],[21,900]],mps:1.3,ads:true,buyAds:3},moyen:{sessions:[[8,240],[13,180],[20,420]],mps:1.0,ads:true,buyAds:1},casual:{sessions:[[20,300]],mps:0.8,ads:false,buyAds:0}}[PROFILE];
 // priorités de recherche (id → poids), le bot prend la meilleure abordable
-const PRIO={cadence:8,rang:6,eveil:5,brule:4,aura:4,st_cad:9,st_power:9,st_auto:8,au_merge:10,st_spark:7,st_bank:5,power:8,spark:8,loot:9,prod:5,cap:3,off:6,au_buy:9,au_boss:7,au_exped:8,au_prestige:6,au_joker:5,au_titan:4,crit:6,combo:2,bossdmg:7,pierce:4,lucky:5,chain:5,gold:4,board:8,sursis:6,killspark:6,catal:3,st_birth:9};
+const PRIO={cadence:8,rang:6,eveil:5,brule:4,aura:4,st_cad:9,st_power:9,st_auto:8,au_merge:10,st_spark:7,st_bank:9,power:8,spark:8,prod:5,cap:3,off:6,au_buy:9,au_boss:7,au_exped:8,au_prestige:6,au_joker:5,au_titan:4,crit:6,combo:2,bossdmg:7,pierce:4,lucky:5,chain:5,gold:4,board:8,sursis:6,killspark:6,catal:3,st_birth:9};
 const log=[];const day=()=>Math.floor((NOW-Date.UTC(2026,9,5))/86400e3)+1;
 let manualCount=0,titanRuns=0,fledEvents=0,stuck=0;
 function mergeOnce(){const R=G.R;const seen={};const cells=R.cells.map((c,i)=>[c,i]).filter(x=>x[0]&&x[0].l&&!x[0].fog).sort((a,b)=>b[0].l-a[0].l);for(const [c,i] of cells){if(seen[c.l]!=null){G.runMove(seen[c.l],i,true);manualCount++;return true;}seen[c.l]=i;}return false;}

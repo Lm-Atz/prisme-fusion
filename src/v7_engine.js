@@ -55,7 +55,7 @@ const UPG=[
   {id:'st_power',g:'start',get t(){return t('u_st_power')},d:k=>t('u_st_power_d',{n:k+1}),c:k=>120*Math.pow(1.25,k),time:T(40,1.25),max:Infinity},
   {id:'st_birth',g:'start',get t(){return t('u_st_birth')},d:k=>t('u_st_birth_d',{n:2+k}),c:k=>400*Math.pow(2.5,k),time:T(120,1.35),max:Infinity,req:12},
   {id:'st_spark',g:'start',get t(){return t('u_st_spark')},d:k=>t('u_st_spark_d',{n:k+1}),c:k=>200*Math.pow(1.4,k),time:T(60,1.25),max:Infinity,req:8},
-  {id:'st_bank',g:'start',get t(){return t('u_st_bank')},d:k=>t('u_st_bank_d',{n:fmt(50*Math.pow(2.2,k))}),c:k=>90*Math.pow(1.6,k),time:T(30,1.3),max:Infinity},
+  {id:'st_bank',g:'start',get t(){return t('u_st_bank')},d:k=>t('u_st_bank_d',{n:8*(k+1)}),c:k=>400*Math.pow(1.55,k),time:T(90,1.3),max:Infinity}, // v12.7 : Trésor +8 % par niveau, définitif (remplace Butin et l'ancien montant fixe)
   // Automatisation
   {id:'au_merge',g:'auto',get t(){return t('u_au_merge')},d:k=>t('u_au_merge_d',{n:30*(k+1)}),c:k=>300*Math.pow(1.35,k),time:T(60,1.25),max:12,req:5},
   {id:'au_buy',g:'auto',get t(){return t('u_au_buy')},d:k=>k?t('u_au_buy_d',{n:Math.max(1,10-k)}):t('u_au_buy_d0'),c:k=>2500*Math.pow(1.4,k),time:T(900,1.25),max:9,req:15},
@@ -77,7 +77,6 @@ const UPG=[
   {id:'board',g:'start',get t(){return t('u_board')},d:k=>k?t('u_board_d1'):t('u_board_d0'),c:k=>[400,60000][k],time:k=>[7200,86400][k],max:2,req:k=>k?30:12},
   {id:'sursis',g:'grid',get t(){return t('u_sursis')},d:k=>t('u_sursis_d',{n:k+2}),c:k=>1200*Math.pow(1.7,k),time:T(600,1.3),max:6,req:10},
   // Économie
-  {id:'loot',g:'eco',get t(){return t('u_loot')},d:k=>t('u_loot_d',{n:8*(k+1)}),c:k=>300*Math.pow(1.4,k),time:T(120,1.25),max:Infinity},
   {id:'off',g:'start',get t(){return t('u_off')},d:k=>t('u_off_d',{n:2+k+1}),c:k=>500*Math.pow(1.6,k),time:T(900,1.3),max:Infinity,req:5},
   {id:'killspark',g:'eco',get t(){return t('u_killspark')},d:k=>t('u_killspark_d',{n:15*(k+1)}),c:k=>800*Math.pow(1.45,k),time:T(300,1.25),max:Infinity,req:10},
   // Jokers
@@ -201,7 +200,7 @@ const autoRate=()=>{const a=tbLvl('auto');if(!a)return 0;return 0.12*a*(1+0.3*S.
 const powerMult=()=>Math.pow(CFG.tb.power.m,tbLvl('power'))*(boosted()?2:1)*bonusMul('dmg');
 const refMult=()=>1+CFG.prestige.mult*S.prestiges; // multiplicateur permanent d'étincelles gagné à chaque Réfraction
 const sparkMult=()=>Math.pow(CFG.tb.spark.m,tbLvl('spark'))*(boosted()?2:1)*refMult()*(evOn('spark')?2:1)*bonusMul('sp'); // v12 : week-end étincelles ×2 ; v12.1 : couleurs et médailles
-const lootMult=()=>(1+0.08*S.up.loot)*(S.lootX2?2:1);
+const lootMult=()=>(1+0.08*(S.up.st_bank|0))*(S.lootX2?2:1); // v12.7 : un seul bonus de trésor, définitif
 const boardN=()=>4+S.up.board;
 
 /* ================= moteur de partie ================= */
@@ -371,7 +370,7 @@ function doPrestige(){
   for(const b of S.build){const u=upById(b.id);if(u&&reset(u))S.mem[u.id]=Math.max(S.mem[u.id]||0,lvlOf(u)+1);}
   S.build=S.build.filter(b=>{const u=upById(b.id);return !(u&&reset(u));});
   for(const u of UPG)if(reset(u)){S.mem[u.id]=Math.max(S.mem[u.id]||0,S.up[u.id]||0);S.up[u.id]=0;}
-  S.run={sparks:g+50*Math.pow(2.2,S.up.st_bank)*(S.up.st_bank?1:0),stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
+  S.run={sparks:g,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0,krate:0};
   S.run.cells=null;if(R){const N=boardN();if(R.N!==N){R.N=N;R.cells=Array(N*N).fill(null);hooks.grow&&hooks.grow(N);}R.cells.fill(null);R.mode='farm';R.E=enemyFor(1);R.combo=0;R.burn=null;R.dmgWin=[];R.sparkWin=[];R.baseWin=[];R.killWin=[];for(let i=0;i<3;i++)spawnOne();}
   hooks.prestige(g);return g;
 }

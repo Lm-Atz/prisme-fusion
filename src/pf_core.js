@@ -22,7 +22,7 @@ function pfMaxSparkPerSec(G){
   const S=G.S,C=G.CFG,st=Math.max(1,S.run.stage|0);
   const L=1+(S.run.tb.birth|0)+(S.up.st_birth|0)+10;                       // niveau de gemme plausible
   const sm=Math.pow(C.tb.spark.m,(S.run.tb.spark|0)+(S.up.st_spark|0))*2*(1+C.prestige.mult*(S.prestiges|0))*G.bonusMul('sp')*(G.weekendEvent()==='spark'?2:1); // v12.1 : couleurs, médailles, week-end ×2
-  const kill=(C.sparks.kill(st)*5*(1+0.15*(S.up.killspark|0))*sm+4*st*(1+0.08*(S.up.loot|0)))*0.5; // ≤ 1 ennemi / 2 s, compté comme boss
+  const kill=(C.sparks.kill(st)*5*(1+0.15*(S.up.killspark|0))*sm+4*st*(1+0.08*(S.up.st_bank|0))*(S.lootX2?2:1))*0.5; // ≤ 1 ennemi / 2 s, compté comme boss
   const merge=3*0.15*L*2*sm;                                                  // ≤ 3 fusions manuelles / s
   const star=3*0.15*L*(1+0.5*(L/8))*(1+0.2*8)*sm*0.3;                          // étoiles
   return (kill+merge+star)*2.5+2; // v12.3 : marge élargie (×1,5 → ×2,5) : un joueur très équipé ne doit jamais être pris pour un tricheur ; une triche reste des ordres de grandeur au-dessus
