@@ -9,10 +9,10 @@ const near=(a,b)=>Math.abs(a-b)<1e-9*Math.max(1,Math.abs(b));
 
 // --- médailles : réclamer seulement quand l'objectif est atteint, rang par rang
 {const t=MON;let S=fresh(t);let r=act(S,'medal',{id:'explore'},t);T('médaille refusée tant que l\'objectif n\'est pas atteint',!r.result.ok&&r.result.err==='medal');
- S.bestStage=80;r=act(S,'medal',{id:'explore'},t);T('Explorateur bronze (étape 25) : +5 gemmes',r.result.ok&&r.state.medals.explore===1&&r.state.gems===105);S=r.state;
- r=act(S,'medal',{id:'explore'},t);T('…puis argent (étape 75) : +10 gemmes',r.result.ok&&r.state.medals.explore===2&&r.state.gems===115);S=r.state;
- r=act(S,'medal',{id:'explore'},t);T('…pas d\'or avant l\'étape 150',!r.result.ok&&r.state.medals.explore===2);
- S.bestStage=999;for(let i=0;i<2;i++){r=act(S,'medal',{id:'explore'},t);S=r.state;}T('…diamant : rang 4, gemmes 5+10+25+50',S.medals.explore===4&&S.gems===190);
+ S.bestStage=80;r=act(S,'medal',{id:'explore'},t);T('v12.5 : Explorateur bronze (étape 30) : +5 gemmes',r.result.ok&&r.state.medals.explore===1&&r.state.gems===105);S=r.state;
+ r=act(S,'medal',{id:'explore'},t);T('v12.5 : …puis argent (étape 60) : +15 gemmes',r.result.ok&&r.state.medals.explore===2&&r.state.gems===120);S=r.state;
+ r=act(S,'medal',{id:'explore'},t);T('v12.5 : …pas d\'or avant l\'étape 120',!r.result.ok&&r.state.medals.explore===2);
+ S.bestStage=999;for(let i=0;i<2;i++){r=act(S,'medal',{id:'explore'},t);S=r.state;}T('v12.5 : …diamant : rang 4, gemmes 5+15+40+100',S.medals.explore===4&&S.gems===260);
  r=act(S,'medal',{id:'explore'},t);T('…plus rien au-delà du diamant',!r.result.ok);
  r=act(S,'medal',{id:'nope'},t);T('médaille inconnue refusée',!r.result.ok);
  const G=eng(t);G.S=S;T('bonus Explorateur diamant : dégâts +16,5 % (11 % × difficulté 1,5)',near(G.bonusMul('dmg'),1.165));}
@@ -43,4 +43,9 @@ const near=(a,b)=>Math.abs(a-b)<1e-9*Math.max(1,Math.abs(b));
 // --- une médaille « Collection » suit les couleurs possédées, « Saisons » les couleurs de saison
 {const t=MON;let S=fresh(t);S.skins=['cyan','rose','or'];let r=act(S,'medal',{id:'collect'},t);T('Collectionneur bronze à 3 couleurs',r.result.ok);
  S=fresh(t);S.skins=['cyan','s3'];r=act(S,'medal',{id:'season'},t);T('Vétéran des saisons bronze avec 1 couleur de saison',r.result.ok);}
+// v12.5 : derniers rangs nettement plus durs (au moins ×1,6 entre or et diamant) et rythme recalé sur la simulation 60 jours (joueur moyen)
+{const G=eng(MON);G.S=fresh(MON);T('v12.5 : diamant au moins ×1,6 plus dur que l\'or, pour chaque médaille',G.MEDALS.every(m=>m.th[3]>=1.6*m.th[2]));
+ const J60={explore:99,hunt:3294,boss:256,alch:267281,artisan:4337,refr:35,titan:91,research:4261,loyal:60,joker:65777};
+ T('v12.5 : joueur moyen à 60 jours : aucune médaille au diamant',G.MEDALS.filter(m=>J60[m.id]!=null).every(m=>J60[m.id]<m.th[3]));
+ const J3={explore:40,hunt:56,boss:3,alch:6873,artisan:2191,refr:0,titan:2,research:26,loyal:3,joker:790};T('v12.5 : …mais au moins 4 bronzes dès les 3 premiers jours',G.MEDALS.filter(m=>J3[m.id]>=m.th[0]).length>=4);}
 console.log(`t7medals : ${ok} OK, ${ko} KO`);

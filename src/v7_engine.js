@@ -588,20 +588,20 @@ const seasonName=k=>t('sn_'+(((k%12)+12)%12));
 const isSeasonSkin=id=>/^s\d+x?$/.test(id);
 function skinInfo(id){if(isSeasonSkin(id)){const k=parseInt(id.slice(1)),x=id.endsWith('x');return {id,season:k,x,hue:seasonHue(k),bn:x?{dmg:0.1,sp:0.1}:{sp:0.08},get label(){return x?t('sn_x',{n:seasonName(k)}):seasonName(k);}};}const s=SKINS.find(z=>z.id===id);return s?Object.assign({hue:s.h,bn:s.bn||{}},s,{label:s.label}):null;}
 /* v12.1 : médailles (succès en 4 rangs : bronze, argent, or, diamant), bonus permanent selon la difficulté */
-const MEDAL_RANK=[0.01,0.02,0.03,0.05],MEDAL_GEMS=[5,10,25,50];
+const MEDAL_RANK=[0.01,0.02,0.03,0.05],MEDAL_GEMS=[5,15,40,100]; // v12.5 : paliers recalés sur la simulation (joueur moyen : bronze en quelques jours, argent ~2 semaines, or ~2 mois, diamant ≥ 6 mois) ; récompense plus forte pour les derniers rangs
 const MEDALS=[
-  {id:'explore',ic:'flag',k:'dmg',q:1.5,th:[25,75,150,300],v:()=>S.bestStage},
-  {id:'hunt',ic:'swords',k:'sp',q:1,th:[1e3,1e4,1e5,1e6],v:()=>S.st.kills},
-  {id:'boss',ic:'trophy',k:'dmg',q:1.2,th:[10,50,250,1000],v:()=>S.st.bosses},
-  {id:'alch',ic:'prism',k:'cad',q:1,th:[1e3,1e4,1e5,1e6],v:()=>S.st.merges},
-  {id:'artisan',ic:'hammer',k:'sp',q:1.2,th:[100,1e3,1e4,5e4],v:()=>S.st.manual},
-  {id:'refr',ic:'diamond',k:'sp',q:1.5,th:[1,5,20,60],v:()=>S.prestiges},
-  {id:'titan',ic:'flame',k:'dmg',q:1.2,th:[3,15,60,200],v:()=>S.st.titans|0},
-  {id:'research',ic:'anvil',k:'res',q:1,th:[10,50,150,400],v:()=>S.st.bought},
-  {id:'collect',ic:'gem',k:'off',q:1,th:[3,5,8,12],v:()=>S.skins.length},
-  {id:'loyal',ic:'heart',k:'sp',q:1.5,th:[7,30,100,365],v:()=>S.st.days},
-  {id:'joker',ic:'star',k:'jok',q:1,th:[20,200,1000,5000],v:()=>S.st.jokerUses},
-  {id:'season',ic:'crown',k:'dmg',q:1.5,th:[1,3,6,12],v:()=>S.skins.filter(isSeasonSkin).length},
+  {id:'explore',ic:'flag',k:'dmg',q:1.5,th:[30,60,120,200],v:()=>S.bestStage},
+  {id:'hunt',ic:'swords',k:'sp',q:1,th:[100,1000,5000,25000],v:()=>S.st.kills},
+  {id:'boss',ic:'trophy',k:'dmg',q:1.2,th:[10,50,300,1500],v:()=>S.st.bosses},
+  {id:'alch',ic:'prism',k:'cad',q:1,th:[5000,40000,300000,2e6],v:()=>S.st.merges},
+  {id:'artisan',ic:'hammer',k:'sp',q:1.2,th:[300,2000,6000,20000],v:()=>S.st.manual},
+  {id:'refr',ic:'diamond',k:'sp',q:1.5,th:[1,10,40,150],v:()=>S.prestiges},
+  {id:'titan',ic:'flame',k:'dmg',q:1.2,th:[3,15,80,300],v:()=>S.st.titans|0},
+  {id:'research',ic:'anvil',k:'res',q:1,th:[25,250,3000,20000],v:()=>S.st.bought},
+  {id:'collect',ic:'gem',k:'off',q:1,th:[3,6,10,16],v:()=>S.skins.length},
+  {id:'loyal',ic:'heart',k:'sp',q:1.5,th:[7,30,120,365],v:()=>S.st.days},
+  {id:'joker',ic:'star',k:'jok',q:1,th:[100,2000,30000,300000],v:()=>S.st.jokerUses},
+  {id:'season',ic:'crown',k:'dmg',q:1.5,th:[1,4,10,20],v:()=>S.skins.filter(isSeasonSkin).length},
 ].map(m=>Object.defineProperty(m,'t',{get(){return t('md_'+m.id)},enumerable:true}));
 const medalLvl=id=>((S.medals||{})[id]|0);
 const medalBonusOf=(m,l)=>MEDAL_RANK.slice(0,l).reduce((a,x)=>a+x,0)*m.q;

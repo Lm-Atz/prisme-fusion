@@ -56,6 +56,7 @@ for(let d=1;d<=60;d++){
   const base=Date.UTC(2026,9,4+d);
   for(const [h,sec] of PROF.sessions){NOW=base+h*3600e3;session(sec);}
   G.tickBuild(NOW);
+  if([3,7,14,30,45,60].includes(d)){const s=S();console.error('MD J'+d+' '+JSON.stringify({best:s.bestStage,kills:s.st.kills,bosses:s.st.bosses,merges:s.st.merges,manual:s.st.manual,pres:s.prestiges,titans:s.st.titans|0,bought:s.st.bought,days:s.st.days,jok:s.st.jokerUses}));}
   if(d<=10||d%5===0){const s=S();const tb=s.run.tb;log.push(`J${String(d).padStart(2)} best ${String(s.bestStage).padStart(3)} prestiges ${String(s.prestiges).padStart(3)} étinc. ${fmtN(s.run.sparks).padStart(8)} recherches ${String(s.st.bought).padStart(3)} jokers ${Object.keys(s.jk).length} onb ${s.onb.length}/50 auto ${s.up.au_merge} st(cad ${s.up.st_cad} pow ${s.up.st_power} auto ${s.up.st_auto} birth ${s.up.st_birth}) auBuy ${s.up.au_buy} exped ${s.up.au_exped} manuel ${manualCount}`);manualCount=0;}
 }
 function fmtN(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(Math.floor(n));}

@@ -1,4 +1,4 @@
-const VERSION='12.4 · épuré';
+const VERSION='12.5 · pastilles';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -214,7 +214,7 @@ const hueAttr=k=>k.hue===-1?'prism':k.hue===-2?225:k.hue===-3?38:k.hue;
 const MEDAL_COL=['#5d6b98','#d08a4e','#c8d4e6','#ffd23e','#7fe9ff'];
 function medalsHtml(){return nbsp(medalsHtml0());}
 function medalsHtml0(){const tot=['dmg','sp','cad','res','jok','off'].map(k=>[k,bonusMul(k)-1]).filter(x=>x[1]>0.0005);
-  let h=`<h2 class="sec">${t('md_title')}</h2>`;
+  let h=`<h2 class="sec">${t('md_title')}${medalsReady()?RD:''}</h2>`;
   if(tot.length)h+=`<p class="mdtot">${tot.map(([k,v])=>bnChip(k,dec(v*100,v<0.1?1:0))).join('')}</p>`;
   h+=`<div class="medals">`+MEDALS.map(m=>{const l=medalLvl(m.id),rd=medalReady(m),v=m.v(),nx=m.th[Math.min(l,3)],cur=medalBonusOf(m,l),nb=l<4?medalBonusOf(m,l+1):cur;
     return `<div class="medal slab${rd?' rd':''}${l>=4?' mx':''}" style="--mc:${MEDAL_COL[l]}"><span class="mart2">${ic(m.ic)}${l?`<i>${'◆'.repeat(l)}</i>`:''}</span><div style="min-width:0" title="${t('md_'+m.id+'_d',{n:fmt(nx)})}"><b>${m.t}</b><small class="mrk">${l?t('md_r'+l):''}${cur?' '+bnChip(m.k,dec(cur*100,1)):''}</small>${l<4?`<div class="qbar"><i style="width:${Math.min(100,100*v/nx)}%"></i><span>${fmt(Math.min(v,nx))} / ${fmt(nx)}</span></div><small class="mnx">→ ${t('md_r'+(l+1))} ${bnChip(m.k,dec(nb*100,1))} ${ic('gem','ig')}${MEDAL_GEMS[l]}</small>`:''}</div>${rd?`<button class="b b-gold sm" data-medal="${m.id}">${t('md_claim')}</button>`:''}</div>`;}).join('')+`</div>`;
@@ -230,12 +230,18 @@ function boostView(){const sp=S.run.sparks;
   for(const g of RUNG){h+=`<h2 class="sec subsec">${GROUPS.find(x=>x.id===g).t}</h2><div class="list bplist">`+UPG.filter(u=>u.g===g).map(u=>{const l=lvlOf(u),c=upCost(u),lk=upLocked(u),mx=l>=u.max;
     return `<div class="bprow${lk?' lk':''}"><span class="bpic">${ic(upIcon(u))}</span><div style="min-width:0"><b>${u.t}${l?` <em>${t('lvl',{n:l})}</em>`:''}</b><p>${u.d(l)}</p></div>${lk?`<span class="d">${ic('lock')}${t('jk_st_lock',{n:upReq(u)})}</span>`:mx?`<span class="d">${t('max')}</span>`:`<button class="b b-spark sm" data-build="${u.id}" ${sp<c?'disabled':''}>${ic('spark')}${fmt(c)}</button>`}</div>`;}).join('')+`</div>`;}
   return h;}
+/* v12.5 : pastille rouge = récompense à récupérer ; elle reste tant que rien n'est récupéré et remonte jusqu'au menu parent */
+const RD='<span class="badge rd"></span>';
+function passPageReady(a,b){const p=passState(),n=Math.min(passTier(),b);for(let i=a+1;i<=n;i++)if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;return false;}
+const loginReady=()=>!loginState().claimedToday;
+const questsReward=()=>claimable()||loginReady()||passClaimable();
+const shopReward=()=>!S.day.sgift||passClaimable();
 function refresh(){
   roll();{const tbn=document.querySelectorAll('#tb .tbt[data-tb]').length;if(R&&(tbn!==Object.keys(TBDEF).filter(tbShown).length||!!$('boostBtn')!==moreShown()))renderTB();} /* v12.3 : nouveau booster révélé dès qu'il se débloque */evBanner();if(tab==='home'&&!S.prestiges&&S.bestStage>=25&&$('hint').hidden&&lsGet('prisme-hintr')!=='1'){lsSet('prisme-hintr','1');showHint(t('hint_refr',{n:CFG.prestige.minStage}),7000);} /* v12.3 : la Réfraction expliquée quand elle approche, plus à l'étape 3 */{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
   gemCounter();const bs=$('balSp');if(bs)bs.textContent=fmt(S.run.sparks);const rm=$('rateMin');if(rm)rm.textContent=rateMin()>=1?t('rate_min',{n:fmt(Math.round(rateMin()))}):''; /* v9.9 : pas de « 0 / min » au démarrage */
   navUnlock();
   const rg=$('refrG');if(rg){const on=!S.prestiges&&S.bestStage>=10&&S.run.max<CFG.prestige.minStage;rg.hidden=!on;if(on)rg.textContent=t('refr_gauge',{n:S.run.max,m:CFG.prestige.minStage});}
-  $('bQ').hidden=!claimable();$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
+  $('bQ').hidden=!questsReward();{const bS=$('bS');if(bS)bS.hidden=!shopReward();}$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild().filter(id=>{const k=id+':'+lvlOf(upById(id));if(doneSeen.has(k))return false;doneSeen.add(k);return true;});if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
   $('bA').hidden=!canBuild;$('bA').classList.add('soft'); // v12.3 : achat possible = pastille discrète (le rouge est réservé aux récompenses)
@@ -322,7 +328,7 @@ function tutoNext(){
 }
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;track('tuto',{s:3,sec:Math.round((Date.now()-sessStart)/1000)});showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
-let atGroup='start',atPane='res';
+let atGroup='start',atPane='res',lastView='';
 const refrReady=()=>(S.pp||0)>0&&(UPG.some(u=>isPP(u)&&!upLocked(u)&&isFinite(upCost(u))&&upCost(u)<=S.pp)||WEAPONS.some((w,i)=>wpCost(i)<=S.pp));
 const canStart=u=>!upLocked(u)&&!inBuild(u.id)&&isFinite(upCost(u))&&upAfford(u)&&(upTime(u)<=0||S.build.length<slotsN());
 /* v11.2 : pastille de famille = recherche nouvellement débloquée et pas encore vue (plus « tu peux acheter », qui allumait tout) */
@@ -432,7 +438,7 @@ function jDiff(a,b,n){const A=a.split(' '),B=b.split(' ');if(A.length!==B.length
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
   document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab==='boost'?'home':tab)));
-  if(home){requestAnimationFrame(resize);return;}
+  if(home){lastView='';requestAnimationFrame(resize);return;}
   const p=$('tabPanel');let h='';
   const head=(ttl,sub,help)=>`<header class="phead"><div><h1 class="ttl">${ttl}${help?` <button class="qhelp hh" id="${help}" aria-label="?">?</button>`:''}</h1></div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
   if(tab==='atelier'){ /* v12.2 : deux vues, une monnaie chacune : Recherches (étincelles + minuteurs, définitives) et Réfraction (points) */
@@ -471,11 +477,11 @@ function renderTab(){
     const qrow=q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-claim="${q.kind}:${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div>${rewardHtml(q.r)}</div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;};
     h+=head(t('quests_title'))+evCard()+passCard(); // v11 : les quêtes font avancer le pass
     const done=ONB.length-v.onbLeft;
-    if(v.onb.length)h+=`<h2 class="sec">${t('quests_onb')}<small>${done} / ${ONB.length}</small></h2><div class="chap"><i style="width:${100*done/ONB.length}%"></i></div><div class="list">${v.onb.map(qrow).join('')}</div>`;
+    if(v.onb.length)h+=`<h2 class="sec">${t('quests_onb')}${v.onb.some(q=>!q.done&&q.p>=q.n)?RD:''}<small>${done} / ${ONB.length}</small></h2><div class="chap"><i style="width:${100*done/ONB.length}%"></i></div><div class="list">${v.onb.map(qrow).join('')}</div>`;
     const mid=new Date();mid.setHours(24,0,0,0);
-    h+=`<h2 class="sec">${t('quests_today')}<small>${ic('clock')} ${dur((mid-Date.now())/1000)}</small></h2><div class="list">${v.d.map(qrow).join('')}</div>`;
-    h+=`<h2 class="sec">${t('quests_week')}</h2><div class="list">${v.w.map(qrow).join('')}</div>`;
-    h+=`<h2 class="sec">${t('quests_cal')}</h2>`+loginHtml();
+    h+=`<h2 class="sec">${t('quests_today')}${v.d.some(q=>!q.done&&q.p>=q.n)?RD:''}<small>${ic('clock')} ${dur((mid-Date.now())/1000)}</small></h2><div class="list">${v.d.map(qrow).join('')}</div>`;
+    h+=`<h2 class="sec">${t('quests_week')}${v.w.some(q=>!q.done&&q.p>=q.n)?RD:''}</h2><div class="list">${v.w.map(qrow).join('')}</div>`;
+    h+=`<h2 class="sec">${t('quests_cal')}${loginState().claimedToday?'':RD}</h2>`+loginHtml();
   }else if(tab==='clan'){
     h+=head(t('cl_title'))+`<div class="grp seg" role="tablist"><button data-pane="league" aria-pressed="${clanPane==='league'}">${ic('trophy')}${t('cl_league')}</button><button data-pane="guild" aria-pressed="${clanPane==='guild'}">${ic('shield')}${t('cl_guild')}${guildClaimable()&&guildCache&&guildCache.guild?'<span class="badge"></span>':''}</button></div>`;
     if(clanPane==='guild')h+=guildHtml();
@@ -536,7 +542,11 @@ function renderTab(){
     h+=`<h2 class="sec">${t('pr_xfer')}</h2><div class="row"><button class="b" style="flex:1" id="xferShow">${t('pr_xfer_show')}</button><button class="b" style="flex:1" id="xferEnter">${t('pr_xfer_enter')}</button></div>`;
     h+=`<h2 class="sec">${t('pr_demo')}<small>${t('pr_version',{v:VERSION})}</small></h2><button class="b b-red" style="width:100%" id="resetBtn">${t('pr_reset')}</button>`;
   }
-  p.innerHTML=h;markHero();window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});
+  /* v12.5 : même écran redessiné (quête validée, achat, médaille…) → on garde la position ; nouvel écran ou sous-onglet → retour en haut */
+  const vkey=tab+'|'+atPane+'|'+atGroup+'|'+clanPane+'|'+passPage,same=vkey===lastView,sy=$('panel').scrollTop,gx=(p.querySelector('.grp')||{}).scrollLeft|0;lastView=vkey;
+  p.innerHTML=h;markHero();
+  if(same){$('panel').scrollTop=sy;const g2=p.querySelector('.grp');if(g2)g2.scrollLeft=gx;}
+  else{window.scrollTo(0,0);$('panel').scrollTop=0;const gsel=p.querySelector('.grp [aria-pressed="true"]');if(gsel&&gsel.scrollIntoView)gsel.scrollIntoView({inline:'center',block:'nearest'});}
   p.querySelectorAll('canvas[data-wpn]').forEach(m=>{const c=m.getContext('2d');c.clearRect(0,0,88,88);drawGem(c,44,44,30,+m.dataset.wpn,1,1,false,0);});
   p.querySelectorAll('canvas[data-foe]').forEach(m=>{drawFoeAt(m.getContext('2d'),88,0,enemyFor(+m.dataset.foe));});
   p.querySelectorAll('canvas[data-mini]').forEach(m=>{const hv=m.dataset.hue;drawMini(m,+m.dataset.mini,hv==='me'?skinHue(0):hv==='prism'?300:+hv);});
@@ -696,7 +706,7 @@ function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();cons
 /* prix habituel de l'offre : production au tarif du pack de 4 h, boost au tarif du boost en gemmes */
 const woRef=o=>{const pk=CFG.sparkShop.packs.find(p=>p.min===240)||CFG.sparkShop.packs[0];return Math.round((o.m||0)*pk.g/pk.min+(o.b||0)*CFG.boost.gemsPrice/CFG.boost.gemsH);};
 function shopGiftHtml(){
-  let h=`<div class="offer slab sgift"><span class="oart">${ic('box','ig')}</span><div style="min-width:0"><b>${t('sg_title')}</b></div><button class="b b-gem sm" id="shopGift" ${S.day.sgift?'disabled':''}>${S.day.sgift?ic('check'):ic('gem')+shopGiftG()}</button></div>`;
+  let h=`<div class="offer slab sgift"><span class="oart">${ic('box','ig')}</span><div style="min-width:0"><b>${t('sg_title')}${S.day.sgift?'':RD}</b></div><button class="b b-gem sm" id="shopGift" ${S.day.sgift?'disabled':''}>${S.day.sgift?ic('check'):ic('gem')+shopGiftG()}</button></div>`;
   return h;
 }
 let passPage=-1;
@@ -713,7 +723,7 @@ function passView(){
   h+=`</div>`;
   /* v12 : avantages du premium, visibles avant l'achat et marqués « Actif » ensuite */
   {const P=CFG.pass.perks,on=premOn();h+=`<div class="perks slab${on?' on':''}"><div class="pchips">${ic('crown','ig')}<span>${ic('star','ig')}×2</span><span>${ic('clock','ie')}+1</span><span>${ic('bolt','ie')}+${P.offH} h</span><span><i class="sdot" style="--sh:${seasonHue(p.k)}"></i>×2</span>${on?ic('check'):''}</div></div>`;}
-  h+=`<div class="ppager" role="group" aria-label="${t('ps_title')}"><button class="b sm" data-ppage="${passPage-1}" ${passPage<=0?'disabled':''} aria-label="${t('ps_prev')}">‹</button><span>${t('ps_range',{a:passPage*10+1,b:Math.min(T,passPage*10+10)})}</span><button class="b sm" data-ppage="${passPage+1}" ${passPage>=P-1?'disabled':''} aria-label="${t('ps_next')}">›</button></div>`;
+  h+=`<div class="ppager" role="group" aria-label="${t('ps_title')}"><button class="b sm" data-ppage="${passPage-1}" ${passPage<=0?'disabled':''} aria-label="${t('ps_prev')}">‹${passPageReady(0,passPage*10)?RD:''}</button><span>${t('ps_range',{a:passPage*10+1,b:Math.min(T,passPage*10+10)})}</span><button class="b sm" data-ppage="${passPage+1}" ${passPage>=P-1?'disabled':''} aria-label="${t('ps_next')}">›${passPageReady(passPage*10+10,T)?RD:''}</button></div>`;
   h+=`<div class="ptrack"><div class="pt ph"><span></span><span>${t('ps_free')}</span><span>${ic('crown','ig')}${t('ps_prem')}</span></div>`;
   for(let k=passPage*10+1;k<=Math.min(T,passPage*10+10);k++){const r=PASS[k-1],ok=n>=k,cf=p.cf.includes(k),cp=p.cp.includes(k);
     const btn=(tr,rw,done,lock)=>`<button class="pr${done?' done':''}${lock?' lock':''}${k%10===0?' big':''}" data-pass="${k}" data-track="${tr}" ${!ok||done?'disabled':''} aria-label="${t('ps_tier',{n:k})}">${rwHtml(rw)}${rw.b?` ${ic('bolt','ie')}${rw.b} h`:''}${done?' ✓':lock?' '+ic('lock'):''}</button>`;

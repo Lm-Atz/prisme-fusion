@@ -425,6 +425,21 @@ r=await ev(async()=>{const G=window.__G,S=G.S,w=ms=>new Promise(z=>setTimeout(z,
   G.setTab('boost');await w(20);o.boost=W(P());G.setTab('atelier');document.querySelector('[data-atpane="res"]').click();await w(20);o.ares=W(P());document.querySelector('[data-grp="jok"]').click();await w(20);o.jok=W(P());
   document.querySelector('[data-atpane="refr"]').click();await w(20);o.refr=W(P());G.setTab('pass');await w(20);o.pass=W(P());G.setTab('home');return o;});
 T('v12.4 : peu de texte : Boosters ≤ 60, Atelier ≤ 50, Jokers ≤ 60, Réfraction ≤ 60, Pass ≤ 30 mots',r.boost<=60&&r.ares<=50&&r.jok<=60&&r.refr<=60&&r.pass<=30);if(!(r.boost<=60&&r.ares<=50&&r.jok<=60&&r.refr<=60&&r.pass<=30))console.log('mots',JSON.stringify(r));
+// v12.5 : position conservée après une validation ; pastilles rouges du sous-menu au menu parent
+r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;const P=document.getElementById('panel');
+  S.day.claimed=[];S.day.kills=999;S.day.merges=9999;S.day.jokers=99;S.day.bosses=9;S.day.tb=99;S.day.gifts=9;S.day.combo=30;S.day.ads=9;S.day.prestiges=9;G.setTab('quests');await w(30);
+  const q=[...P.querySelectorAll('.quest[data-claim^="d:"]')][1];P.scrollTop=q.offsetTop-200;const y0=P.scrollTop;q.click();await w(60);o.keep=y0>100&&Math.abs(P.scrollTop-y0)<5;
+  G.setTab('shop');await w(30);o.top=P.scrollTop===0;
+  // pastilles
+  S.day.claimed=[0,1,2,3];S.week.claimed=[0,1,2,3];S.onb=G.ONB.map((_,i)=>i);G.loginState();G.claimLogin();S.day.sgift=1;S.medals={};S.bestStage=1;
+  const ps=G.passState();ps.cf=Array.from({length:100},(_,i)=>i+1);ps.cp=ps.cf.slice();G.refresh();
+  o.none=document.getElementById('bQ').hidden&&document.getElementById('bS').hidden;
+  ps.cf=ps.cf.filter(x=>x!==1);G.refresh();o.passQ=!document.getElementById('bQ').hidden&&!document.getElementById('bS').hidden;G.setTab('quests');await w(20);o.passCard=!!P.querySelector('.pcard .badge');
+  ps.cf.push(1);S.day.sgift=0;G.refresh();o.gift=!document.getElementById('bS').hidden&&document.getElementById('bQ').hidden;G.setTab('shop');await w(20);o.giftCard=!!P.querySelector('.sgift .badge.rd');
+  S.day.sgift=1;G.refresh();o.giftGone=document.getElementById('bS').hidden;
+  return o;});
+T('v12.5 : quête validée : l\'écran reste à sa place',r.keep);T('v12.5 : changement d\'écran : retour en haut',r.top);T('v12.5 : rien à récupérer → aucune pastille',r.none);
+T('v12.5 : palier du pass à récupérer → pastille sur Quêtes et Boutique',r.passQ&&r.passCard);T('v12.5 : cadeau du jour → pastille Boutique et sur la carte',r.gift&&r.giftCard);T('v12.5 : pastille retirée une fois récupéré',r.giftGone);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);

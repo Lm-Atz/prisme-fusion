@@ -337,3 +337,7 @@ body{margin:0}
 .jmeta{display:flex;align-items:center;gap:3px}.jmeta .i{width:13px;height:13px;color:var(--beam)}
 .stats.st2{grid-template-columns:repeat(4,minmax(0,1fr))}.stats.st2 .stat{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px}.stats.st2 .stat .i{width:20px;height:20px;color:var(--mist)}.stats.st2 .stat b{font:17px var(--display)}
 .plvl b{font:18px var(--display);color:var(--text,#fff)}.plvl .i{width:13px;height:13px;vertical-align:-2px}
+/* v12.5 — pastille rouge en ligne (titre de section, carte, flèche de page) */
+.badge.rd{position:relative;display:inline-block;top:-7px;right:auto;width:10px;height:10px;margin-left:5px;vertical-align:middle;box-shadow:0 0 0 2px var(--night)}
+.ppager .b{position:relative}.ppager .badge.rd{position:absolute;top:2px;right:2px;margin:0}
+#panel h2.sec .badge.rd{top:0;margin:0 auto 0 8px}
