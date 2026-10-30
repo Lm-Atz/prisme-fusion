@@ -51,7 +51,7 @@ const setGoogle=p=>ev(p,()=>{window.__G.OAUTH.google='123-web.apps.googleusercon
   await ev(A,async()=>{const G=window.__G;G.setTab('profile');document.getElementById('nameIn').value='Lumen Vif';document.getElementById('nameBtn').click();await new Promise(z=>setTimeout(z,300));});
   DB.players[idA].state.bestStage=17;DB.players[idA].state.run.stage=17;
   // sans identifiant Google configuré : pas de bouton, message « bientôt » + code de transfert
-  let txt=await profile(A);T('non configuré : message « bientôt », aucun bouton',/arrive bientôt/.test(txt)&&!(await ev(A,()=>!!document.querySelector('[data-oauth]'))));
+  let txt=await profile(A);T('non configuré : message « bientôt », aucun bouton',/Bientôt/.test(txt)&&!(await ev(A,()=>!!document.querySelector('[data-oauth]'))));
   T('plus de formulaire e-mail / mot de passe',!(await ev(A,()=>!!document.getElementById('acEmail')||!!document.getElementById('acPw'))));
   await setGoogle(A);txt=await profile(A);T('configuré sur Android : bouton Google, pas Apple',/Continuer avec Google/.test(txt)&&!/Continuer avec Apple/.test(txt));
   // annulation dans la fenêtre Google : rien ne se passe, pas d'erreur affichée
@@ -84,7 +84,7 @@ const setGoogle=p=>ev(p,()=>{window.__G.OAUTH.google='123-web.apps.googleusercon
   const I=await open(b,errs,'I','nina@icloud.com','ios');await setGoogle(I);txt=await profile(I);T('iOS : boutons Google et Apple',/Continuer avec Google/.test(txt)&&/Continuer avec Apple/.test(txt));
   r=await google(I,'apple');T('Apple : compte créé et partie liée',/Partie sauvegardée sur ce compte/.test(r.txt)&&/nina@icloud.com/.test(r.txt));
   // --- navigateur (GitHub Pages, sans plugin natif) : pas de bouton, message « bientôt »
-  const W=await open(b,errs,'W','',null);await setGoogle(W);txt=await profile(W);T('web : pas de connexion native, code de transfert proposé',/arrive bientôt/.test(txt)&&/Changer d'appareil/.test(txt));
+  const W=await open(b,errs,'W','',null);await setGoogle(W);txt=await profile(W);T('web : pas de connexion native, code de transfert proposé',/Bientôt/.test(txt)&&/Changer d'appareil/.test(txt));
   // --- accessibilité
   r=await ev(B,()=>[...document.querySelectorAll('#panel button')].filter(b=>b.offsetParent&&(b.offsetHeight<40||b.offsetWidth<40)).map(b=>b.id||b.className));T('boutons ≥ 40 px',r.length===0);if(r.length)console.log(r);
   await B.screenshot({path:'acct-linked.png'});

@@ -202,7 +202,7 @@ T('v12.2 : bouton Plus → panneau Boosters (5 boosters + 3 familles)',r.open&&r
 r=await ev(async()=>{const G=window.__G,S=G.S,w=ms=>new Promise(z=>setTimeout(z,ms));const c0=S.up.crit,tb0=S.run.tb.power,sp=S.run.sparks;document.querySelector('#panel [data-build="crit"]').click();await w(60);document.querySelector('#panel [data-bptb="power"]').click();await w(60);return {crit:S.up.crit===c0+1,tb:S.run.tb.power===tb0+1,paid:S.run.sparks<sp,still:G.tab==='boost'};});
 T('v12.2 : achats immédiats dans le panneau (amélioration + booster)',r.crit&&r.tb&&r.paid&&r.still);
 await ev(()=>{const G=window.__G;G.S.pp=3;G.setTab('atelier');});await p.locator('[data-atpane="refr"]').click();await p.waitForTimeout(60);
-r=await ev(()=>{const P=document.getElementById('panel');return {pts:/points de réfraction/.test(P.innerText),auto:!!P.querySelector('[data-build="au_merge"]'),eveil:!!P.querySelector('[data-build="eveil"],[data-updetail="eveil"]'),forms:P.querySelectorAll('[data-wp]').length===8,noSpark:!P.querySelector('#balSp')};});
+r=await ev(()=>{const P=document.getElementById('panel');return {pts:!!P.querySelector('.ppn'),auto:!!P.querySelector('[data-build="au_merge"]'),eveil:!!P.querySelector('[data-build="eveil"],[data-updetail="eveil"]'),forms:P.querySelectorAll('[data-wp]').length===8,noSpark:!P.querySelector('#balSp')};});
 T('v12.2 : Atelier › Réfraction : points, automatisations, Éveil, 8 formes, aucune étincelle',r.pts&&r.auto&&r.eveil&&r.forms&&r.noSpark);
 await p.locator('[data-atpane="res"]').click();await p.waitForTimeout(60);
 T('v12.2 : Atelier › Recherches : étincelles + emplacements, pas de points',await ev(()=>{const P=document.getElementById('panel');return !!P.querySelector('#balSp')&&!P.querySelector('[data-wp]')&&!P.querySelector('[data-build="crit"]');}));
@@ -216,7 +216,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};const g=G.OFFERS.filter(x=>x
   S.day.adk={};const l0=G.adLeft('shop');G.adUse('shop');o.adcap=l0===5&&G.adLeft('shop')===4;S.day.adk={shop:5};o.adzero=G.adLeft('shop')===0;S.day.adk={};
   return o;});
 T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
-await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/0 restante/.test(document.getElementById('adSparks').textContent)));
+await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/×0/.test(document.getElementById('adSparks').textContent)));
 await ev(()=>{window.__G.S.day.adk={};window.__G.setTab('home');});
 // v9.8 : plafond des gemmes de cadeaux, coffre de gemmes
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.day.gg=0;const g0=S.gems;
@@ -235,11 +235,11 @@ await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
 // ===== v10 : boutique, pass de saison, achats encadrés, notifications, offres contextuelles, confidentialité =====
 await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.setTab('shop');});
 r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');const H=pn.innerHTML;o.order=H.indexOf('shopGift')<H.indexOf('data-tab="pass"')&&H.indexOf('data-tab="pass"')<H.indexOf('data-offer="g100"');
-  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/doublée/.test(pn.innerText)&&pn.querySelectorAll('.x2bar').length===1&&pn.querySelectorAll('.x2').length===0;o.best=pn.querySelectorAll('.offer.best .ribbon').length===1&&!!pn.querySelector('.offer.best [data-offer="g16000"]');o.nopct=!/par rapport au petit paquet/.test(pn.innerText)&&pn.querySelectorAll('.bon').length===5;o.starter=pn.innerHTML.indexOf('data-offer="starter"')<pn.innerHTML.indexOf('data-tab="pass"');return o;});
+  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/×2/.test(pn.querySelector('.x2bar').innerText)&&pn.querySelectorAll('.x2bar').length===1&&pn.querySelectorAll('.x2').length===0;o.best=pn.querySelectorAll('.offer.best .ribbon').length===1&&!!pn.querySelector('.offer.best [data-offer="g16000"]');o.nopct=!/par rapport au petit paquet/.test(pn.innerText)&&pn.querySelectorAll('.bon').length===5;o.starter=pn.innerHTML.indexOf('data-offer="starter"')<pn.innerHTML.indexOf('data-tab="pass"');return o;});
 T('v11 : boutique : cadeau, puis carte du pass, puis gemmes',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v11.2 : ×2 annoncé une fois (bandeau)',r.x2);T('v11.2 : un seul « Meilleur rapport », sur le vrai meilleur pack',r.best);T('v11.2 : bonus en pastille, plus de phrase répétée',r.nopct);T('v11.2 : pack de départ en haut tant qu\'il n\'est pas pris',r.starter);
 r=await ev(()=>{const G=window.__G;const g=G.S.gems;document.getElementById('shopGift').click();const a=G.S.gems===g+5&&document.getElementById('shopGift').disabled;return a;});T('v10 : cadeau du jour +5, puis bouton désactivé',r);
 await p.locator('#panel [data-tab="pass"]').first().click();
-r=await ev(()=>{const G=window.__G,pn=document.getElementById('panel'),o={};o.tab=G.tab==='pass';o.rows=pn.querySelectorAll('.pt:not(.ph)').length===10&&/Paliers 1 à 10/.test(pn.innerText)&&/Palier 1 \/ 100/.test(pn.innerText) /* v12.3 : palier 1 offert */;o.nav=document.querySelector('.nav [data-tab="shop"]').getAttribute('aria-selected')==='true';return o;});
+r=await ev(()=>{const G=window.__G,pn=document.getElementById('panel'),o={};o.tab=G.tab==='pass';o.rows=pn.querySelectorAll('.pt:not(.ph)').length===10&&/Paliers 1 à 10/.test(pn.innerText)&&/1 \/ 100/.test(pn.innerText) /* v12.3 : palier 1 offert */;o.nav=document.querySelector('.nav [data-tab="shop"]').getAttribute('aria-selected')==='true';return o;});
 T('v11 : menu du pass dédié, 100 paliers par pages de 10',r.tab&&r.rows);T('v11 : onglet Boutique reste allumé',r.nav);
 await ev(()=>{const G=window.__G;G.passXP(105);G.renderTab();}); /* 15 offerts + 105 = 120 points */
 r=await ev(()=>{const G=window.__G;const o={};o.tier=G.passTier()===8;const s=G.S.run.sparks;document.querySelector('[data-pass="1"][data-track="f"]').click();o.free=G.S.run.sparks>s&&G.passState().cf.includes(1);
@@ -327,7 +327,7 @@ r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hid
   const sv0=G.S.bestStage;G.seenReset();G.S.bestStage=1;['start','auto','atk','grid','eco','jok','arm'].forEach(g=>G.seenGroup(g));G.S.bestStage=sv0;G.S.bestStage=1;o.seen0=['start','auto','atk','grid','eco','jok','arm'].every(g=>!G.grpNew(g));
   const sv=sv0;G.S.bestStage=999;o.newB=['start','auto','atk','grid','eco','jok','arm'].some(g=>G.grpNew(g));const g1=['start','auto','atk','grid','eco','jok','arm'].find(g=>G.grpNew(g));G.seenGroup(g1);o.seenAfter=!G.grpNew(g1);G.S.bestStage=sv;
   G.setTab('clan');const c=document.getElementById('panel');o.lg=!/montent en/.test(c.innerText)&&!c.querySelector('.zone')&&/étapes/.test(c.querySelector('h2.sec').innerText);
-  document.getElementById('lgHelp').click();o.help=/division dépend/.test(document.getElementById('modal').innerText);document.querySelector('#modal [data-close]').click();
+  document.getElementById('lgHelp').click();o.help=document.querySelectorAll('#modal .hlp li').length===4;document.querySelector('#modal [data-close]').click();
   o.allsim=!!c.querySelector('.simall')&&!c.querySelector('.simtag');
   G.setTab('profile');o.nosel=!document.querySelector('#panel select');document.getElementById('langBtn').click();const b=document.querySelector('#modal [data-setlang="en"]');o.langs=document.querySelectorAll('#modal [data-setlang]').length>=6;b.click();await new Promise(z=>setTimeout(z,50));o.en=G.LANG==='en';G.setLang('fr');G.setTab('home');return o;});
 T('v11.2 : Atelier sans en-tête redondant',r.sub);T('v11.2 : plus de fausse barre pleine (recherches sans maximum)',r.inf);T('v11.2 : Veille a sa propre icône',r.icons);
@@ -374,19 +374,19 @@ await p.setViewportSize({width:375,height:667});await p.waitForTimeout(300);T('3
 await p.setViewportSize({width:390,height:844});
 r=await ev(async()=>{const G=window.__G,S=G.S,o={};document.getElementById('veil').hidden=true;S.bestStage=20;S.jk={};S.equip=[];S.jslots=1;S.run.sparks=1e7;S.pp=5;S.wp={};G.setTab('atelier');document.querySelector('[data-atpane="res"]').click();await new Promise(r=>setTimeout(r,30));
   document.querySelector('[data-grp="jok"]').click();await new Promise(r=>setTimeout(r,50));const P=document.getElementById('panel');
-  o.how=!!P.querySelector('.howto li');o.new=!!P.querySelector('.jst.new');o.lock=!!P.querySelector('.jst.lock');o.lab=!!P.querySelector('.jlab');
+  o.how=!P.querySelector('.howto');o.new=!!P.querySelector('.jst.new');o.lock=!!P.querySelector('.jst.lock');o.lab=!!P.querySelector('.jmeta .i'); /* v12.4 : plus de mode d'emploi écrit, recharge en icône */
   P.querySelector('[data-unlock="chameleon:s"]').click();await new Promise(r=>setTimeout(r,50));o.unl=(G.S.jk.chameleon|0)===1&&!!document.querySelector('#panel .jst.eq'); /* débloquer équipe d'office s'il reste une place */
   document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));const off=!G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.own');document.querySelector('#panel [data-equip="chameleon"]').click();await new Promise(r=>setTimeout(r,50));o.eq=off&&G.S.equip.includes('chameleon')&&!!document.querySelector('#panel .jst.eq');
   S.jk.magnet=1;G.setTab('atelier');o.diff=/3 → 4/.test(document.getElementById('panel').textContent);
   document.querySelector('[data-atpane="refr"]').click();await new Promise(r=>setTimeout(r,50));const Q=document.getElementById('panel'); /* v12.2 : les formes sont dans Atelier › Réfraction */
-  o.gem=/Gemme 1/.test(Q.textContent);o.nores=!document.getElementById('wpReset');
-  Q.querySelector('[data-wp="0"]').click();await new Promise(r=>setTimeout(r,50));o.wp=S.wp[0]===1&&S.pp===4&&/effet \+20/.test(document.getElementById('panel').textContent)&&!!document.getElementById('wpReset');
+  o.gem=Q.querySelectorAll('canvas[data-wpn]').length===8;o.nores=!document.getElementById('wpReset');
+  Q.querySelector('[data-wp="0"]').click();await new Promise(r=>setTimeout(r,50));o.wp=S.wp[0]===1&&S.pp===4&&!!document.querySelector('#panel .wlv.on')&&!!document.getElementById('wpReset');
   document.getElementById('wpHelp').click();await new Promise(r=>setTimeout(r,50));o.help=!document.getElementById('veil').hidden;document.querySelector('#modal [data-close]').click();return o;});
-T('v11.9 jokers : mode d\'emploi et statuts',r.how&&r.new&&r.lock&&r.lab);T('v11.9 jokers : débloquer au clic',r.unl);T('v11.9 jokers : équiper au clic',r.eq);T('v11.9 jokers : niveau suivant « 3 → 4 »',r.diff);
+T('v12.4 jokers : statuts visuels, sans mode d\'emploi',r.how&&r.new&&r.lock&&r.lab);T('v11.9 jokers : débloquer au clic',r.unl);T('v11.9 jokers : équiper au clic',r.eq);T('v11.9 jokers : niveau suivant « 3 → 4 »',r.diff);
 T('v11.9 armes : « Gemme 1 », pas de Redistribuer sans dépense',r.gem&&r.nores);T('v11.9 armes : Améliorer au clic + bonus affiché',r.wp);T('v11.9 armes : aide des points',r.help);
 // v12 : pass premium, saisons, événement, offre de la semaine (vrais clics)
 r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;G.S.gems=2000;G.setTab('pass');const P=()=>document.getElementById('panel');
-  o.perks=!!P().querySelector('.perks')&&/emplacement de recherche/.test(P().textContent)&&/Saison /.test(P().textContent);o.price=!!P().querySelector('[data-passtier="1"]')&&/15/.test(P().querySelector('[data-passtier="1"]').textContent);
+  o.perks=P().querySelectorAll('.perks .pchips span').length===4&&!!P().querySelector('.sname');o.price=!!P().querySelector('[data-passtier="1"]')&&/15/.test(P().querySelector('[data-passtier="1"]').textContent);
   o.active=G.premOn()&&!!P().querySelector('.perks.on');
   G.setTab('atelier');document.querySelector('[data-atpane="res"]')?.click();await w(20);document.querySelector('[data-grp="start"]')?.click();await w(30);o.slot=/grâce au pass/.test(P().textContent);
   G.setTab('shop');await w(30);const k=G.seasonKey();o.skins=!!P().querySelector(`[data-skin="s${k}"]`)&&!!P().querySelector(`[data-skin="s${k}x"]`);
@@ -400,7 +400,7 @@ r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeo
   o.dot=document.getElementById('meBtn').classList.contains('dot');G.setTab('profile');await w(30);const P=()=>document.getElementById('panel');
   o.sec=P().querySelectorAll('.medal').length===12&&!!P().querySelector('[data-medal="explore"]');const g=G.S.gems,d0=G.bonusMul('dmg');P().querySelector('[data-medal="explore"]').click();await w(80);
   o.claim=G.S.medals.explore===1&&G.S.gems===g+5&&G.bonusMul('dmg')>d0&&/Bronze/.test(P().textContent);
-  G.setTab('shop');await w(30);o.bn=P().querySelectorAll('.skin .skbn').length>=10&&/dégâts \+12/.test(P().textContent);
+  G.setTab('shop');await w(30);o.bn=P().querySelectorAll('.skin .skbn').length>=10&&!!P().querySelector('[data-skin="rubis"] .bnc')&&/\+12/.test(P().querySelector('[data-skin="rubis"]').textContent);
   G.S.gems=5000;const b=P().querySelector('[data-skin="solaire"]');const g2=G.S.gems;b.click();await w(80);o.buy=G.S.skin==='solaire'&&G.S.gems===g2-2000&&G.S.skins.includes('solaire');
   return o;});
 T('v12.1 : point sur l\'engrenage quand une médaille est prête',r.dot);T('v12.1 : 12 médailles dans le profil',r.sec);T('v12.1 : médaille récupérée au clic (+5 gemmes, bonus actif)',r.claim);
@@ -416,9 +416,15 @@ r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeo
   try{localStorage.removeItem('prisme-hintr');}catch(e){}const p0=S.prestiges,b0=S.bestStage;S.prestiges=0;S.bestStage=26;document.getElementById('hint').hidden=true;G.refresh();o.hint=!document.getElementById('hint').hidden&&/Réfraction/.test(document.getElementById('hint').textContent);document.getElementById('hint').hidden=true;G.refresh();o.once=document.getElementById('hint').hidden;S.prestiges=p0;S.bestStage=b0;
   S.run.sparks=1e9;G.refresh();o.soft=document.getElementById('bA').classList.contains('soft');
   G.setTab('shop');await w(30);o.pop=!!document.querySelector('#panel .offer.pop .rpop');const wo=G.weekOffer();o.was=wo.id==='boost'||wo.id==='prod'||wo.id==='mix'?(!!document.querySelector('#weekOffer .was')||S.week.wo):true;
-  G.setTab('pass');await w(30);o.next=/Prochaine grosse récompense/.test(document.getElementById('panel').innerText);G.setTab('home');return o;});
+  G.setTab('pass');await w(30);o.next=!!document.querySelector('#panel .pnext');G.setTab('home');return o;});
 T('v12.3 : gemme du Profil de nouveau dessinée',r.gem);T('v12.3 : 2 boosters au départ, sans « Plus »',r.start);T('v12.3 : 3 boosters + « Plus » à l\'étape 4',r.mid);T('v12.3 : tous les boosters après une Réfraction',r.all);
 T('v12.3 : la Réfraction expliquée à l\'étape 25, une seule fois',r.hint&&r.once);T('v12.3 : pastille Atelier discrète (achat possible)',r.soft);T('v12.3 : « Populaire » sur le pack à 4,99 €',r.pop);T('v12.3 : prix habituel barré sur l\'offre de la semaine',r.was);T('v12.3 : prochaine grosse récompense du pass',r.next);
+// v12.4 : budget de texte par écran (mots affichés), pour que le jeu reste « presque sans texte »
+r=await ev(async()=>{const G=window.__G,S=G.S,w=ms=>new Promise(z=>setTimeout(z,ms)),W=x=>x.split(/\s+/).filter(v=>/[a-zA-Zà-ÿ]{2,}/.test(v)).length,o={};document.getElementById('veil').hidden=true;
+  const P=()=>document.getElementById('panel').innerText;
+  G.setTab('boost');await w(20);o.boost=W(P());G.setTab('atelier');document.querySelector('[data-atpane="res"]').click();await w(20);o.ares=W(P());document.querySelector('[data-grp="jok"]').click();await w(20);o.jok=W(P());
+  document.querySelector('[data-atpane="refr"]').click();await w(20);o.refr=W(P());G.setTab('pass');await w(20);o.pass=W(P());G.setTab('home');return o;});
+T('v12.4 : peu de texte : Boosters ≤ 60, Atelier ≤ 50, Jokers ≤ 60, Réfraction ≤ 60, Pass ≤ 30 mots',r.boost<=60&&r.ares<=50&&r.jok<=60&&r.refr<=60&&r.pass<=30);if(!(r.boost<=60&&r.ares<=50&&r.jok<=60&&r.refr<=60&&r.pass<=30))console.log('mots',JSON.stringify(r));
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);
