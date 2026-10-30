@@ -42,7 +42,9 @@ const near=(a,b)=>Math.abs(a-b)<1e-9*Math.max(1,Math.abs(b));
  else{let t2=SAT;for(let w=1;w<4&&eng(t2).weekendEvent(t2)!=='spark';w++)t2=SAT+w*7*D;const G2=eng(t2);G2.S=JSON.parse(JSON.stringify(S));const G3=eng(t2+3*D);G3.S=JSON.parse(JSON.stringify(S));{const r=(pfMaxSparkPerSec(G2)-2)/(pfMaxSparkPerSec(G3)-2);T('…et au week-end étincelles ×2',r>1.5&&r<=2+1e-9);}}}
 // --- une médaille « Collection » suit les couleurs possédées, « Saisons » les couleurs de saison
 {const t=MON;let S=fresh(t);S.skins=['cyan','rose','or'];let r=act(S,'medal',{id:'collect'},t);T('Collectionneur bronze à 3 couleurs',r.result.ok);
- S=fresh(t);S.skins=['cyan','s3'];r=act(S,'medal',{id:'season'},t);T('Vétéran des saisons bronze avec 1 couleur de saison',r.result.ok);}
+ S=fresh(t);S.skins=['cyan','s3'];r=act(S,'medal',{id:'season'},t);T('v12.6 : une couleur de saison ne suffit plus (il faut le palier 50)',!r.result.ok);
+ S=fresh(t);r=act(S,'sync',{},t);S=r.state;S.gems=2000;r=act(S,'pass_buy',{k:60},t);T('v12.6 : palier 50 atteint sans pass payant → saison comptée',r.result.ok&&(r.state.ps50||[]).length===1&&!r.state.pass.prem);S=r.state;
+ r=act(S,'medal',{id:'season'},t);T('v12.6 : Vétéran des saisons bronze, sans payer',r.result.ok&&r.state.medals.season===1);}
 // v12.5 : derniers rangs nettement plus durs (au moins ×1,6 entre or et diamant) et rythme recalé sur la simulation 60 jours (joueur moyen)
 {const G=eng(MON);G.S=fresh(MON);T('v12.5 : diamant au moins ×1,6 plus dur que l\'or, pour chaque médaille',G.MEDALS.every(m=>m.th[3]>=1.6*m.th[2]));
  const J60={explore:99,hunt:3294,boss:256,alch:267281,artisan:4337,refr:35,titan:91,research:4261,loyal:60,joker:65777};

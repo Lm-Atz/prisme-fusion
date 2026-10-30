@@ -126,7 +126,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.run.sparks=100000;S.gems=5
   o.start=G.startBuild('st_cad');o.busy=G.startBuild('st_power');S.slots=2;o.two=G.startBuild('st_spark');o.locked=G.startBuild('au_prestige');
   const bld=S.build[0];o.rush=G.rushGems(bld)>=1;o.rushed=G.rushBuild('st_cad')&&S.up.st_cad>0;
   o.ad=G.adBuild('st_spark');o.n=G.ALLUP.length;o.groups=G.GROUPS.length;o.max=Math.max(...G.UPG.map(u=>u.max));
-  o.q=G.questView();o.onb3=o.q.onb.length===3;o.onbTotal=G.ONB.length;o.daily=o.q.d.length===4;o.week=o.q.w.length===4;
+  o.q=G.questView();o.onb3=o.q.onb.length===3;o.onbTotal=G.ONB.length;o.daily=o.q.d.length===4;o.week=o.q.w.length>=2&&o.q.w.length<=4;
   S.st.manual=10;const g=S.gems;o.claim=G.claim('o',0)&&S.gems===g+10;o.claimTwice=G.claim('o',0)===false;
   o.login=G.loginState().day===1;o.claimL=G.claimLogin()&&!G.claimLogin();
   
@@ -440,6 +440,12 @@ r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeo
   return o;});
 T('v12.5 : quête validée : l\'écran reste à sa place',r.keep);T('v12.5 : changement d\'écran : retour en haut',r.top);T('v12.5 : rien à récupérer → aucune pastille',r.none);
 T('v12.5 : palier du pass à récupérer → pastille sur Quêtes et Boutique',r.passQ&&r.passCard);T('v12.5 : cadeau du jour → pastille Boutique et sur la carte',r.gift&&r.giftCard);T('v12.5 : pastille retirée une fois récupéré',r.giftGone);
+// v12.6 : revue de cohérence
+r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;
+  G.setTab('quests');await w(20);document.querySelector('#panel .pcard').click();await w(30);o.navQ=document.querySelector('.nav [data-tab="quests"]').getAttribute('aria-selected')==='true';document.querySelector('#panel .quit').click();await w(30);o.backQ=G.tab==='quests';
+  const sv={p:S.prestiges,pp:S.pp,b:S.bestStage};S.prestiges=0;S.pp=0;G.setTab('atelier');await w(20);const rb=document.querySelector('[data-atpane="refr"]');o.lock=rb.getAttribute('aria-disabled')==='true';rb.click();await w(20);o.stay=!document.querySelector('#panel [data-wp]');
+  S.bestStage=2;G.navUnlock();S.day.sgift=0;G.refresh();o.noDot=document.getElementById('bS').hidden;S.prestiges=sv.p;S.pp=sv.pp;S.bestStage=sv.b;G.navUnlock();G.refresh();G.setTab('home');return o;});
+T('v12.6 : pass ouvert depuis Quêtes → on y revient (onglet Quêtes allumé)',r.navQ&&r.backQ);T('v12.6 : Atelier › Réfraction verrouillé avant la 1re Réfraction',r.lock&&r.stay);T('v12.6 : pas de pastille sur un onglet verrouillé',r.noDot);
 // sauvegarde / rechargement
 await ev(()=>{window.__G.S.run.sparks=777;window.__G.save();});await p.reload();await p.waitForTimeout(500);T('sauvegarde v7 rechargée',await ev(()=>window.__G.S.run.sparks>=777&&window.__G.S.prestiges>=2));
 T('aucune erreur JS',errs.length===0);if(errs.length)console.log(errs,errStack);

@@ -1,4 +1,4 @@
-const VERSION='12.5 · pastilles';
+const VERSION='12.6 · cohérence';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -244,7 +244,7 @@ function refresh(){
   $('bQ').hidden=!questsReward();{const bS=$('bS');if(bS)bS.hidden=!shopReward();}$('bC').hidden=!(guildCache&&guildCache.guild&&guildClaimable());
   const done=tickBuild().filter(id=>{const k=id+':'+lvlOf(upById(id));if(doneSeen.has(k))return false;doneSeen.add(k);return true;});if(done.length){done.forEach(id=>toast(t('at_done',{t:upById(id).t})));sfx.chord();save();if(tab==='atelier')renderTab();if(R)renderTB();}
   const canBuild=ALLUP.some(canStart)||JOKERS.some(j=>jokerAvail(j)&&!S.jk[j.id]&&S.run.sparks>=j.sh);
-  $('bA').hidden=!canBuild;$('bA').classList.add('soft'); // v12.3 : achat possible = pastille discrète (le rouge est réservé aux récompenses)
+  $('bA').hidden=!canBuild;document.querySelectorAll('.nav button.lockd .badge').forEach(x=>x.hidden=true); /* v12.6 : pas de pastille sur un onglet verrouillé */$('bA').classList.add('soft'); // v12.3 : achat possible = pastille discrète (le rouge est réservé aux récompenses)
   document.querySelectorAll('[data-until]').forEach(el=>{el.textContent=dur((+el.dataset.until-Date.now())/1000);});
   document.querySelectorAll('[data-ring]').forEach(el=>{const b=inBuild(el.dataset.ring);if(b)el.style.setProperty('--p',(100*Math.min(1,1-(b.until-Date.now())/1000/b.dur))+'%');});
   document.querySelectorAll('[data-rushg]').forEach(el=>{const b=inBuild(el.dataset.rushg);if(b)el.lastChild.textContent=rushGems(b);});
@@ -278,7 +278,7 @@ function renderActs(){
   if(R.mode==='boss'&&R.E.type==='boss')h+=`<button class="qb" id="retreat" aria-label="${t('retreat_aria',{n:S.run.stage-1})}"><span>${ic('flag')}</span></button>`;
   if(S.run.fled)h+=`<button class="qb hot" id="chal" aria-label="${t('chal_aria',{n:S.run.stage})}"><span>${ic('crown')}</span></button>`;
   if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
-  if(S.bestStage>=15&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
+  if(S.bestStage>=CFG.titan.stage&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
   a.hidden=!h;
 }
@@ -328,7 +328,7 @@ function tutoNext(){
 }
 function tutoTick(){if(tutoStep===2&&S.run.sparks>=tbCost('cad')){tutoStep=3;S.st.tuto=2;track('tuto',{s:3,sec:Math.round((Date.now()-sessStart)/1000)});showHint(t('hint3'));renderTB();}}
 /* ----- onglets ----- */
-let atGroup='start',atPane='res',lastView='';
+let atGroup='start',atPane='res',lastView='',passFrom='shop';
 const refrReady=()=>(S.pp||0)>0&&(UPG.some(u=>isPP(u)&&!upLocked(u)&&isFinite(upCost(u))&&upCost(u)<=S.pp)||WEAPONS.some((w,i)=>wpCost(i)<=S.pp));
 const canStart=u=>!upLocked(u)&&!inBuild(u.id)&&isFinite(upCost(u))&&upAfford(u)&&(upTime(u)<=0||S.build.length<slotsN());
 /* v11.2 : pastille de famille = recherche nouvellement débloquée et pas encore vue (plus « tu peux acheter », qui allumait tout) */
@@ -437,15 +437,15 @@ function markHero(){const pn=$('panel');pn.dataset.acc=tab;const hdef=HERO[tab];
 function jDiff(a,b,n){const A=a.split(' '),B=b.split(' ');if(A.length!==B.length)return esc(a)+` <span class="jnext">${esc(t('jk_next',{n,d:b}))}</span>`;let o=[],i=0;while(i<A.length){if(A[i]===B[i]){o.push(esc(A[i]));i++;continue;}let k=i;while(k<A.length&&A[k]!==B[k])k++;o.push(`<span class="jnext" title="${esc(t('j_lvlbtn',{n}))}">${esc(A.slice(i,k).join(' '))} → ${esc(B.slice(i,k).join(' '))}</span>`);i=k;}return o.join(' ');}
 function renderTab(){
   const home=tab==='home';$('panel').hidden=home;
-  document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?'shop':tab==='boost'?'home':tab)));
+  document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===(tab==='pass'?passFrom:tab==='boost'?'home':tab)));
   if(home){lastView='';requestAnimationFrame(resize);return;}
   const p=$('tabPanel');let h='';
   const head=(ttl,sub,help)=>`<header class="phead"><div><h1 class="ttl">${ttl}${help?` <button class="qhelp hh" id="${help}" aria-label="?">?</button>`:''}</h1></div><button class="quit" data-tab="home" aria-label="${t('nav_home')}">${ic('close')}</button></header>`;
   if(tab==='atelier'){ /* v12.2 : deux vues, une monnaie chacune : Recherches (étincelles + minuteurs, définitives) et Réfraction (points) */
     const free=slotsN()-S.build.length,nextSlot=CFG.build.slotGems[S.slots-1];
-    if(!['start','jok','arm'].includes(atGroup))atGroup='start';
+    if(!['start','jok','arm'].includes(atGroup))atGroup='start';const refrOpen=S.prestiges>0||(S.pp|0)>0;if(!refrOpen)atPane='res'; /* v12.6 : vue Réfraction verrouillée tant qu'aucune Réfraction n'a été faite */
     h+=head(t('at_title'),'',atPane==='refr'?'wpHelp':'atHelp');
-    h+=`<div class="grp seg atseg" role="tablist"><button data-atpane="res" aria-pressed="${atPane!=='refr'}">${ic('anvil')}${t('at_res')}</button><button data-atpane="refr" aria-pressed="${atPane==='refr'}">${ic('prism')}${t('at_refr')}${refrReady()?'<span class="badge soft"></span>':''}</button></div>`;
+    h+=`<div class="grp seg atseg" role="tablist"><button data-atpane="res" aria-pressed="${atPane!=='refr'}">${ic('anvil')}${t('at_res')}</button><button data-atpane="refr" aria-pressed="${atPane==='refr'}" ${refrOpen?'':'class="lockd" aria-disabled="true"'}>${refrOpen?ic('prism'):ic('lock')}${t('at_refr')}${refrOpen?'':` <small>${CFG.prestige.minStage}</small>`}${refrReady()?'<span class="badge soft"></span>':''}</button></div>`;
     if(atPane==='refr'){
       const spent=Object.keys(S.wp||{}).length;
       h+=`<div class="slotbuy ppbal"><span class="ppn">${ic('prism')}<b>${S.pp||0}</b></span></div>`;
@@ -559,7 +559,7 @@ function loginModal(){
   const st=loginState();if(st.claimedToday)return;
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
 }
-function goTab(t){audio();Music.start();tab=t;if(t!=='home')track('tab',{t});renderTab();if(t==='clan')homeMoments();}
+function goTab(t){audio();Music.start();if(t==='pass'&&tab!=='pass')passFrom=tab==='quests'?'quests':'shop';tab=t;if(t!=='home')track('tab',{t});renderTab();if(t==='clan')homeMoments();}
 document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;if(b.classList.contains('lockd')){const k=b.dataset.tab;toast(t('nav_lock',{t:t('nav_'+k),n:NAV_AT[k]}));b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope');sfx.low&&kick('small');return;}goTab(b.dataset.tab);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('veil').hidden&&$('modal').querySelector('[data-close]'))closeModal();}); // v11.1 : Échap ferme la fenêtre (clavier, web)
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.closest('#board')){audio();sfx.click();}},true);
@@ -579,7 +579,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='buySlot'){if(act('slot',{},()=>buySlot())){sfx.chord();toast(t('at_newslot'));}save();refresh();renderTab();}
   else if(el.id==='buyJSlot'){if(act('jslot',{},()=>buyJSlot())){sfx.chord();toast(t('at_newjslot'));}save();refresh();renderTab();}
   else if(el.dataset.grp){atGroup=el.dataset.grp;renderTab();}
-  else if(el.dataset.atpane){atPane=el.dataset.atpane;renderTab();}
+  else if(el.dataset.atpane){if(el.getAttribute('aria-disabled')==='true'){toast(t('nav_lock',{t:t('at_refr'),n:CFG.prestige.minStage}));return;}atPane=el.dataset.atpane;renderTab();}
   else if(el.dataset.bptb){if(buyTB(el.dataset.bptb)){sfx.buy();renderTB();save();renderTab();}else toast(t('bp_poor'));}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
@@ -714,7 +714,7 @@ let passPage=-1;
 function passView(){
   const p=passState(),n=passTier(),X=CFG.pass.xp,T=CFG.pass.tiers,o=OFFERS.find(x=>x.id==='pass'),P=Math.ceil(T/10);
   if(passPage<0||passPage>=P)passPage=Math.min(P-1,Math.floor(Math.min(n,T-1)/10));
-  let h=`<header class="phead"><div><h1 class="ttl">${t('ps_title')}</h1><p class="sub"><b class="sname" style="--sh:${seasonHue(p.k)}">${esc(seasonName(p.k))}</b> · ${ic('clock')} ${t('ps_left_s',{d:seasonLeft()})} <button class="qhelp hh" id="passHelp" aria-label="?">?</button></p></div><button class="quit" data-tab="shop" aria-label="${t('nav_shop')}">${ic('close')}</button></header>`;
+  let h=`<header class="phead"><div><h1 class="ttl">${t('ps_title')}</h1><p class="sub"><b class="sname" style="--sh:${seasonHue(p.k)}">${esc(seasonName(p.k))}</b> · ${ic('clock')} ${t('ps_left_s',{d:seasonLeft()})} <button class="qhelp hh" id="passHelp" aria-label="?">?</button></p></div><button class="quit" data-tab="${passFrom}" aria-label="${t('nav_'+passFrom)}">${ic('close')}</button></header>`;
   h+=`<div class="pass slab"><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(T*X))}%"></i></div><p class="sub plvl"><b>${n}</b> / ${T} · ${ic('star','ig')}${n>=T?X:p.xp%X} / ${X}</p>`;
   if(!p.prem)h+=`<button class="b b-gold" style="width:100%" data-passbuy="1">${ic('crown')}${t('ps_buy',{p:priceOf(o)})}</button>`;
   if(n<T){const k10=Math.min(10,T-n);h+=`<div class="row pbuy"><button class="b b-gem sm" data-passtier="1" ${S.gems<passTierCost(1)?'disabled':''}>${t('ps_plus',{n:1})} ${ic('gem')}${passTierCost(1)}</button><button class="b b-gem sm" data-passtier="${k10}" ${S.gems<passTierCost(k10)?'disabled':''}>${t('ps_plus',{n:k10})} ${ic('gem')}${passTierCost(k10)}</button></div>`;}

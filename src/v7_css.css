@@ -341,3 +341,4 @@ body{margin:0}
 .badge.rd{position:relative;display:inline-block;top:-7px;right:auto;width:10px;height:10px;margin-left:5px;vertical-align:middle;box-shadow:0 0 0 2px var(--night)}
 .ppager .b{position:relative}.ppager .badge.rd{position:absolute;top:2px;right:2px;margin:0}
 #panel h2.sec .badge.rd{top:0;margin:0 auto 0 8px}
+.atseg button.lockd{opacity:.55}.atseg button.lockd small{font:800 11px var(--body);margin-left:2px}

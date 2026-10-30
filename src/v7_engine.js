@@ -11,7 +11,7 @@ const CFG={
   prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
   refr:{reset:['atk','grid','eco'],memCost:0.5,runCost:3,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
-  titan:{time:45,days:[2,4,6],free:2,ticketGems:20}, // jours : 0 = dimanche
+  titan:{time:45,days:[2,4,6],free:2,ticketGems:20,stage:10}, // v12.6 : Titan dès l'étape 10, comme l'onglet Clan // jours : 0 = dimanche
   build:{timeX:1.5,gemSec:300,adCut:1800,slotGems:[300,600],jslotGems:[200,400]},
   boost:{adH:1,loginH:2,gemsH:4,gemsPrice:25},
   interstitialEvery:4,wpReset:50,
@@ -118,7 +118,7 @@ function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?
 function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
   if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}if(!DAILY.length||DAILY.k!==S.day.k){pickDaily();DAILY.k=S.day.k;}if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}if(WEEKLY.k!==S.week.k){pickWeekly();WEEKLY.k=S.week.k;}}
+function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}pickDaily(); /* v12.6 : relu à chaque fois depuis S.day.qd (le serveur peut l'avoir fixé) */if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}pickWeekly();}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
 function rewardHtml(r){const o=[];if(r.g)o.push(`<span>${I.g}${r.g}</span>`);if(r.s)o.push(`<span>${ic('spark','ie')}${fmt(r.s)}</span>`);if(r.sp)o.push(`<span>${ic('spark','ie')}${fmt(r.sp)}</span>`);if(r.b)o.push(`<span>${ic('bolt','ie')}${t('boost_h',{n:r.b})}</span>`);return `<span class="rew">${o.join('')}</span>`;}
 const boosted=()=>Date.now()<S.boostUntil;
@@ -146,7 +146,7 @@ function loginState(){roll();const today=dayKey();if(S.login.last===today)return
   const consecutive=S.login.last===dayKey(Date.now()-86400e3);
   S.login.streak=consecutive?(S.login.streak%7)+1:1;S.login.last=today;return {day:S.login.streak,claimedToday:false};}
 function claimLogin(){const st=loginState();if(st.claimedToday)return false;S.login.claimed=dayKey();const r=LOGIN[st.day-1];
-  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]);if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else{S.gems+=50;chestFill(50);}}else{give(r);chestFill(r.g|0);}passXP(CFG.pass.q.login);return true;}
+  if(r.joker){const j=JOKERS.find(x=>!S.jk[x.id]&&jokerAvail(x)); /* v12.6 : pas de joker encore verrouillé par l'étape */if(j){S.jk[j.id]=1;if(S.equip.length<S.jslots)S.equip.push(j.id);}else{S.gems+=50;chestFill(50);}}else{give(r);chestFill(r.g|0);}passXP(CFG.pass.q.login);return true;}
 
 
 /* ================= atelier : chantiers ================= */
@@ -412,27 +412,32 @@ const DPOOL=[
   {k:'q_kill',a:{n:20},v:()=>S.day.kills,n:20,r:{g:10}},
   {k:'q_merge',a:{n:200},v:()=>S.day.merges,n:200,r:{s:80}},
   {k:'q_ad',v:()=>S.day.ads,n:1,r:{b:1}},
-  {k:'q_boss1',v:()=>S.day.bosses,n:1,r:{g:10}},
+  {k:'q_boss1',v:()=>S.day.bosses,n:1,r:{g:10},ok:()=>S.bestStage>=10},
   {k:'q_tb',a:{n:15},v:()=>S.day.tb||0,n:15,r:{g:10}},
   {k:'q_gift',a:{n:2},v:()=>S.day.gifts||0,n:2,r:{s:60}},
-  {k:'q_jok3',v:()=>S.day.jokers,n:3,r:{s:150}},
+  {k:'q_jok3',v:()=>S.day.jokers,n:3,r:{s:150},ok:()=>S.equip.length>0},
   {k:'q_combo',a:{n:8},v:()=>S.day.combo,n:8,r:{b:1}},
-  {k:'q_pre1',v:()=>S.day.prestiges,n:1,r:{g:15}},
+  {k:'q_pre1',v:()=>S.day.prestiges,n:1,r:{g:15},ok:()=>S.bestStage>=CFG.prestige.minStage},
   {k:'q_kill',a:{n:60},v:()=>S.day.kills,n:60,r:{s:300}},
 ].map(q=>Object.defineProperty(q,'t',{get(){return t(q.k,q.a)},enumerable:true})); /* v11.8 : Object.assign figeait le texte dans la langue du démarrage */
 const dayHash=k=>{let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return h;};
 let DAILY=[];
-function pickDaily(){const h=dayHash(S.day.k),base=DPOOL.slice(0,4),extra=DPOOL.slice(4);const a=base[h%4],b=base[(h>>>2)%4]===a?base[(h%4+1)%4]:base[(h>>>2)%4]; /* v12 : >>> (avec >>, les quêtes du jour cassaient dès le 1er janvier 2027) */
-  DAILY=[a,b,extra[h%extra.length],{get t(){return t('q_bonus')},v:()=>DAILY.slice(0,3).every(q=>q.v()>=q.n)?1:0,n:1,r:{g:15}}];}
+/* v12.6 : seules les quêtes réalisables à ce stade sont tirées (plus de « réfraction » à l'étape 2) ; le tirage est mémorisé pour la journée */
+const qOK=q=>!q.ok||q.ok();
+function pickDaily(){const h=dayHash(S.day.k);let ids=Array.isArray(S.day.qd)&&S.day.qd.length===3&&S.day.qd.every(i=>DPOOL[i])?S.day.qd:null;
+  if(!ids){const base=[0,1,2,3].filter(i=>qOK(DPOOL[i])),extra=DPOOL.map((q,i)=>i).filter(i=>i>=4&&qOK(DPOOL[i]));const a=base[h%base.length];const rest=base.filter(i=>i!==a);const b=rest[(h>>>2)%rest.length];ids=[a,b,extra[(h>>>4)%extra.length]];S.day.qd=ids;}
+  DAILY=[DPOOL[ids[0]],DPOOL[ids[1]],DPOOL[ids[2]],{get t(){return t('q_bonus')},v:()=>DAILY.slice(0,3).every(q=>q.v()>=q.n)?1:0,n:1,r:{g:15}}];}
 /* v12 : quêtes de la semaine tirées chaque lundi, une par famille (le jeu se renouvelle sans intervention) */
 const WFAM=[
-  [{k:'q_kill',a:{n:300},v:()=>S.week.kills,n:300,r:{g:50}},{k:'q_kill',a:{n:600},v:()=>S.week.kills,n:600,r:{g:80}},{k:'q_bossw',a:{n:15},v:()=>S.week.bosses|0,n:15,r:{g:60}}],
-  [{k:'q_titan_n',a:{n:3},v:()=>S.week.titans,n:3,r:{b:3}},{k:'q_titan_n',a:{n:4},v:()=>S.week.titans,n:4,r:{b:4}}],
-  [{k:'q_top10',v:()=>myRank()<=10?1:0,n:1,r:{g:30}},{k:'q_merge',a:{n:2000},v:()=>S.week.merges|0,n:2000,r:{g:40}}],
-  [{k:'q_pre_n',a:{n:2},v:()=>S.week.prestiges,n:2,r:{s:1500}},{k:'q_pre_n',a:{n:3},v:()=>S.week.prestiges,n:3,r:{s:2000}}],
+  [{k:'q_kill',a:{n:300},v:()=>S.week.kills,n:300,r:{g:50}},{k:'q_kill',a:{n:600},v:()=>S.week.kills,n:600,r:{g:80}},{k:'q_bossw',a:{n:15},v:()=>S.week.bosses|0,n:15,r:{g:60},ok:()=>S.bestStage>=20}],
+  [{k:'q_titan_n',a:{n:3},v:()=>S.week.titans,n:3,r:{b:3},ok:()=>S.bestStage>=CFG.titan.stage},{k:'q_titan_n',a:{n:4},v:()=>S.week.titans,n:4,r:{b:4},ok:()=>S.bestStage>=CFG.titan.stage}],
+  [{k:'q_top10',v:()=>myRank()<=10?1:0,n:1,r:{g:30},ok:()=>S.bestStage>=CFG.titan.stage},{k:'q_merge',a:{n:2000},v:()=>S.week.merges|0,n:2000,r:{g:40}}],
+  [{k:'q_pre_n',a:{n:2},v:()=>S.week.prestiges,n:2,r:{s:1500},ok:()=>S.prestiges>0},{k:'q_pre_n',a:{n:3},v:()=>S.week.prestiges,n:3,r:{s:2000},ok:()=>S.prestiges>0}],
 ].map(f=>f.map(q=>Object.defineProperty(q,'t',{get(){return t(q.k,q.a)},enumerable:true})));
 const WEEKLY=[];
-function pickWeekly(){const h=dayHash('w'+S.week.k);WEEKLY.length=0;WFAM.forEach((f,i)=>WEEKLY.push(f[(h>>>(i*3))%f.length]));}
+function pickWeekly(){const h=dayHash('w'+S.week.k);WEEKLY.length=0;let ids=Array.isArray(S.week.qw)?S.week.qw:null;
+  if(!ids){ids=[];WFAM.forEach((f,i)=>{const ok=f.map((q,j)=>j).filter(j=>qOK(f[j]));if(ok.length)ids.push(i*10+ok[(h>>>(i*3))%ok.length]);});S.week.qw=ids;}
+  ids.forEach(c=>{const q=WFAM[Math.floor(c/10)]&&WFAM[Math.floor(c/10)][c%10];if(q)WEEKLY.push(q);});} /* v12.6 : familles sans quête possible ignorées (débutant : 2 quêtes hebdo) ; tirage mémorisé pour la semaine */
 /* v12 : événement automatique du week-end, un différent chaque semaine */
 const EVENTS=['spark','joker','build','gift'];
 function weekendEvent(t=Date.now()){const dw=dparts(t)[3];if(dw!==6&&dw!==0)return null;const wk=Math.floor((seasonDay(t)-(dw===0?1:0))/7);return EVENTS[((wk%EVENTS.length)+EVENTS.length)%EVENTS.length];}
@@ -601,7 +606,7 @@ const MEDALS=[
   {id:'collect',ic:'gem',k:'off',q:1,th:[3,6,10,16],v:()=>S.skins.length},
   {id:'loyal',ic:'heart',k:'sp',q:1.5,th:[7,30,120,365],v:()=>S.st.days},
   {id:'joker',ic:'star',k:'jok',q:1,th:[100,2000,30000,300000],v:()=>S.st.jokerUses},
-  {id:'season',ic:'crown',k:'dmg',q:1.5,th:[1,4,10,20],v:()=>S.skins.filter(isSeasonSkin).length},
+  {id:'season',ic:'crown',k:'dmg',q:1.5,th:[1,4,10,20],v:()=>(S.ps50||[]).length} /* v12.6 : saisons où le palier 50 est atteint (piste gratuite comprise) : accessible sans payer */,
 ].map(m=>Object.defineProperty(m,'t',{get(){return t('md_'+m.id)},enumerable:true}));
 const medalLvl=id=>((S.medals||{})[id]|0);
 const medalBonusOf=(m,l)=>MEDAL_RANK.slice(0,l).reduce((a,x)=>a+x,0)*m.q;
@@ -613,7 +618,8 @@ function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const 
 /* v12 : offre de la semaine (gemmes), une par semaine, qui change seule */
 const weekOffer=()=>{const L=CFG.weekOffer,h=dayHash('o'+weekKey());return L[h%L.length];};
 function buyWeekOffer(){roll();const o=weekOffer();if(S.week.wo||S.gems<o.g)return false;S.gems-=o.g;S.week.wo=1;if(o.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*o.m/30),Math.floor(rateMin()*o.m));if(o.b)give({b:o.b});return true;}
-function passXP(n){if(!n)return;const p=passState();if(p.prem)n*=CFG.pass.perks.xp;p.xp=Math.min(CFG.pass.tiers*CFG.pass.xp,p.xp+n);}
+function passXP(n){if(!n)return;const p=passState();if(p.prem)n*=CFG.pass.perks.xp;p.xp=Math.min(CFG.pass.tiers*CFG.pass.xp,p.xp+n);ps50Mark();}
+function ps50Mark(){const p=S.pass;if(p&&Math.floor(p.xp/CFG.pass.xp)>=50){S.ps50=S.ps50||[];if(!S.ps50.includes(p.k))S.ps50.push(p.k);}}
 const passTier=()=>Math.floor(passState().xp/CFG.pass.xp);
 function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(n<1||n>CFG.pass.tiers||passTier()<n||(prem&&!p.prem))return false;const cl=prem?p.cp:p.cf;if(cl.includes(n))return false;cl.push(n);const r=PASS[n-1][prem?'p':'f'];
   if(r.skin){const id=r.skin==='S'?'s'+p.k:r.skin==='SX'?'s'+p.k+'x':r.skin;if(S.skins.includes(id))S.gems+=CFG.pass.dupe;else S.skins.push(id);}
@@ -621,7 +627,7 @@ function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(
   give({g:r.g,b:r.b});if(!prem)chestFill(r.g|0);return true;}
 /* v11 : acheter des paliers avec des gemmes (ouvert à tous ; sans pass payant, seuls les paliers gratuits deviennent récupérables) */
 const passTierCost=k=>k>=10?Math.round(CFG.pass.tier10*k/10):k*CFG.pass.tierGems;
-function passBuy(k){const p=passState(),n=passTier();k=Math.min(k|0,CFG.pass.tiers-n);if(k<1)return false;const g=passTierCost(k);if(S.gems<g)return false;S.gems-=g;p.xp=(n+k)*CFG.pass.xp;return true;}
+function passBuy(k){const p=passState(),n=passTier();k=Math.min(k|0,CFG.pass.tiers-n);if(k<1)return false;const g=passTierCost(k);if(S.gems<g)return false;S.gems-=g;p.xp=(n+k)*CFG.pass.xp;ps50Mark();return true;}
 function passClaimAll(){const p=passState(),n=passTier();let c=0;for(let i=1;i<=n;i++){if(!p.cf.includes(i)&&passClaim(i,'f'))c++;if(p.prem&&!p.cp.includes(i)&&passClaim(i,'p'))c++;}return c;}
 const passClaimable=()=>{const p=passState(),n=passTier();for(let i=1;i<=n;i++){if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;}return false;};
 /* v10 : cadeau gratuit quotidien de la boutique */

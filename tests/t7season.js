@@ -55,7 +55,7 @@ const act=(S,action,payload,t,extra)=>pfApply(src,S,Object.assign({action,payloa
 
 // --- quêtes de la semaine tirées
 {const sets=[];for(let w=0;w<6;w++){const t=MON+w*7*D;const G=eng(t);G.S=fresh(t);G.roll();sets.push(G.WEEKLY.map(q=>q.k+(q.a?q.a.n:'')).join('|'));}
- T('4 quêtes de la semaine',sets[0].split('|').length===4);T('les quêtes changent d\'une semaine à l\'autre',new Set(sets).size>=3);
+ T('v12.6 : 3 quêtes de la semaine avant la 1re Réfraction (étape 40)',sets[0].split('|').length===3);T('les quêtes changent d\'une semaine à l\'autre',new Set(sets).size>=3);
  const t=MON,G=eng(t);G.S=fresh(t);G.roll();const a=G.WEEKLY.map(q=>q.k).join();const G2=eng(t+2*D);G2.S=G.S;G2.roll();T('même tirage toute la semaine (téléphone = serveur)',G2.WEEKLY.map(q=>q.k).join()===a);
  // réclamer une quête hebdo côté serveur
  let S=fresh(t);let r=act(S,'sync',{},t);S=r.state;S.week.kills=9999;S.week.bosses=99;S.week.merges=99999;S.week.titans=9;S.week.prestiges=9;r=act(S,'claim',{kind:'w',i:0},t);T('quête hebdo réclamée côté serveur',r.result.ok!==false&&r.state.week.claimed.includes(0));}
@@ -74,9 +74,15 @@ const act=(S,action,payload,t,extra)=>pfApply(src,S,Object.assign({action,payloa
 // --- autonomie : 3 ans de jours simulés, rien ne doit casser (quêtes, guilde, pass, saisons, événements, offres)
 {let bad=[],evs=new Set(),seasons=new Set();const t0=Date.UTC(2026,10,1,10);let S=fresh(t0);
  for(let d=0;d<3*365;d++){const t=t0+d*D;const G=eng(t);G.S=S;try{G.roll();const q=G.questView();const gq=G.guildQuests();const p=G.passState();
-   if(q.d.some(x=>!x||!x.t||!(x.n>0))||q.w.length!==4||q.w.some(x=>!x||!x.t||!(x.n>0))||gq.some(x=>!x||!x.t))bad.push(d+':quetes');
+   if(q.d.some(x=>!x||!x.t||!(x.n>0))||q.w.length<2||q.w.length>4||q.w.some(x=>!x||!x.t||!(x.n>0))||gq.some(x=>!x||!x.t))bad.push(d+':quetes');
    if(!(p.k>=0)||G.seasonLeft()<1||G.seasonLeft()>28)bad.push(d+':pass');const e=G.weekendEvent(t);if(e)evs.add(e);seasons.add(p.k);
    if(!G.weekOffer()||!(G.weekOffer().g>0))bad.push(d+':offre');if(!(G.weekTheme()>=0))bad.push(d+':theme');S=G.S;}catch(err){bad.push(d+':'+err.message);if(bad.length>5)break;}}
  T('3 ans simulés jour par jour : aucune quête, saison, offre ou thème cassé',bad.length===0);if(bad.length)console.log(bad.slice(0,5));
  T('…tous les événements tournent',evs.size===4);T('…une saison toutes les 4 semaines (≈ 39)',seasons.size>=38&&seasons.size<=41);}
+// v12.6 : seules les quêtes réalisables sont proposées, et le tirage est le même côté téléphone et serveur
+{const bad=[];for(let d=0;d<60;d++){const t=MON+d*D;for(const st of [2,12,40]){const G=eng(t);const S=fresh(t);S.bestStage=st;S.run.stage=st;S.equip=[];G.S=S;const v=G.questView();
+   const txt=v.d.concat(v.w).map(q=>q.t).join('|');if(/q_jok3/.test(txt)||(st<30&&/q_pre/.test(txt))||(st<10&&/q_titan|q_top10/.test(txt))||(st<10&&/q_boss/.test(txt)))bad.push(st+':'+txt);}}
+ T('v12.6 : aucune quête impossible (réfraction, jokers, Titan, ligue, boss) avant de pouvoir les faire',bad.length===0);if(bad.length)console.log(bad.slice(0,3));
+ const t=MON,S=fresh(t);S.prestiges=2;S.bestStage=60;let r=act(S,'sync',{},t);const G=eng(t);G.S=JSON.parse(JSON.stringify(r.state));const ids=G.questView().w.map(q=>q.t).join();
+ r.state.bestStage=2;const G2=eng(t+3600e3);G2.S=r.state;T('v12.6 : tirage hebdo mémorisé (ne change pas si l\'état change dans la semaine)',G2.questView().w.map(q=>q.t).join()===ids&&G.questView().w.length===4);}
 console.log(`t7season : ${ok} OK, ${ko} KO`);
