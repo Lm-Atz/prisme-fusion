@@ -137,3 +137,4 @@ Object.assign(I18N.it,{"md_season_d": "Raggiungere il livello 50 del pass {n} vo
 Object.assign(I18N.it,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n}%"}); // v12.7
 
 Object.assign(I18N.it,{"evp_t": "Pacchetto {e}", "evp_aria": "Offerta del weekend", "rt_use": "Termina con un gettone"}); // v12.9 : packs du week-end
+Object.assign(I18N.it,{"shp_offers": "Offerte", "shp_gems": "Gemme", "shp_bonus": "Bonus", "shp_skins": "Colori"}); // v13 : onglets de la boutique

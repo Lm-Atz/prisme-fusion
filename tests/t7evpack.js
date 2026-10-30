@@ -48,7 +48,7 @@ console.log(`t7evpack (moteur) : ${ok} OK, ${ko} KO`);
  {const st=DB[id].state;st.bestStage=40;st.run.stage=40;st.run.max=40;st.maxStage=40;st.st.tuto=3;st.gems=50;st.srvAt=now();st.simBy='autre';}
  await p.evaluate(async()=>{await window.__G.actAsync('sync');window.__G.closeModal&&window.__G.closeModal();document.getElementById('veil').hidden=true;window.__G.setTab('home');});
  await p.waitForTimeout(1500);
- let r=await p.evaluate(()=>({chip:!document.getElementById('evChip').hidden,modal:!document.getElementById('veil').hidden,txt:document.getElementById('modal').innerText,rows:document.querySelectorAll('#modal .evpk .offer').length}));
+ let r=await p.evaluate(()=>({chip:!document.getElementById('evChip').hidden,modal:!document.getElementById('veil').hidden,txt:document.getElementById('modal').innerText,rows:document.querySelectorAll('#modal .evpk .gtile').length}));
  T('client : pastille de l\'événement visible sur l\'accueil',r.chip,r);T('client : fenêtre des packs ouverte une fois (3 paliers)',r.modal&&r.rows===3,r);
  await p.screenshot({path:'/tmp/claude-0/-home-claude/88f4d138-66ef-5763-882a-0d473f4a1294/scratchpad/evpk_modal.png'});
  await p.evaluate(()=>document.querySelector('#modal [data-close]').click());await p.waitForTimeout(1200);
@@ -62,7 +62,7 @@ console.log(`t7evpack (moteur) : ${ok} OK, ${ko} KO`);
  r=await p.evaluate(()=>({g:window.__G.S.gems,rt:window.__G.S.rt}));T('client : pack reçu (gemmes + 3 jetons) et confirmé par le serveur',r.g===50+P.g[1]&&r.rt===P.build[1]&&DB[id].state.rt===P.build[1]&&DB[id].state.gems===r.g,{r,srv:DB[id].state.gems});
  // boutique : 3 lignes, palier 2 acheté ; les packs ne sont pas en double dans « offres »
  await p.evaluate(()=>window.__G.setTab('shop'));await p.waitForTimeout(300);
- r=await p.evaluate(()=>({rows:document.querySelectorAll('#panel .evpk .offer').length,dis:[...document.querySelectorAll('#panel .evpk [data-offer]')].map(b=>b.disabled),dup:document.querySelectorAll('#panel [data-offer^="ev"]').length}));
+ r=await p.evaluate(()=>({rows:document.querySelectorAll('#panel .evpk .gtile').length,dis:[...document.querySelectorAll('#panel .evpk [data-offer]')].map(b=>b.disabled),dup:document.querySelectorAll('#panel [data-offer^="ev"]').length}));
  T('client : boutique : 3 paliers, le 2e marqué acheté',r.rows===3&&r.dis.join()==='false,true,false'&&r.dup===3,r);
  await p.screenshot({path:'/tmp/claude-0/-home-claude/88f4d138-66ef-5763-882a-0d473f4a1294/scratchpad/evpk_shop.png',fullPage:false});
  // jeton dans l'Atelier

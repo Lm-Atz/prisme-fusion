@@ -216,7 +216,7 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};const g=G.OFFERS.filter(x=>x
   S.day.adk={};const l0=G.adLeft('shop');G.adUse('shop');o.adcap=l0===5&&G.adLeft('shop')===4;S.day.adk={shop:5};o.adzero=G.adLeft('shop')===0;S.day.adk={};
   return o;});
 T('packs : 100 → 16 000 gemmes',r.packs);T('packs : plus on paie, plus la gemme est bon marché',r.mono);T('bonus affiché ≤ bonus réel, arrondi vers le bas',r.bonusTrue);T('pubs : plafond de 5 par jour en boutique',r.adcap&&r.adzero);
-await ev(()=>{window.__G.S.day.adk={shop:5};window.__G.setTab('shop');});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/×0/.test(document.getElementById('adSparks').textContent)));
+await ev(()=>{window.__G.S.day.adk={shop:5};(window.__G.shopPane='bonus',window.__G.setTab('shop'));});T('boutique : pub épuisée → bouton désactivé',await ev(()=>document.getElementById('adSparks').disabled&&/×0/.test(document.getElementById('adSparks').textContent)));
 await ev(()=>{window.__G.S.day.adk={};window.__G.setTab('home');});
 // v9.8 : plafond des gemmes de cadeaux, coffre de gemmes
 r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.day.gg=0;const g0=S.gems;
@@ -230,13 +230,13 @@ r=await ev(()=>{const G=window.__G,S=G.S;const o={};S.day.gg=0;const g0=S.gems;
   return o;});
 T('cadeaux : au plus 30 gemmes par jour',r.cap);T('cadeaux : plus de gemmes une fois le plafond atteint',r.noGem);T('coffre : 1 gemme pour 2 gemmes gratuites',r.half);T('coffre : les gemmes achetées ne le remplissent pas',r.paidNoFill);
 T('coffre : fermé sous 300',r.closed);T('coffre : plafonné à 600',r.capped);T('coffre : ouverture = contenu exact, puis vide',r.open&&r.again);
-await ev(()=>{const G=window.__G;G.S.chest=700;G.setTab('shop');});T('boutique : coffre affiché avec son contenu',await ev(()=>/Coffre de gemmes/.test(document.getElementById('panel').innerText)&&/350 \/ 600/.test(document.getElementById('panel').innerText)&&/Prête/.test(document.getElementById('panel').innerText)&&!!document.querySelector('#panel .chbar')));
+await ev(()=>{const G=window.__G;G.S.chest=700;(window.__G.shopPane='offers',window.__G.setTab('shop'));});T('boutique : coffre affiché avec son contenu',await ev(()=>/Coffre de gemmes/.test(document.getElementById('panel').innerText)&&/350 \/ 600/.test(document.getElementById('panel').innerText)&&/Prête/.test(document.getElementById('panel').innerText)&&!!document.querySelector('#panel .chbar')));
 await ev(()=>{window.__G.S.chest=0;window.__G.setTab('home');});
 // ===== v10 : boutique, pass de saison, achats encadrés, notifications, offres contextuelles, confidentialité =====
-await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.setTab('shop');});
-r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');const H=pn.innerHTML;o.order=H.indexOf('shopGift')<H.indexOf('data-tab="pass"')&&H.indexOf('data-tab="pass"')<H.indexOf('data-offer="g100"');
-  o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');o.x2=/×2/.test(pn.querySelector('.x2bar').innerText)&&pn.querySelectorAll('.x2bar').length===1&&pn.querySelectorAll('.x2').length===0;o.best=pn.querySelectorAll('.offer.best .ribbon').length===1&&!!pn.querySelector('.offer.best [data-offer="g16000"]');o.nopct=!/par rapport au petit paquet/.test(pn.innerText)&&pn.querySelectorAll('.bon').length===5;o.starter=pn.innerHTML.indexOf('data-offer="starter"')<pn.innerHTML.indexOf('data-tab="pass"');return o;});
-T('v11 : boutique : cadeau, puis carte du pass, puis gemmes',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v11.2 : ×2 annoncé une fois (bandeau)',r.x2);T('v11.2 : un seul « Meilleur rapport », sur le vrai meilleur pack',r.best);T('v11.2 : bonus en pastille, plus de phrase répétée',r.nopct);T('v11.2 : pack de départ en haut tant qu\'il n\'est pas pris',r.starter);
+await ev(()=>{const G=window.__G;G.S.settings.age='a';G.S.firstX2=false;G.S.spend=null;G.S.day.sgift=0;G.S.pass=null;G.shopPane='offers';G.setTab('shop');});
+r=await ev(()=>{const G=window.__G,o={};const pn=document.getElementById('panel');let H=pn.innerHTML;o.order=H.indexOf('shopGift')<H.indexOf('data-tab="pass"')&&H.indexOf('data-offer="g100"')<0;o.starter=H.indexOf('data-offer="starter"')<H.indexOf('data-tab="pass"');o.light=pn.querySelectorAll('.pt').length===0&&!pn.querySelector('[data-pass]');
+  G.shopPane='gems';G.renderTab();o.x2=/×2/.test(pn.querySelector('.x2bar').innerText)&&pn.querySelectorAll('.x2bar').length===1&&pn.querySelectorAll('.x2').length===0;o.best=pn.querySelectorAll('.gtile.best .ribbon').length===1&&!!pn.querySelector('.gtile.best[data-offer="g16000"]');o.nopct=!/par rapport au petit paquet/.test(pn.innerText)&&pn.querySelectorAll('.gtile s').length===6;G.shopPane='offers';G.renderTab();return o;});
+T('v11 : boutique : v13 : Offres : cadeau puis pass ; gemmes dans leur onglet',r.order);T('v11 : la boutique n\'affiche plus les paliers (menu dédié)',r.light);T('v11.2 : ×2 annoncé une fois (bandeau)',r.x2);T('v11.2 : un seul « Meilleur rapport », sur le vrai meilleur pack',r.best);T('v11.2 : 1er achat : ancien montant barré, plus de phrase répétée',r.nopct);T('v11.2 : pack de départ en haut tant qu\'il n\'est pas pris',r.starter);
 r=await ev(()=>{const G=window.__G;const g=G.S.gems;document.getElementById('shopGift').click();const a=G.S.gems===g+5&&document.getElementById('shopGift').disabled;return a;});T('v10 : cadeau du jour +5, puis bouton désactivé',r);
 await p.locator('#panel [data-tab="pass"]').first().click();
 r=await ev(()=>{const G=window.__G,pn=document.getElementById('panel'),o={};o.tab=G.tab==='pass';o.rows=pn.querySelectorAll('.pt:not(.ph)').length===10&&/Paliers 1 à 10/.test(pn.innerText)&&/1 \/ 100/.test(pn.innerText) /* v12.3 : palier 1 offert */;o.nav=document.querySelector('.nav [data-tab="shop"]').getAttribute('aria-selected')==='true';return o;});
@@ -254,14 +254,14 @@ T('v12 : acheter 1 palier = 15 gemmes',r.buy1);T('v11 : sans pass payant, seul l
 await ev(()=>{window.__G.passXP(0);window.__G.renderTab();});await p.locator('#panel [data-passbuy]').click();await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);await ev(()=>{const G=window.__G;window.__pp=-1;});
 r=await ev(()=>{const G=window.__G;G.setTab('pass');const g=G.S.gems;document.querySelector('[data-ppage="0"]')?.click();const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();const o={one:G.passState().prem&&G.S.gems===g+8&&G.S.spend.eur===4.99};
   const g2=G.S.gems;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+7*8;return o;}); /* v12 : palier 5 = coffre (production + boost), sans gemmes */T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
-await ev(()=>window.__G.setTab('shop'));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
+await ev(()=>(window.__G.shopPane='gems',window.__G.setTab('shop')));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
-await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
+await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.shopPane='gems';G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
 await p.locator('[data-offer="g600"]').click();await p.locator('#modal [data-confirm="g600"]').click();await p.waitForTimeout(100);
 T('v10.6 : plus d\'alerte de dépenses, achat direct',await ev(g=>window.__G.S.gems===g+600&&!/Alerte de dépenses/.test(document.getElementById('modal').innerText)&&!/Dépensé ce mois/.test(document.getElementById('panel').innerText),gA));
-await ev(()=>{const G=window.__G;delete G.S.settings.age;G.S.spend=null;G.setTab('shop');});const gB=await ev(()=>window.__G.S.gems);await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
+await ev(()=>{const G=window.__G;delete G.S.settings.age;G.S.spend=null;G.shopPane='gems';G.setTab('shop');});const gB=await ev(()=>window.__G.S.gems);await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 T('v10.5 : achat possible sans âge déclaré (contrôles Google/Apple)',await ev(g=>window.__G.S.gems===g+100&&!/Achats indisponibles/.test(document.getElementById('modal').innerText),gB));
-T('v12 : couleurs de la saison : non achetables, marquées palier 50 / 100',await ev(()=>{const G=window.__G,k=G.seasonKey();G.S.skins=G.S.skins.filter(s=>!/^s\d/.test(s));G.setTab('shop');const b=document.querySelector(`[data-skin="s${k}"]`),bx=document.querySelector(`[data-skin="s${k}x"]`);const g=G.S.gems;b.click();return !!b&&!!bx&&/50/.test(b.innerText)&&/100/.test(bx.innerText)&&!G.S.skins.includes('s'+k)&&G.S.gems===g&&!document.querySelector('[data-skin="saison"]');}));
+T('v12 : couleurs de la saison : non achetables, marquées palier 50 / 100',await ev(()=>{const G=window.__G,k=G.seasonKey();G.S.skins=G.S.skins.filter(s=>!/^s\d/.test(s));G.shopPane='skins';G.setTab('shop');const b=document.querySelector(`[data-skin="s${k}"]`),bx=document.querySelector(`[data-skin="s${k}x"]`);const g=G.S.gems;b.click();return !!b&&!!bx&&/50/.test(b.innerText)&&/100/.test(bx.innerText)&&!G.S.skins.includes('s'+k)&&G.S.gems===g&&!document.querySelector('[data-skin="saison"]');}));
 // profil : plafond, confidentialité, âge
 await ev(()=>window.__G.setTab('profile'));
 T('v10 : profil : plus de plafond, pas d\'interrupteur de notifications sans téléphone',await ev(()=>!document.getElementById('setCap')&&!/Âge déclaré/.test(document.getElementById('panel').innerText)&&!document.getElementById('setNotif')));
@@ -305,7 +305,7 @@ r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hid
   document.querySelector('#panel [data-grp="start"]').click();await new Promise(z=>setTimeout(z,30));o.tagK=[...document.querySelectorAll('#panel .tile')].every(t=>t.querySelector('.ttag.keep'));
   const f=document.querySelector('#panel .b small');o.font=!f||/Lilita/.test(getComputedStyle(f).fontFamily);G.setTab('home');
   G.S.run.max=35;G.renderActs();document.getElementById('prest').click();const m=document.getElementById('modal');o.pre=!!m.querySelector('.prek .keep')&&!!m.querySelector('.prek .cyc')&&/Tu gardes/.test(m.innerText)&&/Tu repars à zéro/.test(m.innerText);m.querySelector('[data-close]').click();
-  G.setTab('shop');const sm=[...document.querySelectorAll('#panel .b small')];o.adFont=sm.length>0&&sm.every(e=>/Lilita/.test(getComputedStyle(e).fontFamily));G.setTab('home');return o;});
+  G.shopPane='bonus';G.setTab('shop');const sm=[...document.querySelectorAll('#panel .b small')];o.adFont=sm.length>0&&sm.every(e=>/Lilita/.test(getComputedStyle(e).fontFamily));G.setTab('home');return o;});
 T('v12.2 : Atelier › Recherches : Départ, Jokers, Armes (toutes définitives)',r.rows);T('v11 : étiquette or sur les recherches gardées',r.tagK);
 T('v11 : Réfraction : « Tu gardes » / « Tu repars à zéro »',r.pre);T('v11 : petits textes des boutons dans la police du jeu',r.font&&r.adFont);
 r=await ev(async()=>{const G=window.__G,o=[];const lang0=G.LANG;for(const lg of ['fr','de','pt']){G.setLang(lg);for(const tb of ['shop','pass','quests','profile','atelier']){G.setTab(tb);document.querySelectorAll('#panel button,#panel .b').forEach(e=>{if(!e.offsetParent)return;const R=e.getBoundingClientRect();e.querySelectorAll('*').forEach(c=>{const q=c.getBoundingClientRect();if(q.width&&(q.right>R.right+2||q.left<R.left-2))o.push(lg+'/'+tb+': '+c.textContent.trim().slice(0,25));});});}}G.setLang(lang0);G.setTab('home');return o;});
@@ -313,7 +313,7 @@ T('v11 : aucun texte qui déborde de son bouton (fr, de, pt) '+r.slice(0,3).join
 // v11.1 : game feel des menus, onglets verrouillés, Échap
 r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;const sv={b:G.S.bestStage,p:G.S.prestiges};G.S.bestStage=1;G.S.prestiges=0;G.refresh();
   const b=document.querySelector('.nav [data-tab="shop"]');b.click();o.lockTap=G.tab!=='shop'&&/étape 8/.test(document.getElementById('toast').textContent);G.S.bestStage=sv.b;G.S.prestiges=sv.p;G.refresh();o.unl=!document.querySelector('.nav [data-tab="shop"]').classList.contains('lockd');
-  G.S.day.sgift=0;G.setTab('shop');const g0=G.S.gems;document.getElementById('shopGift').click();const pop=document.querySelector('.rwpop');o.pop=!!pop&&/\+5/.test(pop.textContent)&&G.S.gems===g0+5;
+  G.S.day.sgift=0;G.shopPane='offers';G.setTab('shop');const g0=G.S.gems;document.getElementById('shopGift').click();const pop=document.querySelector('.rwpop');o.pop=!!pop&&/\+5/.test(pop.textContent)&&G.S.gems===g0+5;
   await new Promise(z=>setTimeout(z,1100));o.gone=!document.querySelector('.rwpop');
   G.setTab('home');await new Promise(z=>setTimeout(z,600));const c=document.getElementById('cG');G.S.gems+=500;G.refresh();await new Promise(z=>setTimeout(z,120));const mid=+c.textContent.replace(/\D/g,'');await new Promise(z=>setTimeout(z,600));const end=+c.textContent.replace(/\D/g,'');
   o.count=mid<G.S.gems&&end===G.S.gems;G.S.gems-=500;G.refresh();
@@ -337,7 +337,7 @@ T('v11.2 : langue : plus de menu déroulant système',r.nosel);T('v11.2 : langue
 // v11.3 : identité visuelle par onglet
 r=await ev(async()=>{const G=window.__G,o={};document.getElementById('veil').hidden=true;const acc=t=>{G.setTab(t);return getComputedStyle(document.querySelector('#panel .phead .ttl')).color;};
   o.diff=new Set(['atelier','quests','clan','shop'].map(acc)).size===4;G.S.st.manual=Math.max(G.S.st.manual,20);G.setTab('quests');o.one=document.querySelectorAll('#panel .hero').length<=1;
-  G.S.starter=false;G.setTab('shop');o.shop=!!document.querySelector('#panel .offer.feat.hero .herol');G.setTab('profile');o.none=!document.querySelector('#panel .hero');G.setTab('home');return o;});
+  G.S.starter=false;G.shopPane='offers';G.setTab('shop');o.shop=!!document.querySelector('#panel .offer.feat.hero .herol');G.setTab('profile');o.none=!document.querySelector('#panel .hero');G.setTab('home');return o;});
 T('v11.3 : une couleur du spectre par onglet',r.diff);T('v11.3 : au plus un élément mis en avant par écran',r.one&&r.none);T('v11.3 : offre de bienvenue mise en avant en boutique',r.shop);
 // v11.5 : « Nouvel onglet » une seule fois, même après une synchronisation qui réécrit la partie
 r=await ev(async()=>{const G=window.__G;document.getElementById('veil').hidden=true;const sv={b:G.S.bestStage,p:G.S.prestiges};G.navReset();localStorage.removeItem('prisme-nav');
@@ -389,8 +389,8 @@ r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeo
   o.perks=P().querySelectorAll('.perks .pchips span').length===4&&!!P().querySelector('.sname');o.price=!!P().querySelector('[data-passtier="1"]')&&/15/.test(P().querySelector('[data-passtier="1"]').textContent);
   o.active=G.premOn()&&!!P().querySelector('.perks.on');
   G.setTab('atelier');document.querySelector('[data-atpane="res"]')?.click();await w(20);document.querySelector('[data-grp="start"]')?.click();await w(30);o.slot=/grâce au pass/.test(P().textContent);
-  G.setTab('shop');await w(30);const k=G.seasonKey();o.skins=!!P().querySelector(`[data-skin="s${k}"]`)&&!!P().querySelector(`[data-skin="s${k}x"]`);
-  const b=document.getElementById('weekOffer');const g=G.S.gems,c=G.weekOffer().g;b.click();await w(80);o.wo=G.S.gems===g-c&&document.getElementById('weekOffer').disabled;
+  G.shopPane='skins';G.setTab('shop');await w(30);const k=G.seasonKey();o.skins=!!P().querySelector(`[data-skin="s${k}"]`)&&!!P().querySelector(`[data-skin="s${k}x"]`);
+  G.shopPane='offers';G.renderTab();await w(30);const b=document.getElementById('weekOffer');const g=G.S.gems,c=G.weekOffer().g;b.click();await w(80);o.wo=G.S.gems===g-c&&document.getElementById('weekOffer').disabled;
   const real=Date.now;const sat=(()=>{let t=real();for(let i=0;i<8;i++){if(G.weekendEvent(t))return t;t+=864e5;}return t;})();Date.now=()=>sat;G.renderTab();o.ev=!!P().querySelector('.evcard.on');G.setTab('quests');o.evq=!!P().querySelector('.evcard');Date.now=real;G.renderTab();
   return o;});
 T('v12 : pass : avantages premium et prix 15 gemmes',r.perks&&r.price);T('v12 : pass acheté → avantages « Actif »',r.active);T('v12 : atelier : emplacement du pass signalé',r.slot);
@@ -400,7 +400,7 @@ r=await ev(async()=>{const G=window.__G,o={};const w=ms=>new Promise(z=>setTimeo
   o.dot=document.getElementById('meBtn').classList.contains('dot');G.setTab('profile');await w(30);const P=()=>document.getElementById('panel');
   o.sec=P().querySelectorAll('.medal').length===12&&!!P().querySelector('[data-medal="explore"]');const g=G.S.gems,d0=G.bonusMul('dmg');P().querySelector('[data-medal="explore"]').click();await w(80);
   o.claim=G.S.medals.explore===1&&G.S.gems===g+5&&G.bonusMul('dmg')>d0&&/Bronze/.test(P().textContent);
-  G.setTab('shop');await w(30);o.bn=P().querySelectorAll('.skin .skbn').length>=10&&!!P().querySelector('[data-skin="rubis"] .bnc')&&/\+12/.test(P().querySelector('[data-skin="rubis"]').textContent);
+  G.shopPane='skins';G.setTab('shop');await w(30);o.bn=P().querySelectorAll('.skin .skbn').length>=10&&!!P().querySelector('[data-skin="rubis"] .bnc')&&/\+12/.test(P().querySelector('[data-skin="rubis"]').textContent);
   G.S.gems=5000;const b=P().querySelector('[data-skin="solaire"]');const g2=G.S.gems;b.click();await w(80);o.buy=G.S.skin==='solaire'&&G.S.gems===g2-2000&&G.S.skins.includes('solaire');
   return o;});
 T('v12.1 : point sur l\'engrenage quand une médaille est prête',r.dot);T('v12.1 : 12 médailles dans le profil',r.sec);T('v12.1 : médaille récupérée au clic (+5 gemmes, bonus actif)',r.claim);
@@ -415,7 +415,7 @@ r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeo
   S.bestStage=sv.b;S.prestiges=sv.p;Object.assign(S.run.tb,sv.tb);Object.assign(S.up,sv.up);G.renderTB();
   try{localStorage.removeItem('prisme-hintr');}catch(e){}const p0=S.prestiges,b0=S.bestStage;S.prestiges=0;S.bestStage=26;document.getElementById('hint').hidden=true;G.refresh();o.hint=!document.getElementById('hint').hidden&&/Réfraction/.test(document.getElementById('hint').textContent);document.getElementById('hint').hidden=true;G.refresh();o.once=document.getElementById('hint').hidden;S.prestiges=p0;S.bestStage=b0;
   S.run.sparks=1e9;G.refresh();o.soft=document.getElementById('bA').classList.contains('soft');
-  G.setTab('shop');await w(30);o.pop=!!document.querySelector('#panel .offer.pop .rpop');const wo=G.weekOffer();o.was=wo.id==='boost'||wo.id==='prod'||wo.id==='mix'?(!!document.querySelector('#weekOffer .was')||S.week.wo):true;
+  G.shopPane='gems';G.setTab('shop');await w(30);o.pop=!!document.querySelector('#panel .gtile.pop .rpop');G.shopPane='offers';G.renderTab();await w(30);const wo=G.weekOffer();o.was=wo.id==='boost'||wo.id==='prod'||wo.id==='mix'?(!!document.querySelector('#weekOffer .was')||S.week.wo):true;
   G.setTab('pass');await w(30);o.next=!!document.querySelector('#panel .pnext');G.setTab('home');return o;});
 T('v12.3 : gemme du Profil de nouveau dessinée',r.gem);T('v12.3 : 2 boosters au départ, sans « Plus »',r.start);T('v12.3 : 3 boosters + « Plus » à l\'étape 4',r.mid);T('v12.3 : tous les boosters après une Réfraction',r.all);
 T('v12.3 : la Réfraction expliquée à l\'étape 25, une seule fois',r.hint&&r.once);T('v12.3 : pastille Atelier discrète (achat possible)',r.soft);T('v12.3 : « Populaire » sur le pack à 4,99 €',r.pop);T('v12.3 : prix habituel barré sur l\'offre de la semaine',r.was);T('v12.3 : prochaine grosse récompense du pass',r.next);
@@ -429,13 +429,13 @@ T('v12.4 : peu de texte : Boosters ≤ 60, Atelier ≤ 50, Jokers ≤ 60, Réfra
 r=await ev(async()=>{const G=window.__G,S=G.S,o={},w=ms=>new Promise(z=>setTimeout(z,ms));document.getElementById('veil').hidden=true;const P=document.getElementById('panel');
   S.day.claimed=[];S.day.kills=999;S.day.merges=9999;S.day.jokers=99;S.day.bosses=9;S.day.tb=99;S.day.gifts=9;S.day.combo=30;S.day.ads=9;S.day.prestiges=9;G.setTab('quests');await w(30);
   const q=[...P.querySelectorAll('.quest[data-claim^="d:"]')][1];P.scrollTop=q.offsetTop-200;const y0=P.scrollTop;q.click();await w(60);o.keep=y0>100&&Math.abs(P.scrollTop-y0)<5;
-  G.setTab('shop');await w(30);o.top=P.scrollTop===0;
+  G.shopPane='offers';G.setTab('shop');await w(30);o.top=P.scrollTop===0;
   // pastilles
   S.day.claimed=[0,1,2,3];S.week.claimed=[0,1,2,3];S.onb=G.ONB.map((_,i)=>i);G.loginState();G.claimLogin();S.day.sgift=1;S.medals={};S.bestStage=1;
   const ps=G.passState();ps.cf=Array.from({length:100},(_,i)=>i+1);ps.cp=ps.cf.slice();G.refresh();
   o.none=document.getElementById('bQ').hidden&&document.getElementById('bS').hidden;
   ps.cf=ps.cf.filter(x=>x!==1);G.refresh();o.passQ=!document.getElementById('bQ').hidden&&!document.getElementById('bS').hidden;G.setTab('quests');await w(20);o.passCard=!!P.querySelector('.pcard .badge');
-  ps.cf.push(1);S.day.sgift=0;G.refresh();o.gift=!document.getElementById('bS').hidden&&document.getElementById('bQ').hidden;G.setTab('shop');await w(20);o.giftCard=!!P.querySelector('.sgift .badge.rd');
+  ps.cf.push(1);S.day.sgift=0;G.refresh();o.gift=!document.getElementById('bS').hidden&&document.getElementById('bQ').hidden;G.shopPane='offers';G.setTab('shop');await w(20);o.giftCard=!!P.querySelector('.sgift .badge.rd');
   S.day.sgift=1;G.refresh();o.giftGone=document.getElementById('bS').hidden;
   return o;});
 T('v12.5 : quête validée : l\'écran reste à sa place',r.keep);T('v12.5 : changement d\'écran : retour en haut',r.top);T('v12.5 : rien à récupérer → aucune pastille',r.none);

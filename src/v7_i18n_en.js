@@ -137,3 +137,4 @@ Object.assign(I18N.en,{"md_season_d": "Reach pass tier 50 {n} time{n|s}"}); // v
 Object.assign(I18N.en,{"u_st_bank": "Treasure", "u_st_bank_d": "Treasure +{n}%"}); // v12.7
 
 Object.assign(I18N.en,{"evp_t": "{e} pack", "evp_aria": "Weekend offer", "rt_use": "Finish with a token"}); // v12.9 : packs du week-end
+Object.assign(I18N.en,{"shp_offers": "Offers", "shp_gems": "Gems", "shp_bonus": "Boosts", "shp_skins": "Colors"}); // v13 : onglets de la boutique

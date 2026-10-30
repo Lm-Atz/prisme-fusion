@@ -163,3 +163,4 @@ Object.assign(I18N.fr,{"md_season_d": "Atteindre le palier 50 du pass {n} fois"}
 Object.assign(I18N.fr,{"u_st_bank": "Trésor", "u_st_bank_d": "Trésor +{n} %"}); // v12.7
 
 Object.assign(I18N.fr,{"evp_t": "Pack {e}", "evp_aria": "Offre du week-end", "rt_use": "Terminer avec un jeton"}); // v12.9 : packs du week-end
+Object.assign(I18N.fr,{"shp_offers": "Offres", "shp_gems": "Gemmes", "shp_bonus": "Bonus", "shp_skins": "Couleurs"}); // v13 : onglets de la boutique

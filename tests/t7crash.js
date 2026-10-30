@@ -29,7 +29,7 @@ async function open(d,init){const c=d?await chromium.launchPersistentContext(d,{
   T('partie plus récente ailleurs : le téléphone la reprend au lieu de l\'écraser',r0.stale&&r0.sp>=2000&&r0.st===7&&r0.gems===300&&DB.players[id].state.run.sparks>=2000,r0);await W(300);
   // 1. ACHATS puis coupure immédiate : enregistrés par le serveur à l'instant de l'achat, sans attendre la synchro
   acts=[];const r1=await p.evaluate(async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('atelier');document.querySelector('[data-build="st_cad"]').click();
-    G.setTab('shop');document.querySelector('[data-gem="boost"]').click();await new Promise(z=>setTimeout(z,600));return {gems:G.S.gems,build:G.S.build.length,boost:G.S.boostUntil>Date.now()};});
+    G.shopPane='bonus';G.setTab('shop');document.querySelector('[data-gem="boost"]').click();await new Promise(z=>setTimeout(z,600));return {gems:G.S.gems,build:G.S.build.length,boost:G.S.boostUntil>Date.now()};});
   down=true; // plus de réseau / batterie à plat : rien d'autre ne part
   const s1=DB.players[id].state;
   T('achat en gemmes enregistré côté serveur sans attendre la synchro',s1.gems===r1.gems&&s1.boostUntil>Date.now(),{srv:s1.gems,loc:r1.gems});

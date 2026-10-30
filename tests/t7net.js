@@ -47,7 +47,7 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   r=await ev(A,async()=>{const G=window.__G;G.S.run.stage=400;G.S.bestStage=400;await G.actAsync('sync');return {st:G.S.run.stage,best:G.S.bestStage};});
   T('triche étape plafonnée',r.st<50&&r.best<50);
   // --- refus serveur : le téléphone croit avoir 100 gemmes, le serveur sait qu'il en a 20
-  r=await ev(A,async()=>{const G=window.__G;G.S.gems=100;G.setTab('shop');document.querySelector('[data-gem="boost"]').click();const local=G.S.gems;await new Promise(z=>setTimeout(z,400));await G.actAsync('sync');return {local,after:G.S.gems,boost:G.S.boostUntil>Date.now()};});
+  r=await ev(A,async()=>{const G=window.__G;G.S.gems=100;G.shopPane='bonus';G.setTab('shop');document.querySelector('[data-gem="boost"]').click();const local=G.S.gems;await new Promise(z=>setTimeout(z,400));await G.actAsync('sync');return {local,after:G.S.gems,boost:G.S.boostUntil>Date.now()};});
   T('achat local optimiste (75 gemmes)',r.local===75);T('serveur : refusé → 20 gemmes, pas de boost',r.after===20&&!r.boost);
   // --- cadeau : tiré par le serveur, accordé par le serveur après la pub
   r=await ev(A,async()=>{const G=window.__G;G.setTab('home');G.forceGift();await new Promise(z=>setTimeout(z,500));const gf=G.gift;const g0=G.S.gems,s0=G.S.run.sparks;if(!gf)return {gf:null};document.getElementById('gift').click();await new Promise(z=>setTimeout(z,100));document.getElementById('giftGo').click();await new Promise(z=>setTimeout(z,3800));await G.actAsync('sync');return {gf,dg:G.S.gems-g0,ds:G.S.run.sparks-s0,boost:G.S.boostUntil>Date.now()};});
@@ -79,7 +79,7 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   // --- v11.6 : Réfraction automatique validée par le serveur ; étincelles sans double comptage ; réinitialisation de démo côté serveur
   r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;await G.actAsync('sync');const p0=G.S.prestiges;G.hooks.autoPrestige();await new Promise(z=>setTimeout(z,600));await G.actAsync('sync');return {p0,p1:G.S.prestiges};});
   T('v11.6 : Réfraction automatique enregistrée par le serveur',r.p1===r.p0+1&&DB.players[idA].state.prestiges===r.p1||r.p1===r.p0&&DB.players[idA].state.prestiges===r.p0);
-  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;await G.actAsync('sync');const s0=G.S.run.sparks;G.S.gems=Math.max(G.S.gems,20);G.setTab('shop');const b=document.querySelector('[data-pack="0"]');if(!b||b.disabled)return null;b.click();await new Promise(z=>setTimeout(z,800));await G.actAsync('sync');return {cli:G.S.run.sparks};});
+  r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;await G.actAsync('sync');const s0=G.S.run.sparks;G.S.gems=Math.max(G.S.gems,20);G.shopPane='bonus';G.setTab('shop');const b=document.querySelector('[data-pack="0"]');if(!b||b.disabled)return null;b.click();await new Promise(z=>setTimeout(z,800));await G.actAsync('sync');return {cli:G.S.run.sparks};});
   if(r)T('v11.6 : étincelles d\'un paquet comptées une seule fois (téléphone = serveur)',Math.abs(r.cli-DB.players[idA].state.run.sparks)<Math.max(50,0.02*r.cli));
   // --- v11.6 : boosters achetés pendant un aller-retour lent : pas d'étincelles rendues
   LAT=600;r=await ev(A,async()=>{const G=window.__G;document.getElementById('veil').hidden=true;G.setTab('home');G.S.run.sparks=Math.max(G.S.run.sparks,1e5);await G.actAsync('sync');
