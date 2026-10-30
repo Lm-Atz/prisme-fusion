@@ -89,7 +89,12 @@ function pfApply(src,stateIn,body,nowMs,trusted){
   G.roll();
   const last=S.lastSeen||nowMs,dt=Math.max(0,(nowMs-last)/1000);
   const off=action==='hello'?G.offlineGains(nowMs):null; // réveil : hors-ligne calculé par le serveur, au débit mémorisé à la fermeture
-  pfMergeSim(G,body.sim,dt,anomalies); // ce que le téléphone a simulé depuis le dernier contact, borné
+  /* v12.8 : la simulation vient d'un AUTRE appareil (nouveau téléphone, réinstallation, ancien téléphone resté hors ligne
+     pendant qu'un autre jouait) et ne part pas de la dernière version serveur → elle écraserait la partie à jour avec une
+     partie vide ou périmée : on l'ignore, le téléphone reprend la partie du serveur. Le même appareil reste toujours accepté. */
+  const sm=body.sim&&typeof body.sim==='object'?body.sim:null,si=sm&&typeof sm.i==='string'?sm.i.slice(0,40):null;
+  const stale=!!(si&&stateIn&&stateIn.v===3&&stateIn.simBy&&si!==stateIn.simBy&&sm.b!==stateIn.srvAt);
+  if(stale)res.stale=true;else{pfMergeSim(G,body.sim,dt,anomalies);if(si)S.simBy=si;} // ce que le téléphone a simulé depuis le dernier contact, borné
   if(off&&(off.sparks>0||off.stages>0)){G.applyOffline(off,1);S.pendingOff={sparks:off.sparks,stages:off.stages,at:nowMs};res.offline=off;}
   G.tickBuild(nowMs);
   const need=(cond,err)=>{if(!cond){res.ok=false;res.err=err;}return cond;};
@@ -144,7 +149,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'guild_reward':if(need(trusted,'trusted')){const r=G.guildReward(pfInt(p.tier,1,9,0));if(need(!!r,'tier')){S.gems+=r.g;G.chestFill(r.g);S.run.sparks+=r.sparks;if(r.b)G.give({b:r.b});res.reward=r;}}break;
     case 'league':if(need(trusted,'trusted')){const gems=pfInt(p.gems,0,1000,0),minutes=pfInt(p.minutes,0,1000,0);const sp=Math.max(G.CFG.ads.floor.shop,Math.floor(G.rateMin()*minutes));S.gems+=gems;G.chestFill(gems);S.run.sparks+=sp;res.gems=gems;res.sparks=sp;}break;
   }
-  S.lastSeen=nowMs;if(anomalies.length)S.anom=(S.anom|0)+anomalies.length;
+  S.lastSeen=nowMs;S.srvAt=nowMs;if(anomalies.length)S.anom=(S.anom|0)+anomalies.length;
   return {state:S,result:res,anomalies};
 }
 const pfLeagueMinutes=r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10;

@@ -24,7 +24,9 @@ function syncClock(res){if(res&&res.now){clockOff=res.now-_dateNow();}}
 /* Le téléphone simule la partie (plateau, tirs, étincelles) ; le serveur applique les mêmes règles,
    borne ce qui a été simulé et renvoie l'état officiel, qui remplace le nôtre. */
 function mergeSave(o){const f=fresh();const m=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])m[k]=Object.assign({},f[k],o[k]||{});m.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});return migrate(m);}
-function simSnap(){snapBoard();const r=S.run;return {run:{sparks:r.sparks,stage:r.stage,max:r.max,tb:Object.assign({},r.tb),fled:!!r.fled,cells:r.cells,brate:r.brate||0,srate:r.srate||0,krate:r.krate||0},
+/* v12.8 : identifiant de CETTE installation + version serveur dont part la simulation (voir pf_core : stale) */
+const INST=(()=>{try{let v=localStorage.getItem('prisme-inst');if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('prisme-inst',v);}return v;}catch(e){return 'x';}})();
+function simSnap(){snapBoard();const r=S.run;return {i:INST,b:S.srvAt||0,run:{sparks:r.sparks,stage:r.stage,max:r.max,tb:Object.assign({},r.tb),fled:!!r.fled,cells:r.cells,brate:r.brate||0,srate:r.srate||0,krate:r.krate||0},
   st:{merges:S.st.merges,manual:S.st.manual,kills:S.st.kills,bosses:S.st.bosses,jokerUses:S.st.jokerUses,maxCombo:S.st.maxCombo,tuto:S.st.tuto,namePrompted:S.st.namePrompted,hintW:S.st.hintW},
   day:{merges:S.day.merges,kills:S.day.kills,bosses:S.day.bosses,tb:S.day.tb||0,jokers:S.day.jokers,combo:S.day.combo||0},week:{kills:S.week.kills,merges:S.week.merges|0,bosses:S.week.bosses|0},bestiary:S.bestiary,settings:S.settings,league:S.league};}
 let srvQ=Promise.resolve(),srvLast=0,srvErr=0,onServer=()=>{};
@@ -69,6 +71,7 @@ async function actNow(action,payload,snap,sent,retry=1,ent=null){
 /* l'état serveur remplace le nôtre ; on conserve seulement ce qui a bougé pendant l'aller-retour */
 function applyServer(d,sent){
   const st=d.state,prev=S,an=d.anomalies||[];
+  if(d.result&&d.result.stale){S=mergeSave(st);if(typeof newRun==='function'&&typeof R!=='undefined'&&R)try{newRun();}catch(e){}return;} /* v12.8 : partie du serveur reprise telle quelle (autre appareil plus à jour) */
   const gained=prev.run.sparks-sent; // v11.6 : peut être négatif (boosters achetés pendant l'aller-retour) ; borné à 0 avant → étincelles dépensées rendues, boosters gratuits
   const m=mergeSave(st);
   m.run.sparks=an.includes('sparks')?st.run.sparks:Math.max(0,st.run.sparks+gained);
