@@ -1,14 +1,13 @@
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-mail" viewBox="0 0 24 24"><path d="M2.5 5h19v14h-19z"/><path d="m2.8 5.6 9.2 7.2 9.2-7.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1.7"/></symbol></defs></svg>
 <section id="game">
   <div class="gwrap">
     <div class="arena">
       <canvas id="bossCv" data-i18n-aria="enemy_aria"></canvas>
-      <div class="stg"><button class="me" id="meBtn" data-i18n-aria="profile_aria"><svg class="i"><use href="#i-gear"/></svg></button><div class="stgt"><b id="stgN"></b><small id="stgW"></small><div class="tmr" id="tmr" hidden></div></div><div class="side"><button class="pill sm" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button><div class="quick" id="acts" hidden></div></div></div>
+      <div class="stg"><button class="me" id="meBtn" data-i18n-aria="profile_aria"><svg class="i"><use href="#i-gear"/></svg></button><div class="stgt"><b id="stgN"></b><small id="stgW"></small><div class="tmr" id="tmr" hidden></div></div><div class="side"><button class="pill sm" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button><div class="qgrid" id="qgrid"><div class="quick" id="acts" hidden></div><button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button><button class="evchip" id="evChip" hidden data-i18n-aria="evp_aria"></button><button class="qb mail" id="mailBtn" hidden data-i18n-aria="mail_aria"><span><svg class="i"><use href="#i-mail"/></svg></span><i class="mailn" id="mailN"></i></button></div></div></div>
       <div class="hp" id="hpWrap" role="progressbar" data-i18n-aria="hp_aria"><i id="hpLag"></i><i id="hpBar"></i></div>
       <div class="banner" id="banner" hidden></div>
+      <div class="hint" id="hint" hidden></div>
     </div>
-    <div class="hint" id="hint" hidden></div>
-    <button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button>
-    <button class="evchip" id="evChip" hidden data-i18n-aria="evp_aria"></button>
     <div class="boardwrap" id="bw"><canvas id="board" data-i18n-aria="board_aria"></canvas></div>
     <div class="jok" id="jok" hidden></div>
     <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b><small id="rateMin"></small><small id="refrG" hidden></small></div>

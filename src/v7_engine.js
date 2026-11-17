@@ -3,12 +3,12 @@ const CFG={
   board:{spawn0:2.4,spawnMin:0.35,spawnDecay:0.9},
   dmg:{base:2.6,combo:0.12,manual:1.6},
   shards:{kill:(n,type)=>type==='boss'?4*n:type==='mini'?n:n/25}, // éclats hors Réfraction : surtout les boss
-  sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
-  enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
+  sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,ne(n))*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
+  enemy:{hp:n=>400*Math.pow(1.6,ne(n)-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
    bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40,m:1.12},spark:{c0:50,g:1.5,max:30,m:1.08}}, // v12.2 : m = effet par niveau (Force et Gain absorbent Puissance et Étincelles)
-  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
+  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,ne(n))),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
   refr:{reset:['atk','grid','eco'],memCost:0.5,runCost:3,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20,stage:10}, // v12.6 : Titan dès l'étape 10, comme l'onglet Clan // jours : 0 = dimanche
@@ -26,12 +26,20 @@ const CFG={
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
   guild:{size:30,create:100,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
+  late:{from:100,k1:0.3,until:3000,k2:0.08}, // v14 : fin de partie infinie : après l'étape 100, chaque étape compte pour 0,3 étape « exponentielle » (PV ×1,15 au lieu de ×1,6) ; après 3000, 0,08 → plus de mur des nombres avant ~9 000 étapes
+  lum:{min:60,cap:24,m:1.005}, // v14 : Lumière : à chaque Réfraction (record de la course ≥ 60), 1 point par heure écoulée depuis la précédente (24 max) ; chaque point = dégâts ×1,005, pour toujours. Liée au temps, pas au nombre de Réfractions : pas d'emballement
+  road:{every:25,g:k=>Math.min(150,30+5*k),m:1.05}, // v14 : route des records : toutes les 25 étapes de record, gemmes + dégâts ×1,05 définitifs
   sparkShop:{packs:[{g:20,min:30},{g:50,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
 const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.defineProperty(w,'n',{get(){return t('w'+i)},enumerable:true}));
+const ne=n=>{const L=CFG.late;return n<=L.from?n:L.from+L.k1*(Math.min(n,L.until)-L.from)+L.k2*Math.max(0,n-L.until);}; // v14 : étape « exponentielle » effective
 const worldOf=n=>Math.floor((n-1)/10)+1;
-function worldInfo(w){const b=WORLDS[(w-1)%WORLDS.length];const cyc=Math.floor((w-1)/WORLDS.length);return {name:b.n+(cyc?' '+['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(cyc-1,8)]:''),h:b.h,k:b.k,col:`hsl(${b.h} 100% 62%)`};}
+/* v14 : mondes infinis : après le 1er tour des 5 mondes, chaque tour reçoit le nom d'une étoile (identique dans toutes les langues) et une teinte décalée */
+const STARS=['Vega','Orion','Lyra','Sirius','Altaïr','Rigel','Deneb','Antarès','Capella','Polaris','Aldébaran','Bételgeuse','Spica','Arcturus','Procyon','Castor','Pollux','Mira','Electra','Maïa','Alcor','Mizar','Thuban','Achernar','Canopus','Hadar','Mimosa','Shaula','Nunki','Alnair'];
+function worldInfo(w){const b=WORLDS[(w-1)%WORLDS.length];const cyc=Math.floor((w-1)/WORLDS.length);const h=cyc?(b.h+cyc*47)%360:b.h;
+  const suf=cyc?' · '+STARS[(cyc-1)%STARS.length]+(cyc>STARS.length?' '+(Math.floor((cyc-1)/STARS.length)+1):''):'';
+  return {name:b.n+suf,h,k:b.k,col:`hsl(${h} 100% 62%)`,cyc};}
 
 /* ---------- atelier : recherches ---------- */
 /* ---------- armes : la forme de la gemme (cycle de 8) ---------- */
@@ -104,7 +112,7 @@ function fresh(){
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
-    pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
+    pp:0,wp:{},mem:{},lum:0,road:0,runAt:now,lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],medals:{},
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
@@ -116,7 +124,7 @@ const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
 function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
-  if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+  if(!m.runAt)m.runAt=Date.now(); /* v14 */if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}pickDaily(); /* v12.6 : relu à chaque fois depuis S.day.qd (le serveur peut l'avoir fixé) */if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}pickWeekly();}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
@@ -362,10 +370,17 @@ function titanGemTicket(){const t=titanState();if(t.gem>=1||S.gems<CFG.titan.tic
 function startTitan(){if(!R||R.mode!=='farm'||!titanReady())return false;R.saved=R.E;R.E=titanEnemy();R.mode='titan';R.titanT=CFG.titan.time;R.titanDmg=0;titanState().used++;S.st.titans++;S.day.titans++;S.week.titans++;return true;}
 function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.titanBest)S.st.titanBest=d;R.E=R.saved||enemyFor(S.run.stage);R.mode='farm';hooks.titanEnd(d);}
 /* ---------- prestige ---------- */
+/* v14 : Lumière (Réfraction qui compte) et route des records */
+const lumGain=(n,now=Date.now())=>n<CFG.lum.min?0:Math.max(1,Math.min(CFG.lum.cap,Math.floor((now-(S.runAt||now))/3600e3)));
+const lumMult=()=>Math.pow(CFG.lum.m,S.lum|0);
+const roadN=()=>Math.floor((S.bestStage|0)/CFG.road.every);
+const roadReady=()=>roadN()-(S.road|0);
+const roadMult=()=>Math.pow(CFG.road.m,S.road|0);
+function claimRoad(){if(roadReady()<=0)return false;const k=(S.road|0)+1;S.road=k;const g=CFG.road.g(k);S.gems+=g;chestFill(g);return {k,g};}
 const prestigeGain=()=>S.run.max>=CFG.prestige.minStage?Math.floor(CFG.prestige.shards(S.run.max)*lootMult()):0;
 function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
-  S.pp=(S.pp||0)+ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first);S.prestiges++;roll();S.day.prestiges++;S.week.prestiges++;
+  S.pp=(S.pp||0)+ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first);S.lum=(S.lum|0)+lumGain(S.run.max);S.runAt=Date.now();S.prestiges++;roll();S.day.prestiges++;S.week.prestiges++;
   // Attaque, Plateau, Économie : remis à zéro, mais mémorisés (une recherche en cours compte comme acquise)
   S.mem=S.mem||{};const reset=u=>!u.joker&&CFG.refr.reset.includes(u.g);
   for(const b of S.build){const u=upById(b.id);if(u&&reset(u))S.mem[u.id]=Math.max(S.mem[u.id]||0,lvlOf(u)+1);}
@@ -561,7 +576,7 @@ const OFFERS=[
   {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:300,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
   {id:'loot',price:7.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
   {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
-  {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),h:CFG.pass.perks.offH,d:seasonLeft()})}},
+  {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),l:PASS.reduce((a,x)=>a+(x.p.lum|0),0),r:PASS.reduce((a,x)=>a+(x.p.rt|0),0),h:CFG.pass.perks.offH,d:seasonLeft()})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
 ].concat([0,1,2].map(i=>({id:'ev'+(i+1),price:CFG.evPack.price[i],ev:i,avail:()=>!!weekendEvent()&&!evBought(i),give(){evPackGive(i);},get t(){return t('evp_t',{e:t('ev_'+(weekendEvent()||nextEvent()))})},get d(){return typeof evRw==='function'?evRw(i):''}}))).concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
@@ -583,7 +598,14 @@ function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
 /* v10 : pass de saison */
 /* v11 : gratuit = 2 gemmes un palier sur deux, 10 min de production sinon ; premium = 8 gemmes, 50 tous les 10 paliers, boost 4 h aux paliers 25/50/75/100, couleur Saison au 100 (≈ 1 220 gemmes) */
 /* v12 : premium = 8 gemmes, coffre (2 h de production + boost 2 h) tous les 5 paliers, 80 gemmes tous les 10, couleur de la saison au 50 et sa version Éclat au 100 */
-const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:10}:{g:2},p:Object.assign(n%10===0?{g:80}:n%5===0?{m:120,b:2,chest:1}:{g:8},n===50?{skin:'S'}:{},n===CFG.pass.tiers?{skin:'SX'}:{})};});
+/* v14 : pass refondu : la Lumière (dégâts définitifs) et les jetons de recherche (une recherche terminée tout de suite) en font une vraie accélération.
+   gratuit : 15 min de production / 3 gemmes en alternance, boost 1 h tous les 5, +5 Lumière tous les 10, 1 jeton aux paliers 25/50/75/100
+   payant  : 8 gemmes, 1 jeton aux paliers en 3 et 7, coffre (2 h de production + boost 2 h) tous les 5, 80 gemmes + 10 Lumière tous les 10,
+             couleur de la saison au 50, version Éclat + 40 Lumière au 100 (≈ 1 280 gemmes, 20 jetons, 140 Lumière) */
+const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;
+  const f=Object.assign(n%10===0?{lum:5}:n%5===0?{b:1}:n%2?{m:15}:{g:3},n%25===0?{rt:1}:{});
+  const p=Object.assign(n%10===0?{g:80,lum:10}:n%5===0?{m:120,b:2,chest:1}:(n%10===3||n%10===7)?{rt:1}:{g:8},n===50?{skin:'S'}:{},n===CFG.pass.tiers?{skin:'SX',lum:50}:{});
+  return {f,p};});
 const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
 function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
 const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
@@ -619,7 +641,7 @@ const medalReady=m=>medalLvl(m.id)<4&&m.v()>=m.th[medalLvl(m.id)];
 function claimMedal(id){const m=MEDALS.find(x=>x.id===id);if(!m||!medalReady(m))return false;const l=medalLvl(id);S.medals=S.medals||{};S.medals[id]=l+1;S.gems+=MEDAL_GEMS[l];return true;}
 const medalsReady=()=>MEDALS.some(medalReady);
 /* bonus total d'un type : couleur portée × médailles × collection (+1 % d'étincelles par couleur possédée au-delà de la première) */
-function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const md=MEDALS.reduce((a,m)=>a+(m.k===k?medalBonusOf(m,medalLvl(m.id)):0),0);const col=k==='sp'?0.01*Math.max(0,(S.skins||[]).length-1):0;return (1+w)*(1+md)*(1+col);}
+function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const md=MEDALS.reduce((a,m)=>a+(m.k===k?medalBonusOf(m,medalLvl(m.id)):0),0);const col=k==='sp'?0.01*Math.max(0,(S.skins||[]).length-1):0;return (1+w)*(1+md)*(1+col)*(k==='dmg'?lumMult()*roadMult():1);} // v14 : Lumière et route des records multiplient les dégâts
 /* v12 : offre de la semaine (gemmes), une par semaine, qui change seule */
 const weekOffer=()=>{const L=CFG.weekOffer,h=dayHash('o'+weekKey());return L[h%L.length];};
 function buyWeekOffer(){roll();const o=weekOffer();if(S.week.wo||S.gems<o.g)return false;S.gems-=o.g;S.week.wo=1;if(o.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*o.m/30),Math.floor(rateMin()*o.m));if(o.b)give({b:o.b});return true;}
@@ -629,6 +651,7 @@ const passTier=()=>Math.floor(passState().xp/CFG.pass.xp);
 function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(n<1||n>CFG.pass.tiers||passTier()<n||(prem&&!p.prem))return false;const cl=prem?p.cp:p.cf;if(cl.includes(n))return false;cl.push(n);const r=PASS[n-1][prem?'p':'f'];
   if(r.skin){const id=r.skin==='S'?'s'+p.k:r.skin==='SX'?'s'+p.k+'x':r.skin;if(S.skins.includes(id))S.gems+=CFG.pass.dupe;else S.skins.push(id);}
   if(r.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*r.m/30),Math.floor(rateMin()*r.m));
+  if(r.lum)S.lum=(S.lum|0)+r.lum;if(r.rt)S.rt=(S.rt|0)+r.rt; /* v14 */
   give({g:r.g,b:r.b});if(!prem)chestFill(r.g|0);return true;}
 /* v11 : acheter des paliers avec des gemmes (ouvert à tous ; sans pass payant, seuls les paliers gratuits deviennent récupérables) */
 const passTierCost=k=>k>=10?Math.round(CFG.pass.tier10*k/10):k*CFG.pass.tierGems;

@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 (async()=>{const b=await chromium.launch();let ok=0,ko=0;
 for(const lang of ['fr','en','es','de','pt','it']){
-  const ctx=await b.newContext({viewport:{width:390,height:844},locale:lang,deviceScaleFactor:2});const p=await ctx.newPage();
+  const ctx=await b.newContext({viewport:{width:390,height:844},locale:lang,deviceScaleFactor:2});await ctx.route(/^https:\/\/[a-z0-9-]+\.supabase\.co\//,r=>r.abort()); /* v14 : jamais le vrai serveur pendant les tests (jeu hors ligne) */const p=await ctx.newPage();
   const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto('file:///home/claude/fusion/wrapped.html');await p.waitForTimeout(400);
   const got=await p.evaluate(()=>window.__G.LANG);

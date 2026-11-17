@@ -99,8 +99,8 @@ const ev=(p,f,...a)=>p.evaluate(f,...a);
   const cB=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cB);const B=await cB.newPage();B.on('pageerror',e=>errs.push('B:'+e.message));
   await B.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:secretA}));
   await B.goto('http://localhost:8766/');await B.waitForTimeout(1800);
-  r=await ev(B,()=>{const G=window.__G;return {name:G.S.name,p:G.S.prestiges,gems:G.S.gems,modal:document.getElementById('modal').textContent};});
-  T('appareil B reçoit l\'état serveur',r.name==='Lumen Vif'&&r.p===1);T('résultat de ligue accordé par le serveur au réveil (+40 gemmes)',r.gems===gemsBefore+40&&/sur 12/.test(r.modal));
+  r=await ev(B,async()=>{const G=window.__G;const auto=!document.getElementById('veil').hidden&&/sur 12/.test(document.getElementById('modal').textContent);const mail=!document.getElementById('mailBtn').hidden;document.getElementById('veil').hidden=true;document.getElementById('mailBtn').click();await new Promise(z=>setTimeout(z,150));const b=[...document.querySelectorAll('#modal [data-mail]')].find(x=>/Ligue|ligue|semaine/i.test(x.textContent));if(b){b.click();await new Promise(z=>setTimeout(z,200));}return {name:G.S.name,p:G.S.prestiges,gems:G.S.gems,auto,mail,modal:document.getElementById('modal').textContent};}); /* v14 : le résultat attend dans la boîte aux lettres */
+  T('appareil B reçoit l\'état serveur',r.name==='Lumen Vif'&&r.p===1);T('résultat de ligue accordé par le serveur au réveil (+40 gemmes), affiché depuis la boîte aux lettres',r.gems===gemsBefore+40&&!r.auto&&r.mail&&/sur 12/.test(r.modal),r);
   // --- mauvais secret
   const cD=await b.newContext({viewport:{width:390,height:844},locale:'fr-FR'});await mock(cD);const D=await cD.newPage();D.on('pageerror',e=>errs.push('D:'+e.message));
   await D.addInitScript(d=>localStorage.setItem('prisme-dev',d),JSON.stringify({id:idA,s:'mauvais-secret-mauvais'}));

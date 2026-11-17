@@ -138,3 +138,6 @@ Object.assign(I18N.de,{"u_st_bank": "Schatz", "u_st_bank_d": "Schatz +{n} %"}); 
 
 Object.assign(I18N.de,{"evp_t": "{e}-Paket", "evp_aria": "Wochenend-Angebot", "rt_use": "Mit Marke beenden"}); // v12.9 : packs du week-end
 Object.assign(I18N.de,{"shp_offers": "Angebote", "shp_gems": "Edelsteine", "shp_bonus": "Boosts", "shp_skins": "Farben"}); // v13 : onglets de la boutique
+Object.assign(I18N.de,{"mail_aria": "Postfach", "mail_title": "Post"}); // v14 : boîte aux lettres
+Object.assign(I18N.de,{"lum_t": "Licht", "hp_lum": "Jede Brechung gibt Licht (1 pro Stunde Lauf, max. 24): dauerhaft mehr Schaden.", "road_t": "Rekordweg"}); // v14 : Lumière, route des records
+Object.assign(I18N.de,{"of_pass_d": "Premium-Leiste der Saison: {n} Edelsteine, {l} Licht (dauerhafter Schaden), {r} Forschungsmarken, Truhen und zwei exklusive Farben. Und die ganze Saison: Passpunkte ×2, +1 Forschungsplatz, +{h} Std. Offline-Ertrag. Bereits erreichte Stufen sofort abholbar. Noch {d} Tag{d|e}."}); // v14 : pass refondu

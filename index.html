@@ -602,6 +602,29 @@ body{margin:0}
 .evpk.gtiles{margin-top:10px}
 #modal .evpk.gtiles{gap:8px 6px}#modal .gtile>b{font-size:17px}
 .gtile>b .ig{color:var(--gem)}
+
+/* v14 : rien au-dessus du plateau : cadeau, événement et boîte aux lettres rejoignent les actions rapides, dans l'arène ; la grille passe sur une 2e colonne si la hauteur manque */
+.qgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--qr,3),44px);grid-auto-columns:44px;direction:rtl;gap:2px 4px;pointer-events:auto;justify-content:end}
+.qgrid>*{direction:ltr}
+.qgrid .quick{display:contents}
+.qgrid .gift,.qgrid .evchip{position:relative;left:auto;right:auto;top:auto;width:40px;height:40px;min-width:0;margin:2px;padding:0;border-radius:50%;display:grid;place-items:center;z-index:auto}
+.qgrid .evchip .i,.qgrid .gift .i{width:22px;height:22px}
+.qgrid .evchip small{display:none}
+.qb.mail{color:var(--light)}.qb.mail span{box-shadow:inset 0 0 0 2px var(--beam)}
+.qb .mailn{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--danger,#ff5d73);color:#fff;font:800 11px/18px var(--body);text-align:center;box-shadow:0 0 0 2px var(--night);width:auto}
+.mlist{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.mlist button{display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left}
+.mlist button .i{width:22px;height:22px;flex:none}
+.arena .hint{position:absolute;left:0;right:54px;bottom:14px;z-index:4;pointer-events:none;margin:0} /* v14 : l'aide s'affiche dans l'arène, jamais sur le plateau */
+@media (max-height:700px){.arena .hint{margin-right:0;padding:7px 10px;font-size:13px}}
+/* v14 : Lumière et route des records */
+.lumc,.road{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;margin:8px 0 10px;border-radius:18px}
+.lumc b,.road b{font:17px var(--display);display:flex;align-items:center;gap:6px}
+.lumc .lumn{color:var(--beam)}
+.lumc .lumg{font:800 15px var(--body);color:var(--beam);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.road.hl{box-shadow:inset 0 0 0 2px var(--beam);cursor:pointer}
+.road .qbar{margin:6px 0 4px}
+.road .note{white-space:nowrap}
 </style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -644,17 +667,16 @@ body{margin:0}
 <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20 3c-7 0-13 5-13 12v2l-3 4 1.5 1 3-4h2c7 0 11-7 9.5-15z"/></symbol>
 </defs></svg>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-mail" viewBox="0 0 24 24"><path d="M2.5 5h19v14h-19z"/><path d="m2.8 5.6 9.2 7.2 9.2-7.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1.7"/></symbol></defs></svg>
 <section id="game">
   <div class="gwrap">
     <div class="arena">
       <canvas id="bossCv" data-i18n-aria="enemy_aria"></canvas>
-      <div class="stg"><button class="me" id="meBtn" data-i18n-aria="profile_aria"><svg class="i"><use href="#i-gear"/></svg></button><div class="stgt"><b id="stgN"></b><small id="stgW"></small><div class="tmr" id="tmr" hidden></div></div><div class="side"><button class="pill sm" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button><div class="quick" id="acts" hidden></div></div></div>
+      <div class="stg"><button class="me" id="meBtn" data-i18n-aria="profile_aria"><svg class="i"><use href="#i-gear"/></svg></button><div class="stgt"><b id="stgN"></b><small id="stgW"></small><div class="tmr" id="tmr" hidden></div></div><div class="side"><button class="pill sm" id="pillG" data-i18n-aria="gems_aria"><svg class="i ig"><use href="#i-gem"/></svg><span id="cG">0</span><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span></button><div class="qgrid" id="qgrid"><div class="quick" id="acts" hidden></div><button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button><button class="evchip" id="evChip" hidden data-i18n-aria="evp_aria"></button><button class="qb mail" id="mailBtn" hidden data-i18n-aria="mail_aria"><span><svg class="i"><use href="#i-mail"/></svg></span><i class="mailn" id="mailN"></i></button></div></div></div>
       <div class="hp" id="hpWrap" role="progressbar" data-i18n-aria="hp_aria"><i id="hpLag"></i><i id="hpBar"></i></div>
       <div class="banner" id="banner" hidden></div>
+      <div class="hint" id="hint" hidden></div>
     </div>
-    <div class="hint" id="hint" hidden></div>
-    <button class="gift" id="gift" hidden data-i18n-aria="gift_aria"></button>
-    <button class="evchip" id="evChip" hidden data-i18n-aria="evp_aria"></button>
     <div class="boardwrap" id="bw"><canvas id="board" data-i18n-aria="board_aria"></canvas></div>
     <div class="jok" id="jok" hidden></div>
     <div class="sparks"><b><svg class="i"><use href="#i-spark"/></svg><span id="cSp">0</span></b><small id="rateMin"></small><small id="refrG" hidden></small></div>
@@ -842,6 +864,9 @@ Object.assign(I18N.fr,{"u_st_bank": "Trésor", "u_st_bank_d": "Trésor +{n} %"})
 
 Object.assign(I18N.fr,{"evp_t": "Pack {e}", "evp_aria": "Offre du week-end", "rt_use": "Terminer avec un jeton"}); // v12.9 : packs du week-end
 Object.assign(I18N.fr,{"shp_offers": "Offres", "shp_gems": "Gemmes", "shp_bonus": "Bonus", "shp_skins": "Couleurs"}); // v13 : onglets de la boutique
+Object.assign(I18N.fr,{"mail_aria": "Boîte aux lettres", "mail_title": "Courrier"}); // v14 : boîte aux lettres
+Object.assign(I18N.fr,{"lum_t": "Lumière", "hp_lum": "Chaque Réfraction donne de la Lumière (1 par heure de course, 24 max) : dégâts augmentés pour toujours.", "road_t": "Route des records"}); // v14 : Lumière, route des records
+Object.assign(I18N.fr,{"of_pass_d": "Piste premium de la saison : {n} gemmes, {l} Lumière (dégâts définitifs), {r} jetons de recherche, des coffres et deux couleurs exclusives. Et toute la saison : points de pass ×2, +1 emplacement de recherche, +{h} h de gains hors ligne. Les paliers déjà atteints se récupèrent tout de suite. Encore {d} jour{d|s}."}); // v14 : pass refondu
 
 I18N.en={
   _name:'English',_units:['K','M','B','T'],_days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],_dur:['s','min','h','d'],_adj:['Cobalt','Blazing','Crimson','Stellar','Swift','Polar','Fiery','Lunar','Electric','Shadow','Radiant','Quantum'],_noun:['Hexagon','Prism','Pentagon','Comet','Spiral','Vector','Nova','Pulsar','Octagon','Photon','Orbit','Fractal'],
@@ -983,6 +1008,9 @@ Object.assign(I18N.en,{"u_st_bank": "Treasure", "u_st_bank_d": "Treasure +{n}%"}
 
 Object.assign(I18N.en,{"evp_t": "{e} pack", "evp_aria": "Weekend offer", "rt_use": "Finish with a token"}); // v12.9 : packs du week-end
 Object.assign(I18N.en,{"shp_offers": "Offers", "shp_gems": "Gems", "shp_bonus": "Boosts", "shp_skins": "Colors"}); // v13 : onglets de la boutique
+Object.assign(I18N.en,{"mail_aria": "Mailbox", "mail_title": "Mail"}); // v14 : boîte aux lettres
+Object.assign(I18N.en,{"lum_t": "Light", "hp_lum": "Each Refraction grants Light (1 per hour of run, 24 max): damage increased forever.", "road_t": "Record road"}); // v14 : Lumière, route des records
+Object.assign(I18N.en,{"of_pass_d": "Season premium track: {n} gems, {l} Light (permanent damage), {r} research tokens, chests and two exclusive colours. And all season: pass points ×2, +1 research slot, +{h} h of offline earnings. Tiers already reached can be claimed right away. {d} day{d|s} left."}); // v14 : pass refondu
 I18N.es={
   _name:'Español',_units:['k','M','MM','B'],_days:['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardiente','Lunar','Eléctrico','Sombrío','Radiante','Cuántico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vector','Nova','Púlsar','Octógono','Fotón','Órbita','Fractal'],
   sparks:'chispas',shards:'esquirlas',gems:'gemas',stage:'Etapa {n}',level:'nivel',lvl:'niv. {n}',max:'Máx.',close:'Cerrar',later:'Más tarde',cancel:'Cancelar',
@@ -1123,6 +1151,9 @@ Object.assign(I18N.es,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n} %"}); 
 
 Object.assign(I18N.es,{"evp_t": "Pack {e}", "evp_aria": "Oferta del fin de semana", "rt_use": "Terminar con una ficha"}); // v12.9 : packs du week-end
 Object.assign(I18N.es,{"shp_offers": "Ofertas", "shp_gems": "Gemas", "shp_bonus": "Bonus", "shp_skins": "Colores"}); // v13 : onglets de la boutique
+Object.assign(I18N.es,{"mail_aria": "Buzón", "mail_title": "Correo"}); // v14 : boîte aux lettres
+Object.assign(I18N.es,{"lum_t": "Luz", "hp_lum": "Cada Refracción da Luz (1 por hora de partida, 24 máx.): más daño para siempre.", "road_t": "Ruta de récords"}); // v14 : Lumière, route des records
+Object.assign(I18N.es,{"of_pass_d": "Pista prémium de la temporada: {n} gemas, {l} de Luz (daño permanente), {r} fichas de investigación, cofres y dos colores exclusivos. Y toda la temporada: puntos de pase ×2, +1 ranura de investigación, +{h} h de ganancias sin conexión. Los niveles ya alcanzados se reclaman al momento. Quedan {d} día{d|s}."}); // v14 : pass refondu
 I18N.de={
   _name:'Deutsch',_units:['Tsd.','Mio.','Mrd.','Bio.'],_days:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],_dur:['s','Min.','Std.','T.'],_adj:['Kobalt','Blitzend','Purpur','Stellar','Flink','Polar','Glühend','Lunar','Elektrisch','Dunkel','Strahlend','Quanten'],_noun:['Sechseck','Prisma','Fünfeck','Komet','Spirale','Vektor','Nova','Pulsar','Achteck','Photon','Orbit','Fraktal'],
   sparks:'Funken',shards:'Splitter',gems:'Edelsteine',stage:'Stufe {n}',level:'Level',lvl:'Lv. {n}',max:'Max',close:'Schließen',later:'Später',cancel:'Abbrechen',
@@ -1263,6 +1294,9 @@ Object.assign(I18N.de,{"u_st_bank": "Schatz", "u_st_bank_d": "Schatz +{n} %"}); 
 
 Object.assign(I18N.de,{"evp_t": "{e}-Paket", "evp_aria": "Wochenend-Angebot", "rt_use": "Mit Marke beenden"}); // v12.9 : packs du week-end
 Object.assign(I18N.de,{"shp_offers": "Angebote", "shp_gems": "Edelsteine", "shp_bonus": "Boosts", "shp_skins": "Farben"}); // v13 : onglets de la boutique
+Object.assign(I18N.de,{"mail_aria": "Postfach", "mail_title": "Post"}); // v14 : boîte aux lettres
+Object.assign(I18N.de,{"lum_t": "Licht", "hp_lum": "Jede Brechung gibt Licht (1 pro Stunde Lauf, max. 24): dauerhaft mehr Schaden.", "road_t": "Rekordweg"}); // v14 : Lumière, route des records
+Object.assign(I18N.de,{"of_pass_d": "Premium-Leiste der Saison: {n} Edelsteine, {l} Licht (dauerhafter Schaden), {r} Forschungsmarken, Truhen und zwei exklusive Farben. Und die ganze Saison: Passpunkte ×2, +1 Forschungsplatz, +{h} Std. Offline-Ertrag. Bereits erreichte Stufen sofort abholbar. Noch {d} Tag{d|e}."}); // v14 : pass refondu
 I18N.pt={
   _name:'Português',_units:['mil','mi','bi','tri'],_days:['domingo','segunda','terça','quarta','quinta','sexta','sábado'],_dur:['s','min','h','d'],_adj:['Cobalto','Fulgurante','Púrpura','Estelar','Veloz','Polar','Ardente','Lunar','Elétrico','Sombrio','Radiante','Quântico'],_noun:['Hexágono','Prisma','Pentágono','Cometa','Espiral','Vetor','Nova','Pulsar','Octógono','Fotão','Órbita','Fractal'],
   sparks:'faíscas',shards:'estilhaços',gems:'gemas',stage:'Etapa {n}',level:'nível',lvl:'nív. {n}',max:'Máx.',close:'Fechar',later:'Mais tarde',cancel:'Cancelar',
@@ -1403,6 +1437,9 @@ Object.assign(I18N.pt,{"u_st_bank": "Tesouro", "u_st_bank_d": "Tesouro +{n}%"});
 
 Object.assign(I18N.pt,{"evp_t": "Pacote {e}", "evp_aria": "Oferta do fim de semana", "rt_use": "Terminar com uma ficha"}); // v12.9 : packs du week-end
 Object.assign(I18N.pt,{"shp_offers": "Ofertas", "shp_gems": "Gemas", "shp_bonus": "Bónus", "shp_skins": "Cores"}); // v13 : onglets de la boutique
+Object.assign(I18N.pt,{"mail_aria": "Caixa de correio", "mail_title": "Correio"}); // v14 : boîte aux lettres
+Object.assign(I18N.pt,{"lum_t": "Luz", "hp_lum": "Cada Refração dá Luz (1 por hora de partida, máx. 24): dano aumentado para sempre.", "road_t": "Rota dos recordes"}); // v14 : Lumière, route des records
+Object.assign(I18N.pt,{"of_pass_d": "Pista premium da temporada: {n} gemas, {l} de Luz (dano permanente), {r} fichas de pesquisa, baús e duas cores exclusivas. E toda a temporada: pontos de passe ×2, +1 espaço de pesquisa, +{h} h de ganhos offline. Os níveis já alcançados recebem-se logo. Faltam {d} dia{d|s}."}); // v14 : pass refondu
 I18N.it={
   _name:'Italiano',_units:['k','M','Mrd','Bln'],_days:['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'],_dur:['s','min','h','g'],_adj:['Cobalto','Fulminante','Purpureo','Stellare','Vivace','Polare','Ardente','Lunare','Elettrico','Oscuro','Radioso','Quantico'],_noun:['Esagono','Prisma','Pentagono','Cometa','Spirale','Vettore','Nova','Pulsar','Ottagono','Fotone','Orbita','Frattale'],
   sparks:'scintille',shards:'schegge',gems:'gemme',stage:'Livello {n}',level:'grado',lvl:'gr. {n}',max:'Max',close:'Chiudi',later:'Più tardi',cancel:'Annulla',
@@ -1543,6 +1580,9 @@ Object.assign(I18N.it,{"u_st_bank": "Tesoro", "u_st_bank_d": "Tesoro +{n}%"}); /
 
 Object.assign(I18N.it,{"evp_t": "Pacchetto {e}", "evp_aria": "Offerta del weekend", "rt_use": "Termina con un gettone"}); // v12.9 : packs du week-end
 Object.assign(I18N.it,{"shp_offers": "Offerte", "shp_gems": "Gemme", "shp_bonus": "Bonus", "shp_skins": "Colori"}); // v13 : onglets de la boutique
+Object.assign(I18N.it,{"mail_aria": "Posta", "mail_title": "Posta"}); // v14 : boîte aux lettres
+Object.assign(I18N.it,{"lum_t": "Luce", "hp_lum": "Ogni Rifrazione dà Luce (1 per ora di partita, max 24): danni aumentati per sempre.", "road_t": "Via dei record"}); // v14 : Lumière, route des records
+Object.assign(I18N.it,{"of_pass_d": "Percorso premium della stagione: {n} gemme, {l} Luce (danni permanenti), {r} gettoni di ricerca, forzieri e due colori esclusivi. E per tutta la stagione: punti pass ×2, +1 slot di ricerca, +{h} h di guadagni offline. I livelli già raggiunti si riscuotono subito. Ancora {d} giorn{d|o/i}."}); // v14 : pass refondu
 
 /* ================= utilitaires ================= */
 const $=id=>document.getElementById(id);
@@ -1590,12 +1630,12 @@ const CFG={
   board:{spawn0:2.4,spawnMin:0.35,spawnDecay:0.9},
   dmg:{base:2.6,combo:0.12,manual:1.6},
   shards:{kill:(n,type)=>type==='boss'?4*n:type==='mini'?n:n/25}, // éclats hors Réfraction : surtout les boss
-  sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,n)*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
-  enemy:{hp:n=>400*Math.pow(1.6,n-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
+  sparks:{merge:l=>0.15*l,manual:2,kill:n=>0.8*Math.pow(1.18,ne(n))*(1+2*Math.max(0,1-(n-1)/15))}, // coup de pouce ×3 à l'étage 1, fondu jusqu'à l'étage 16
+  enemy:{hp:n=>400*Math.pow(1.6,ne(n)-1)*(n%10===0?3:n%5===0?2:1)*(n<5?[0.06,0.25,0.5,0.8][n-1]:1), // v9.9 : 4 premiers ennemis allégés (premier tué en quelques secondes)
    bossTime:60,bossRetry:60,atkEvery:9,windup:3},
   tb:{ // boosters temporaires : coût de base, croissance, plafond
     cad:{c0:10,g:1.45,max:30},birth:{c0:300,g:6,max:5},auto:{c0:60,g:1.55,max:30},power:{c0:25,g:1.45,max:40,m:1.12},spark:{c0:50,g:1.5,max:30,m:1.08}}, // v12.2 : m = effet par niveau (Force et Gain absorbent Puissance et Étincelles)
-  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,n)),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
+  prestige:{minStage:30,mult:0.2,shards:n=>Math.floor(10*Math.pow(1.15,ne(n))),ppX:1.5,first:2}, // first : points offerts à la première Réfraction (de quoi débloquer l'auto-fusion et l'achat auto)
   refr:{reset:['atk','grid','eco'],memCost:0.5,runCost:3,ppAuto:k=>Math.min(3,1+Math.floor(k/3))}, // v9.4 : Attaque/Plateau/Économie repartent à zéro à chaque Réfraction ; « mémoire » = re-recherche instantanée et moitié prix ; automatisations payées en points de réfraction
   offline:{capH:k=>2+k,rateWindow:60,factor:0.3},
   titan:{time:45,days:[2,4,6],free:2,ticketGems:20,stage:10}, // v12.6 : Titan dès l'étape 10, comme l'onglet Clan // jours : 0 = dimanche
@@ -1613,12 +1653,20 @@ const CFG={
   ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
   guild:{size:30,create:100,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
+  late:{from:100,k1:0.3,until:3000,k2:0.08}, // v14 : fin de partie infinie : après l'étape 100, chaque étape compte pour 0,3 étape « exponentielle » (PV ×1,15 au lieu de ×1,6) ; après 3000, 0,08 → plus de mur des nombres avant ~9 000 étapes
+  lum:{min:60,cap:24,m:1.005}, // v14 : Lumière : à chaque Réfraction (record de la course ≥ 60), 1 point par heure écoulée depuis la précédente (24 max) ; chaque point = dégâts ×1,005, pour toujours. Liée au temps, pas au nombre de Réfractions : pas d'emballement
+  road:{every:25,g:k=>Math.min(150,30+5*k),m:1.05}, // v14 : route des records : toutes les 25 étapes de record, gemmes + dégâts ×1,05 définitifs
   sparkShop:{packs:[{g:20,min:30},{g:50,min:90},{g:100,min:240},{g:200,min:600}],capMin:1440}, // gemmes → étincelles, 24 h de production max par jour
 };
 const THEMES=[0,1,2,3,4].map(i=>({get mob(){return t('th'+i+'_mob')},get mini(){return t('th'+i+'_mini')},get boss(){return t('th'+i+'_boss')},get titan(){return t('th'+i+'_titan')},atk:['lock','burn','fog','heal','shuffle'][i],get atkT(){return t('th'+i+'_atk')}}));
 const WORLDS=[{h:188,k:0},{h:22,k:-3},{h:255,k:2},{h:145,k:-5},{h:310,k:5}].map((w,i)=>Object.defineProperty(w,'n',{get(){return t('w'+i)},enumerable:true}));
+const ne=n=>{const L=CFG.late;return n<=L.from?n:L.from+L.k1*(Math.min(n,L.until)-L.from)+L.k2*Math.max(0,n-L.until);}; // v14 : étape « exponentielle » effective
 const worldOf=n=>Math.floor((n-1)/10)+1;
-function worldInfo(w){const b=WORLDS[(w-1)%WORLDS.length];const cyc=Math.floor((w-1)/WORLDS.length);return {name:b.n+(cyc?' '+['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(cyc-1,8)]:''),h:b.h,k:b.k,col:`hsl(${b.h} 100% 62%)`};}
+/* v14 : mondes infinis : après le 1er tour des 5 mondes, chaque tour reçoit le nom d'une étoile (identique dans toutes les langues) et une teinte décalée */
+const STARS=['Vega','Orion','Lyra','Sirius','Altaïr','Rigel','Deneb','Antarès','Capella','Polaris','Aldébaran','Bételgeuse','Spica','Arcturus','Procyon','Castor','Pollux','Mira','Electra','Maïa','Alcor','Mizar','Thuban','Achernar','Canopus','Hadar','Mimosa','Shaula','Nunki','Alnair'];
+function worldInfo(w){const b=WORLDS[(w-1)%WORLDS.length];const cyc=Math.floor((w-1)/WORLDS.length);const h=cyc?(b.h+cyc*47)%360:b.h;
+  const suf=cyc?' · '+STARS[(cyc-1)%STARS.length]+(cyc>STARS.length?' '+(Math.floor((cyc-1)/STARS.length)+1):''):'';
+  return {name:b.n+suf,h,k:b.k,col:`hsl(${h} 100% 62%)`,cyc};}
 
 /* ---------- atelier : recherches ---------- */
 /* ---------- armes : la forme de la gemme (cycle de 8) ---------- */
@@ -1691,7 +1739,7 @@ function fresh(){
   return {v:3,gems:20,maxStage:1,bestStage:1,prestiges:0,
     run:{sparks:0,stage:1,tb:{cad:0,birth:0,auto:0,power:0,spark:0},max:1,fled:false,fledAt:0,rate:0,srate:0},
     up:Object.fromEntries(UPG.map(u=>[u.id,0])),jk:{},equip:[],jslots:1,build:[],slots:1,
-    pp:0,wp:{},mem:{},lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
+    pp:0,wp:{},mem:{},lum:0,road:0,runAt:now,lastSeen:now,boostUntil:0,titan:null,lootX2:false,noAds:false,starter:false,adCount:0,firstX2:false,pass:null,spend:null,
     name:randomName(),nameChanges:0,flagged:0,skin:'cyan',skins:['cyan'],medals:{},
     st:{tuto:0,merges:0,manual:0,kills:0,bosses:0,collects:0,bought:0,started:0,jokerUses:0,maxCombo:0,days:1,lastDay:dayKey(),titans:0,titanBest:0,namePrompted:false,hintW:1},
     day:{k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]},
@@ -1703,7 +1751,7 @@ const KEY='prisme-fusion-v7';
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===3){const f=fresh();const merged=Object.assign({},f,o);for(const k of ['up','st','settings','run','day','week','login','wp'])merged[k]=Object.assign({},f[k],o[k]||{});merged.run.tb=Object.assign({},f.run.tb,(o.run||{}).tb||{});migrate(merged);S=merged;}}}catch(e){}}
 function snapBoard(){if(!R||!R.cells)return;S.run.cells=R.cells.map(c=>!c?0:c.l?(c.k==='gold'?-c.l:c.l):c.k==='joker'?'j':0);}
 function migrate(m){delete m.idle;if(!m.mem)m.mem={};if(Array.isArray(m.build)&&m.up)m.build=m.build.filter(b=>{const u=UPG.find(x=>x.id===b.id);if(u&&(u.g==='auto'||u.g==='refr'||CFG.refr.reset.includes(u.g))){m.up[u.id]=(m.up[u.id]||0)+1;return false;}return !!(u||ALLUP.find(x=>x.id===b.id));}); // v12.2 : améliorations de partie et Éveil immédiats : une recherche en cours est acquise ; recherche supprimée (Puissance, Étincelles) : retirée // v9.4 : automatisation en cours = acquise
-  if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
+  if(!m.runAt)m.runAt=Date.now(); /* v14 */if(m.day&&!Array.isArray(m.day.gq))m.day.gq=[];if(m.shards>0){m.run.sparks=(m.run.sparks||0)+m.shards;}delete m.shards;return m;} // v8.4 : les éclats deviennent des étincelles
 function save(){S.lastSeen=Date.now();snapBoard();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){passState(); /* v12.3 : pass de la saison créé des deux côtés (téléphone et serveur) */if(S.st.lastDay!==dayKey()){S.st.days++;S.st.lastDay=dayKey();}if(S.day.k!==dayKey()){S.day={k:dayKey(),merges:0,kills:0,bosses:0,ads:0,buildAds:0,collects:0,jokers:0,titans:0,tb:0,gifts:0,combo:0,prestiges:0,started:0,claimed:[],gq:[]};}pickDaily(); /* v12.6 : relu à chaque fois depuis S.day.qd (le serveur peut l'avoir fixé) */if(S.week.k!==weekKey()){S.week={k:weekKey(),best:0,kills:0,prestiges:0,collects:0,titans:0,merges:0,bosses:0,claimed:[]};S.league=null;}pickWeekly();}
 function give(r){if(!r)return;if(r.g)S.gems+=r.g;if(r.s)S.run.sparks+=r.s;if(r.sp)S.run.sparks+=r.sp;if(r.b)S.boostUntil=Math.max(Date.now(),S.boostUntil)+r.b*3600e3;}
@@ -1949,10 +1997,17 @@ function titanGemTicket(){const t=titanState();if(t.gem>=1||S.gems<CFG.titan.tic
 function startTitan(){if(!R||R.mode!=='farm'||!titanReady())return false;R.saved=R.E;R.E=titanEnemy();R.mode='titan';R.titanT=CFG.titan.time;R.titanDmg=0;titanState().used++;S.st.titans++;S.day.titans++;S.week.titans++;return true;}
 function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.titanBest)S.st.titanBest=d;R.E=R.saved||enemyFor(S.run.stage);R.mode='farm';hooks.titanEnd(d);}
 /* ---------- prestige ---------- */
+/* v14 : Lumière (Réfraction qui compte) et route des records */
+const lumGain=(n,now=Date.now())=>n<CFG.lum.min?0:Math.max(1,Math.min(CFG.lum.cap,Math.floor((now-(S.runAt||now))/3600e3)));
+const lumMult=()=>Math.pow(CFG.lum.m,S.lum|0);
+const roadN=()=>Math.floor((S.bestStage|0)/CFG.road.every);
+const roadReady=()=>roadN()-(S.road|0);
+const roadMult=()=>Math.pow(CFG.road.m,S.road|0);
+function claimRoad(){if(roadReady()<=0)return false;const k=(S.road|0)+1;S.road=k;const g=CFG.road.g(k);S.gems+=g;chestFill(g);return {k,g};}
 const prestigeGain=()=>S.run.max>=CFG.prestige.minStage?Math.floor(CFG.prestige.shards(S.run.max)*lootMult()):0;
 function doPrestige(){
   const g=prestigeGain();if(!g)return 0;
-  S.pp=(S.pp||0)+ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first);S.prestiges++;roll();S.day.prestiges++;S.week.prestiges++;
+  S.pp=(S.pp||0)+ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first);S.lum=(S.lum|0)+lumGain(S.run.max);S.runAt=Date.now();S.prestiges++;roll();S.day.prestiges++;S.week.prestiges++;
   // Attaque, Plateau, Économie : remis à zéro, mais mémorisés (une recherche en cours compte comme acquise)
   S.mem=S.mem||{};const reset=u=>!u.joker&&CFG.refr.reset.includes(u.g);
   for(const b of S.build){const u=upById(b.id);if(u&&reset(u))S.mem[u.id]=Math.max(S.mem[u.id]||0,lvlOf(u)+1);}
@@ -2148,7 +2203,7 @@ const OFFERS=[
   {id:'starter',price:1.99,once:()=>S.starter,give(){give({g:300,b:6});S.starter=true;},get t(){return t('of_starter')},get d(){return t('of_starter_d')}},
   {id:'loot',price:7.99,once:()=>S.lootX2,give(){S.lootX2=true;},get t(){return t('of_loot')},get d(){return t('of_loot_d')}},
   {id:'chest',price:CFG.chest.price,avail:()=>chestG()>=CFG.chest.open,give(){const g=chestG();S.gems+=g;S.chest=0;S.st.chests=(S.st.chests|0)+1;},get t(){return t('of_chest')},get d(){return t('of_chest_d',{n:grp(chestG()),m:grp(CFG.chest.cap),o:grp(CFG.chest.open)})}},
-  {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),h:CFG.pass.perks.offH,d:seasonLeft()})}},
+  {id:'pass',price:CFG.pass.price,once:()=>passState().prem,give(){passState().prem=true;},get t(){return t('of_pass')},get d(){return t('of_pass_d',{n:grp(PASS.reduce((a,x)=>a+(x.p.g|0),0)),l:PASS.reduce((a,x)=>a+(x.p.lum|0),0),r:PASS.reduce((a,x)=>a+(x.p.rt|0),0),h:CFG.pass.perks.offH,d:seasonLeft()})}},
   {id:'noads',price:2.99,once:()=>S.noAds,give(){S.noAds=true;},get t(){return t('of_noads')},get d(){return t('of_noads_d')}},
 ].concat([0,1,2].map(i=>({id:'ev'+(i+1),price:CFG.evPack.price[i],ev:i,avail:()=>!!weekendEvent()&&!evBought(i),give(){evPackGive(i);},get t(){return t('evp_t',{e:t('ev_'+(weekendEvent()||nextEvent()))})},get d(){return typeof evRw==='function'?evRw(i):''}}))).concat([[100,0.99],[600,4.99],[1300,9.99],[2800,19.99],[7500,49.99],[16000,99.99]].map(([n,price],i)=>({id:'g'+n,price,n,give(){S.gems+=S.firstX2?n:2*n;S.firstX2=true;},get t(){return t('of_gems',{n:grp(n)})},get d(){return i?t('of_more',{n:packBonus(this)}):t('of_small')}})));
 /* v9.7 : 100 gemmes = 0,99 € (taux de référence du plus petit pack, principe CPC 1) ; bonus affiché = bonus réel arrondi vers le bas */
@@ -2170,7 +2225,14 @@ function addSpend(p){const s=spendNow();s.eur=Math.round((s.eur+p)*100)/100;}
 /* v10 : pass de saison */
 /* v11 : gratuit = 2 gemmes un palier sur deux, 10 min de production sinon ; premium = 8 gemmes, 50 tous les 10 paliers, boost 4 h aux paliers 25/50/75/100, couleur Saison au 100 (≈ 1 220 gemmes) */
 /* v12 : premium = 8 gemmes, coffre (2 h de production + boost 2 h) tous les 5 paliers, 80 gemmes tous les 10, couleur de la saison au 50 et sa version Éclat au 100 */
-const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;return {f:n%2?{m:10}:{g:2},p:Object.assign(n%10===0?{g:80}:n%5===0?{m:120,b:2,chest:1}:{g:8},n===50?{skin:'S'}:{},n===CFG.pass.tiers?{skin:'SX'}:{})};});
+/* v14 : pass refondu : la Lumière (dégâts définitifs) et les jetons de recherche (une recherche terminée tout de suite) en font une vraie accélération.
+   gratuit : 15 min de production / 3 gemmes en alternance, boost 1 h tous les 5, +5 Lumière tous les 10, 1 jeton aux paliers 25/50/75/100
+   payant  : 8 gemmes, 1 jeton aux paliers en 3 et 7, coffre (2 h de production + boost 2 h) tous les 5, 80 gemmes + 10 Lumière tous les 10,
+             couleur de la saison au 50, version Éclat + 40 Lumière au 100 (≈ 1 280 gemmes, 20 jetons, 140 Lumière) */
+const PASS=Array.from({length:CFG.pass.tiers},(_,i)=>{const n=i+1;
+  const f=Object.assign(n%10===0?{lum:5}:n%5===0?{b:1}:n%2?{m:15}:{g:3},n%25===0?{rt:1}:{});
+  const p=Object.assign(n%10===0?{g:80,lum:10}:n%5===0?{m:120,b:2,chest:1}:(n%10===3||n%10===7)?{rt:1}:{g:8},n===50?{skin:'S'}:{},n===CFG.pass.tiers?{skin:'SX',lum:50}:{});
+  return {f,p};});
 const SEASON0=Date.UTC(2026,0,5); // un lundi : les saisons durent 4 semaines
 function seasonDay(t=Date.now()){const [y,m,d]=dparts(t);return Math.floor((Date.UTC(y,m,d)-SEASON0)/864e5);}
 const seasonKey=(t=Date.now())=>Math.floor(seasonDay(t)/28);
@@ -2206,7 +2268,7 @@ const medalReady=m=>medalLvl(m.id)<4&&m.v()>=m.th[medalLvl(m.id)];
 function claimMedal(id){const m=MEDALS.find(x=>x.id===id);if(!m||!medalReady(m))return false;const l=medalLvl(id);S.medals=S.medals||{};S.medals[id]=l+1;S.gems+=MEDAL_GEMS[l];return true;}
 const medalsReady=()=>MEDALS.some(medalReady);
 /* bonus total d'un type : couleur portée × médailles × collection (+1 % d'étincelles par couleur possédée au-delà de la première) */
-function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const md=MEDALS.reduce((a,m)=>a+(m.k===k?medalBonusOf(m,medalLvl(m.id)):0),0);const col=k==='sp'?0.01*Math.max(0,(S.skins||[]).length-1):0;return (1+w)*(1+md)*(1+col);}
+function bonusMul(k){const sk=skinInfo(S.skin),w=(sk&&sk.bn&&sk.bn[k])||0;const md=MEDALS.reduce((a,m)=>a+(m.k===k?medalBonusOf(m,medalLvl(m.id)):0),0);const col=k==='sp'?0.01*Math.max(0,(S.skins||[]).length-1):0;return (1+w)*(1+md)*(1+col)*(k==='dmg'?lumMult()*roadMult():1);} // v14 : Lumière et route des records multiplient les dégâts
 /* v12 : offre de la semaine (gemmes), une par semaine, qui change seule */
 const weekOffer=()=>{const L=CFG.weekOffer,h=dayHash('o'+weekKey());return L[h%L.length];};
 function buyWeekOffer(){roll();const o=weekOffer();if(S.week.wo||S.gems<o.g)return false;S.gems-=o.g;S.week.wo=1;if(o.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*o.m/30),Math.floor(rateMin()*o.m));if(o.b)give({b:o.b});return true;}
@@ -2216,6 +2278,7 @@ const passTier=()=>Math.floor(passState().xp/CFG.pass.xp);
 function passClaim(n,track){const p=passState();n=n|0;const prem=track==='p';if(n<1||n>CFG.pass.tiers||passTier()<n||(prem&&!p.prem))return false;const cl=prem?p.cp:p.cf;if(cl.includes(n))return false;cl.push(n);const r=PASS[n-1][prem?'p':'f'];
   if(r.skin){const id=r.skin==='S'?'s'+p.k:r.skin==='SX'?'s'+p.k+'x':r.skin;if(S.skins.includes(id))S.gems+=CFG.pass.dupe;else S.skins.push(id);}
   if(r.m)S.run.sparks+=Math.max(Math.round(CFG.ads.floor.shop*r.m/30),Math.floor(rateMin()*r.m));
+  if(r.lum)S.lum=(S.lum|0)+r.lum;if(r.rt)S.rt=(S.rt|0)+r.rt; /* v14 */
   give({g:r.g,b:r.b});if(!prem)chestFill(r.g|0);return true;}
 /* v11 : acheter des paliers avec des gemmes (ouvert à tous ; sans pass payant, seuls les paliers gratuits deviennent récupérables) */
 const passTierCost=k=>k>=10?Math.round(CFG.pass.tier10*k/10):k*CFG.pass.tierGems;
@@ -2502,7 +2565,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='13.0 · boutique';
+const VERSION='14.0 · infini';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -2677,7 +2740,7 @@ hooks.harvest=(i,sp)=>{if(Math.random()<0.5)return;const [x,y]=fx.at(i);fx.float
 hooks.tb=k=>{sfx.buy();kick('small');fx.glow=Math.min(1,fx.glow+0.4);if(tutoStep===3)tutoNext();};
 hooks.autoPrestige=()=>{act('prestige',{},()=>doPrestige()||false);};
 hooks.prestige=g=>{track('refraction',{stage:S.run.stage,pts:g});boardCache=null;fx.flash=1;fx.flashCol='127,226,255';kick('huge');sfx.win();for(let i=0;i<R.N*R.N;i++)fx.burst(i,null,4,300);};
-hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><div class="big">${fmt(d*DX)}</div><p>${d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest*DX)})}</p><div class="acts"><button class="b b-gold" data-close>${t('continue')}</button></div>`);};
+hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});banner(fmt(d*DX),d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest*DX)}),'gold',3600);renderActs();}; /* v14 : plus de fenêtre sur le plateau */
 /* ================= gemme du joueur (accueil) ================= */
 function drawMe(c,size,t,dt){
   c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,size,size);
@@ -2792,7 +2855,11 @@ function boostView(){const sp=S.run.sparks;
 const RD='<span class="badge rd"></span>';
 function passPageReady(a,b){const p=passState(),n=Math.min(passTier(),b);for(let i=a+1;i<=n;i++)if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;return false;}
 const loginReady=()=>!loginState().claimedToday;
-const questsReward=()=>claimable()||loginReady()||passClaimable();
+const questsReward=()=>claimable()||loginReady()||passClaimable()||roadReady()>0;
+const xm=x=>x<1000?dec(x,x<10?2:1):fmt(x); // multiplicateur lisible
+/* v14 : route des records : toutes les 25 étapes de record, une récompense définitive à récupérer */
+function roadCard(){const k=(S.road|0)+1,target=k*CFG.road.every,ready=roadReady()>0,prev=(k-1)*CFG.road.every,p=Math.max(0,Math.min(1,(S.bestStage-prev)/(target-prev)));
+  return `<div class="road slab${ready?' hl':''}" ${ready?'data-road="1" role="button" tabindex="0"':''}><span class="oart">${ic('flag','ig')}</span><div style="min-width:0"><b>${t('road_t')}${ready?RD:''}</b><div class="qbar"><i style="width:${ready?100:100*p}%"></i><span>${ic('flag')} ${target}</span></div><span class="rew">${ic('gem','ig')}${CFG.road.g(k)} ${ic('swords')}×${dec(CFG.road.m,2)}</span></div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:`<span class="note">${ic('swords')}×${xm(roadMult())}</span>`}</div>`;}
 const shopReward=()=>!S.day.sgift||passClaimable();
 function refresh(){
   roll();{const tbn=document.querySelectorAll('#tb .tbt[data-tb]').length;if(R&&(tbn!==Object.keys(TBDEF).filter(tbShown).length||!!$('boostBtn')!==moreShown()))renderTB();} /* v12.3 : nouveau booster révélé dès qu'il se débloque */evBanner();if(tab==='home'&&!S.prestiges&&S.bestStage>=25&&$('hint').hidden&&lsGet('prisme-hintr')!=='1'){lsSet('prisme-hintr','1');showHint(t('hint_refr',{n:CFG.prestige.minStage}),7000);} /* v12.3 : la Réfraction expliquée quand elle approche, plus à l'étape 3 */{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
@@ -2838,7 +2905,7 @@ function renderActs(){
   if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
   if(S.bestStage>=CFG.titan.stage&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
-  a.hidden=!h;
+  a.hidden=!h;qgridFit();
 }
 function renderJok(){
   const ids=Object.keys(R.jk);$('jok').hidden=!ids.length;
@@ -2859,7 +2926,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='titan')titanModal();
 });
 function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1); /* v12.4 : chiffres et icônes, plus de paragraphes */
-  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span></div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span>${lumGain(S.run.max)?`<span>${ic('star','ig')}<b>+${lumGain(S.run.max)}</b></span>`:''}</div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(act('titan_start',{},()=>startTitan())){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -2874,6 +2941,17 @@ function giftTick(dt){
     if(!NET.on){show(giftRoll());giftAsk=false;return;}if(!netReady){giftAsk=false;return;} /* v11.6 : en ligne, seul le serveur crée les cadeaux */
     actAsync('gift_offer').then(d=>{giftAsk=false;if(d&&d.ok&&d.result&&d.result.ok&&d.result.gift)show(d.result.gift);else if(d&&d.result&&d.result.wait)giftNext=giftT+d.result.wait;else giftNext=giftT+60;}).catch(()=>{giftAsk=false;giftNext=giftT+60;});}
 }
+/* v14 : boîte aux lettres : ce qui s'ouvrait tout seul pendant le jeu (connexion du jour, résultat de ligue, offres, packs du week-end…) attend ici, avec une pastille, jusqu'à ce que le joueur l'ouvre */
+let MAIL=[];
+function mailPush(k,icon,title,open){if(MAIL.some(m=>m.k===k))return;MAIL.push({k,icon,title,open});renderMail();}
+function mailDrop(k){MAIL=MAIL.filter(m=>m.k!==k);renderMail();}
+function renderMail(){const b=$('mailBtn');if(!b)return;b.hidden=!MAIL.length;$('mailN').textContent=MAIL.length>1?String(MAIL.length):'';$('mailN').hidden=MAIL.length<2;qgridFit();}
+function mailOpen(){if(!MAIL.length)return;audio();if(MAIL.length===1){const m=MAIL.shift();renderMail();m.open();return;}
+  modal(`<div class="mart" style="color:var(--beam)">${ic('mail')}</div><h2>${t('mail_title')}</h2><div class="mlist">${MAIL.map((m,i)=>`<button class="b" data-mail="${i}">${ic(m.icon,m.icon==='gem'?'ig':'')}<span>${esc(m.title)}</span></button>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);}
+/* la colonne d'actions ne descend jamais sur le plateau : autant de lignes que la hauteur de l'arène le permet */
+function qgridFit(){const q=$('qgrid'),b=$('board');if(!q||!b)return;const top=q.getBoundingClientRect().top,bot=b.getBoundingClientRect().top-4;const n=Math.max(1,Math.floor((bot-top+2)/46));if(q.style.getPropertyValue('--qr')!==String(n))q.style.setProperty('--qr',n);}
+addEventListener('resize',()=>qgridFit());
+$('mailBtn').addEventListener('click',mailOpen);
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
 $('evChip').addEventListener('click',()=>{audio();track('evpk_open',{e:weekendEvent()});evPackModal();});
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('close')}</button></div>`,()=>{if(gift){gift=null;$('gift').hidden=true;giftNext=0;}});});
@@ -3010,10 +3088,10 @@ function renderTab(){
     if(atPane==='refr'){
       const spent=Object.keys(S.wp||{}).length;
       h+=`<div class="slotbuy ppbal"><span class="ppn">${ic('prism')}<b>${S.pp||0}</b></span></div>`;
+      {const lg=lumGain(Math.max(S.run.max,CFG.lum.min));h+=`<div class="lumc slab"><span class="oart">${ic('star','ig')}</span><div style="min-width:0"><b>${t('lum_t')} <span class="lumn">${grp(S.lum|0)}</span></b><p class="sub">${ic('swords')} ×${xm(lumMult())}</p></div><span class="lumg">${S.run.max>=CFG.lum.min?`+${lg} ${ic('star','ig')}`:`${ic('lock')} ${CFG.lum.min}`}</span></div>`;} /* v14 : Lumière */
       h+=`<h2 class="sec subsec">${t('at_auto_h')}</h2><div class="tiles">${UPG.filter(u=>u.g==='auto'||u.g==='refr').map(u=>tileHtml(u,free)).join('')}</div>`;
       h+=`<h2 class="sec subsec">${t('at_forms')}</h2>`;
       h+=`<div class="list" style="gap:6px;margin-bottom:8px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><b>${w.t} <span>· ${w.fx}</span></b>${k?`<p class="wlv on">${t('lvl',{n:k})} · ${t('bn_dmg',{n:8*k})}</p>`:''}</div><button class="b ${S.pp>=c?'b-gold':''} sm wbtn" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}">${ic('prism')}<span>${c}</span></button></div>`;}).join('')}</div>`;
-      if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
       if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
     }else{
       seenGroup(atGroup);h+=`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
@@ -3036,7 +3114,7 @@ function renderTab(){
   }else if(tab==='quests'){
     const v=questView();
     const qrow=q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-claim="${q.kind}:${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div>${rewardHtml(q.r)}</div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;};
-    h+=head(t('quests_title'))+evCard()+passCard(); // v11 : les quêtes font avancer le pass
+    h+=head(t('quests_title'))+evCard()+roadCard()+passCard(); // v11 : les quêtes font avancer le pass ; v14 : route des records
     const done=ONB.length-v.onbLeft;
     if(v.onb.length)h+=`<h2 class="sec">${t('quests_onb')}${v.onb.some(q=>!q.done&&q.p>=q.n)?RD:''}<small>${done} / ${ONB.length}</small></h2><div class="chap"><i style="width:${100*done/ONB.length}%"></i></div><div class="list">${v.onb.map(qrow).join('')}</div>`;
     const mid=new Date();mid.setHours(24,0,0,0);
@@ -3129,6 +3207,7 @@ function loginHtml(){
   const st=loginState();
   return `<div class="login">${LOGIN.map((r,i)=>{const d=i+1,cls=d<st.day?'past':d===st.day?'today':'';return `<div class="ltile ${cls}"><small>${d}</small>${r.joker?`<span>${ic('eye','ig')}${t('login_joker')}</span>`:rewardHtml(r).replace('class="rew"','class="rew" style="justify-content:center"')}</div>`;}).join('')}</div>${st.claimedToday?`<p class="note">${t('login_done',{n:st.day%7+1})}</p>`:`<button class="b b-gold" style="width:100%;margin-top:10px" id="loginGo">${t('login_go',{n:st.day})}</button>`}`;
 }
+function mailLogin(){const st=loginState();if(!st.claimedToday)mailPush('login','star',t('login_title',{n:st.day}),loginModal);}
 function loginModal(){
   const st=loginState();if(st.claimedToday)return;
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
@@ -3141,7 +3220,7 @@ $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>{shopPane='gems';goTab('shop');});
 function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(RUNG.includes(upById(id).g)){sfx.buy();if(R)renderTB();}else if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));if(LN()&&S.settings.notif==null)setTimeout(notifPrompt,900);}}else if(r==='slots'){if(S.slots-1<CFG.build.slotGems.length&&ctxOnce('slots'))ctxSlots();else toast(t('at_busy'));}save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
-  const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
+  const el=e.target.closest('button,[data-claim],[data-gquest],[data-road]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
   else if(el.dataset.wp){const i=+el.dataset.wp;if(act('wp',{i},()=>buyWP(i))){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(act('wpreset',{},()=>resetWP())){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
@@ -3159,6 +3238,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.bptb){if(buyTB(el.dataset.bptb)){sfx.buy();renderTB();save();renderTab();}else toast(t('bp_poor'));}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
+  else if(el.dataset.road){if(gainFx(el,()=>act('road',{},()=>claimRoad()))){track('road',{k:S.road});sfx.chord();save();refresh();renderTab();}}
   else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(gainFx(el,()=>act('claim',{kind:k,i:+i},()=>claim(k,+i)))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
   else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
@@ -3181,7 +3261,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='privBtn')privacyModal();
   else if(el.id==='notifTest'){el.disabled=true;notifTest().then(o=>{el.disabled=false;const msg=o.ok?t('nt_test_ok'):o.perm==='denied'?t('nt_test_denied'):t('nt_test_err',{e:o.err||o.perm});modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_test')}</h2><p>${msg}</p><p class="sub">${t('nt_test_diag',{p:o.perm,x:o.exact})}${notifErr?' · '+esc(notifErr):''}</p><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);});}
   else if(el.id==='langBtn')modal(`<h2>${t('pr_lang')}</h2><div class="langs">${LANG_LIST().map(l=>`<button class="b${l===LANG?' b-gold':''}" data-setlang="${l}">${I18N[l]._name}</button>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
-  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['link','hp_pp2'],['target','hp_pp3']]);
+  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['star','hp_lum'],['link','hp_pp2'],['target','hp_pp3']]);
   else if(el.id==='atHelp')helpModal('anvil',t('at_res'),[['clock','hp_at1'],['plus','hp_at2'],['star','hp_at3']]);
   else if(el.id==='passHelp')helpModal('crown',t('ps_title'),[['star','hp_ps1'],['crown','hp_ps2'],['gem','hp_ps3'],['clock','hp_ps4']]);
   else if(el.id==='lgHelp')helpModal('trophy',t('lg_help_t'),[['flame','hp_lg1'],['trophy','hp_lg2'],['gem','hp_lg3'],['eye','hp_lg4']]);
@@ -3214,6 +3294,7 @@ $('panel').addEventListener('change',e=>{
 $('modal').addEventListener('click',e=>{
   const el=e.target.closest('button');if(!el)return;audio();
   if(el.hasAttribute('data-close'))closeModal();
+  else if(el.dataset.mail!=null){const m=MAIL.splice(+el.dataset.mail,1)[0];renderMail();closeModal();if(m)setTimeout(m.open,60);}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);} // v12.9 : packs du week-end depuis la fenêtre de l'accueil
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
@@ -3233,7 +3314,7 @@ $('modal').addEventListener('click',e=>{
   else if(el.hasAttribute('data-doreset')){const keep={name:S.name,nameChanges:S.nameChanges};act('reset',{},()=>{S=fresh();Object.assign(S,keep);return true;});closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}let x=null;const r=act('rename',{name:v},()=>{x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=(x&&x.msg)||t('srv_refused');}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());closeModal();if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
-  else if(el.id==='doPrest'){closeModal();lsSet('prisme-adc',String(+(lsGet('prisme-adc')||0)+1));const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');starterModal();} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
+  else if(el.id==='doPrest'){closeModal();lsSet('prisme-adc',String(+(lsGet('prisme-adc')||0)+1));const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');mailPush('starter','box',OFFERS[0].t,starterModal);} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
   else if(el.id==='titanGo'){closeModal();launchTitan();}
   else if(el.id==='giftGo'){const gf=gift;gift=null;$('gift').hidden=true;giftNext=0;closeModal();showAd(()=>{act('ad',{kind:'gift'},()=>{giftTake(gf);return true;});toast(giftLabel(gf));sfx.win();save();refresh();if(R)renderTB();},t('ad_sim'));}
   else if(el.id==='titanAd'){closeModal();rewarded(()=>{act('ad',{kind:'titan'},()=>titanAdTicket());toast(t('titan_got'));titanModal();});}
@@ -3266,7 +3347,10 @@ function homeMoments(){
     $('nameIn').select();}
 }
 /* ================= v10 : boutique (cadeau du jour, pass de saison), achats encadrés, offres contextuelles ================= */
-const rwHtml=r=>r.skin?`<span class="sdot" style="--sh:${seasonHue(passState().k)}"></span>${esc(skinInfo(r.skin==='S'?'s'+passState().k:r.skin==='SX'?'s'+passState().k+'x':r.skin).label)}${r.g?` ${ic('gem','ig')}${r.g}`:''}`:r.chest?`${ic('box','ig')}${t('ps_chest')}`:r.g?`${ic('gem','ig')}${r.g}`:r.m?`${ic('spark','ie')}${dur(r.m*60)}`:'';
+const rwHtml=r=>{const o=[]; /* v14 : récompenses combinées (Lumière, jetons de recherche) */
+  if(r.skin)o.push(`<span class="sdot" style="--sh:${seasonHue(passState().k)}"></span>${esc(skinInfo(r.skin==='S'?'s'+passState().k:r.skin==='SX'?'s'+passState().k+'x':r.skin).label)}`);
+  if(r.chest)o.push(`${ic('box','ig')}${t('ps_chest')}`);else if(r.m)o.push(`${ic('spark','ie')}${dur(r.m*60)}`);
+  if(r.g)o.push(`${ic('gem','ig')}${r.g}`);if(r.lum)o.push(`${ic('star','ig')}+${r.lum}`);if(r.rt)o.push(`${ic('clock','ie')}×${r.rt}`);return o.join(' ');};
 function passCard(){const p=passState(),n=passTier(),X=CFG.pass.xp,ready=passClaimable();
   return `<button class="pass slab pcard" data-tab="pass"><span class="oart">${ic('crown','ig')}</span><div style="min-width:0;text-align:left"><b>${t('ps_title')}${ready?'<span class="badge"></span>':''}</b><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(CFG.pass.tiers*X))}%"></i></div><p class="sub">${n} / ${CFG.pass.tiers} · ${ic('clock')} ${t('ps_left_s',{d:seasonLeft()})}</p></div><span class="b b-gold sm">›</span></button>`;}
 function shopTop(){return shopGiftHtml()+passCard();}
@@ -3285,8 +3369,8 @@ function evPackHtml(){const e=weekendEvent();if(!e)return '';return `<div class=
   return `<button class="gtile slab${bs?' best':''}${own?' own':''}" data-offer="${o.id}" ${own?'disabled':''}>${bs?`<span class="ribbon">${t('sh_best')}</span>`:''}<span class="oart">${ic(EVICON[e],'ie')}</span><b>${ic('gem','ig')}${grp(r.g)}</b><span class="evb">${bonus||'&nbsp;'}</span><span class="b b-gold sm">${own?t('sh_own'):priceOf(o)}</span></button>`;}).join('')}</div>`;}
 const evPackLeft=()=>!!weekendEvent()&&[0,1,2].some(i=>!evBought(i));
 function evPackModal(){const e=weekendEvent();if(!e)return;modal(`<div class="mart" style="color:var(--beam)">${ic(EVICON[e])}</div><h2>${t('ev_'+e)}</h2><p class="sub">${ic('clock')} ${t('ev_ends',{t:dur((evEnd()-Date.now())/1000)})}</p>${evPackHtml()}<div class="acts"><button class="b" data-close>${t('later')}</button></div>`);}
-function evChip(){const c=$('evChip');if(!c)return;const on=tab==='home'&&S.bestStage>=5&&evPackLeft();c.hidden=!on;if(!on)return;const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
-  if($('veil').hidden&&!giftAsk&&S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());evPackModal();}} /* une seule fois par événement */
+function evChip(){qgridFit();const c=$('evChip');if(!c)return;const on=S.bestStage>=5&&evPackLeft();if(c.hidden===on){c.hidden=!on;qgridFit();}if(!on){mailDrop('evpk');return;}const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
+  if(S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());mailPush('evpk',EVICON[e],t('ev_'+e),evPackModal);}} /* v14 : une seule fois par événement, dans la boîte aux lettres */
 /* v12 : offre de la semaine, renouvelée chaque lundi */
 function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();const [y,m,d,dw]=dparts(now);const mon=Date.UTC(y,m,d+((8-dw)%7||7))-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000;
   const parts=[o.m?`${ic('spark','ie')}${t('sh_pack',{t:dur(o.m*60)})}`:'',o.b?`${ic('bolt','ie')}${t('sh_gemboost',{n:o.b})}`:''].filter(Boolean).join(' + ');
@@ -3450,23 +3534,23 @@ const MILESTONES=[2,3,5,6,10,15,20,25,30,35,40,50,60,75,100];
 let sessStart=Date.now(),lastPlace='';
 document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[id],[data-adb]');if(el)lastPlace=el.dataset.adb?'adbuild':el.id;},true);
 {const f=hooks.evolve;hooks.evolve=(...a)=>{f&&f(...a);if(MILESTONES.includes(S.bestStage))track('stage',{n:S.bestStage,min:Math.round((Date.now()-sessStart)/60000)});};}
-{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});if(!v){bossFails++;if(bossFails>=3&&ctxOnce('boss')){bossFails=0;setTimeout(ctxBoss,2800);}}};}
+{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});if(!v){bossFails++;if(bossFails>=3&&ctxOnce('boss')){bossFails=0;mailPush('boss','bolt',t('cx_boss'),ctxBoss);}}};}
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={lumGain,lumMult,roadReady,roadMult,claimRoad,ne,get MAIL(){return MAIL;},mailPush,mailOpen,qgridFit,get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
 /* réveil (ouverture ou retour au premier plan) : le serveur fait foi, calcule le hors-ligne et les résultats de ligue */
 let booted=false;
-async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.ok){if(!booted&&S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},400);booted=true;return;}
+async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.ok){if(!booted&&S.st.kills>0)mailLogin();booted=true;return;}
   renderJok();renderTab();refresh();if(R)renderTB();renderActs();
   const o=d.result&&d.result.offline;if(o&&(o.sparks>0||o.stages>0)){if(R&&o.stages)R.E=enemyFor(S.run.stage);if($('veil').hidden)offlineModal(o);}
-  if(d.league&&d.league.rank)leagueModal(d.league);
+  if(d.league&&d.league.rank){const r=d.league;mailPush('league','trophy',t('lg_res_title'),()=>leagueModal(r));}
   netGuild(true).then(()=>{refresh();if(tab==='clan')renderTab();});
-  if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},600);}
+  if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)mailLogin();}
 }
 function netBoot(){wake();}
 function leagueModal(r){const show=()=>modal(`<div class="mart" style="color:var(--beam)">${ic('trophy')}</div><h2>${t('lg_res_title')}</h2><p>${t('lg_res_p',{r:r.rank,n:r.size})}</p><div class="loot">${ic('gem','ig')}+${r.gems} · ${ic('spark','ie')}+${fmt(r.sparks||0)}</div><p class="sub">${t('lg_res_sub',{t:dur(CFG.league.minutes(r.rank)*60)})}</p><div class="acts"><button class="b b-gold" id="lgClaim" data-gems="${r.gems}">${t('claim')}</button></div>`);if($('veil').hidden)show();else{const prev=modalOnClose;modalOnClose=()=>{if(prev)prev();setTimeout(show,200);};}}

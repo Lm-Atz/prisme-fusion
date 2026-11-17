@@ -138,3 +138,6 @@ Object.assign(I18N.pt,{"u_st_bank": "Tesouro", "u_st_bank_d": "Tesouro +{n}%"});
 
 Object.assign(I18N.pt,{"evp_t": "Pacote {e}", "evp_aria": "Oferta do fim de semana", "rt_use": "Terminar com uma ficha"}); // v12.9 : packs du week-end
 Object.assign(I18N.pt,{"shp_offers": "Ofertas", "shp_gems": "Gemas", "shp_bonus": "Bónus", "shp_skins": "Cores"}); // v13 : onglets de la boutique
+Object.assign(I18N.pt,{"mail_aria": "Caixa de correio", "mail_title": "Correio"}); // v14 : boîte aux lettres
+Object.assign(I18N.pt,{"lum_t": "Luz", "hp_lum": "Cada Refração dá Luz (1 por hora de partida, máx. 24): dano aumentado para sempre.", "road_t": "Rota dos recordes"}); // v14 : Lumière, route des records
+Object.assign(I18N.pt,{"of_pass_d": "Pista premium da temporada: {n} gemas, {l} de Luz (dano permanente), {r} fichas de pesquisa, baús e duas cores exclusivas. E toda a temporada: pontos de passe ×2, +1 espaço de pesquisa, +{h} h de ganhos offline. Os níveis já alcançados recebem-se logo. Faltam {d} dia{d|s}."}); // v14 : pass refondu

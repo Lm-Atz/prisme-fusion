@@ -1,4 +1,4 @@
-const VERSION='13.0 · boutique';
+const VERSION='14.0 · infini';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -148,7 +148,7 @@ hooks.harvest=(i,sp)=>{if(Math.random()<0.5)return;const [x,y]=fx.at(i);fx.float
 hooks.tb=k=>{sfx.buy();kick('small');fx.glow=Math.min(1,fx.glow+0.4);if(tutoStep===3)tutoNext();};
 hooks.autoPrestige=()=>{act('prestige',{},()=>doPrestige()||false);};
 hooks.prestige=g=>{track('refraction',{stage:S.run.stage,pts:g});boardCache=null;fx.flash=1;fx.flashCol='127,226,255';kick('huge');sfx.win();for(let i=0;i<R.N*R.N;i++)fx.burst(i,null,4,300);};
-hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><div class="big">${fmt(d*DX)}</div><p>${d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest*DX)})}</p><div class="acts"><button class="b b-gold" data-close>${t('continue')}</button></div>`);};
+hooks.titanEnd=d=>{Music.target=0.3;boardCache=null;act('titan_end',{score:Math.floor(d)});banner(fmt(d*DX),d>=S.st.titanBest?t('titan_record'):t('titan_prev',{n:fmt(S.st.titanBest*DX)}),'gold',3600);renderActs();}; /* v14 : plus de fenêtre sur le plateau */
 //__ME__
 /* ================= saisie (glisser, aimant, retour) ================= */
 function cellAt(e){const r=cv.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;if(x<0||y<0||x>=r.width||y>=r.height)return null;return {i:Math.floor(y/cell)*R.N+Math.floor(x/cell),x,y};}
@@ -234,7 +234,11 @@ function boostView(){const sp=S.run.sparks;
 const RD='<span class="badge rd"></span>';
 function passPageReady(a,b){const p=passState(),n=Math.min(passTier(),b);for(let i=a+1;i<=n;i++)if(!p.cf.includes(i)||(p.prem&&!p.cp.includes(i)))return true;return false;}
 const loginReady=()=>!loginState().claimedToday;
-const questsReward=()=>claimable()||loginReady()||passClaimable();
+const questsReward=()=>claimable()||loginReady()||passClaimable()||roadReady()>0;
+const xm=x=>x<1000?dec(x,x<10?2:1):fmt(x); // multiplicateur lisible
+/* v14 : route des records : toutes les 25 étapes de record, une récompense définitive à récupérer */
+function roadCard(){const k=(S.road|0)+1,target=k*CFG.road.every,ready=roadReady()>0,prev=(k-1)*CFG.road.every,p=Math.max(0,Math.min(1,(S.bestStage-prev)/(target-prev)));
+  return `<div class="road slab${ready?' hl':''}" ${ready?'data-road="1" role="button" tabindex="0"':''}><span class="oart">${ic('flag','ig')}</span><div style="min-width:0"><b>${t('road_t')}${ready?RD:''}</b><div class="qbar"><i style="width:${ready?100:100*p}%"></i><span>${ic('flag')} ${target}</span></div><span class="rew">${ic('gem','ig')}${CFG.road.g(k)} ${ic('swords')}×${dec(CFG.road.m,2)}</span></div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:`<span class="note">${ic('swords')}×${xm(roadMult())}</span>`}</div>`;}
 const shopReward=()=>!S.day.sgift||passClaimable();
 function refresh(){
   roll();{const tbn=document.querySelectorAll('#tb .tbt[data-tb]').length;if(R&&(tbn!==Object.keys(TBDEF).filter(tbShown).length||!!$('boostBtn')!==moreShown()))renderTB();} /* v12.3 : nouveau booster révélé dès qu'il se débloque */evBanner();if(tab==='home'&&!S.prestiges&&S.bestStage>=25&&$('hint').hidden&&lsGet('prisme-hintr')!=='1'){lsSet('prisme-hintr','1');showHint(t('hint_refr',{n:CFG.prestige.minStage}),7000);} /* v12.3 : la Réfraction expliquée quand elle approche, plus à l'étape 3 */{const mb=$('meBtn');if(mb)mb.classList.toggle('dot',medalsReady());}
@@ -280,7 +284,7 @@ function renderActs(){
   if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
   if(S.bestStage>=CFG.titan.stage&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
-  a.hidden=!h;
+  a.hidden=!h;qgridFit();
 }
 function renderJok(){
   const ids=Object.keys(R.jk);$('jok').hidden=!ids.length;
@@ -301,7 +305,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='titan')titanModal();
 });
 function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1); /* v12.4 : chiffres et icônes, plus de paragraphes */
-  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span></div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span>${lumGain(S.run.max)?`<span>${ic('star','ig')}<b>+${lumGain(S.run.max)}</b></span>`:''}</div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(act('titan_start',{},()=>startTitan())){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -316,6 +320,17 @@ function giftTick(dt){
     if(!NET.on){show(giftRoll());giftAsk=false;return;}if(!netReady){giftAsk=false;return;} /* v11.6 : en ligne, seul le serveur crée les cadeaux */
     actAsync('gift_offer').then(d=>{giftAsk=false;if(d&&d.ok&&d.result&&d.result.ok&&d.result.gift)show(d.result.gift);else if(d&&d.result&&d.result.wait)giftNext=giftT+d.result.wait;else giftNext=giftT+60;}).catch(()=>{giftAsk=false;giftNext=giftT+60;});}
 }
+/* v14 : boîte aux lettres : ce qui s'ouvrait tout seul pendant le jeu (connexion du jour, résultat de ligue, offres, packs du week-end…) attend ici, avec une pastille, jusqu'à ce que le joueur l'ouvre */
+let MAIL=[];
+function mailPush(k,icon,title,open){if(MAIL.some(m=>m.k===k))return;MAIL.push({k,icon,title,open});renderMail();}
+function mailDrop(k){MAIL=MAIL.filter(m=>m.k!==k);renderMail();}
+function renderMail(){const b=$('mailBtn');if(!b)return;b.hidden=!MAIL.length;$('mailN').textContent=MAIL.length>1?String(MAIL.length):'';$('mailN').hidden=MAIL.length<2;qgridFit();}
+function mailOpen(){if(!MAIL.length)return;audio();if(MAIL.length===1){const m=MAIL.shift();renderMail();m.open();return;}
+  modal(`<div class="mart" style="color:var(--beam)">${ic('mail')}</div><h2>${t('mail_title')}</h2><div class="mlist">${MAIL.map((m,i)=>`<button class="b" data-mail="${i}">${ic(m.icon,m.icon==='gem'?'ig':'')}<span>${esc(m.title)}</span></button>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);}
+/* la colonne d'actions ne descend jamais sur le plateau : autant de lignes que la hauteur de l'arène le permet */
+function qgridFit(){const q=$('qgrid'),b=$('board');if(!q||!b)return;const top=q.getBoundingClientRect().top,bot=b.getBoundingClientRect().top-4;const n=Math.max(1,Math.floor((bot-top+2)/46));if(q.style.getPropertyValue('--qr')!==String(n))q.style.setProperty('--qr',n);}
+addEventListener('resize',()=>qgridFit());
+$('mailBtn').addEventListener('click',mailOpen);
 function giftLabel(gf){return gf.k==='sp'?'+'+fmt(gf.v)+' '+t('sparks'):gf.k==='g'?'+'+gf.v+' '+t('gems'):t('gift_boost',{n:30});}
 $('evChip').addEventListener('click',()=>{audio();track('evpk_open',{e:weekendEvent()});evPackModal();});
 $('gift').addEventListener('click',()=>{if(!gift)return;audio();const gf=gift;modal(`<div class="mart" style="color:var(--beam)">${ic('box')}</div><h2>${t('gift_title')}</h2><div class="loot" style="color:var(--beam)">${giftLabel(gf)}</div><p>${t('gift_p')}</p><div class="acts"><button class="b b-gold" id="giftGo">${ic('tv')}${t('gift_go')}</button><button class="b" data-close>${t('close')}</button></div>`,()=>{if(gift){gift=null;$('gift').hidden=true;giftNext=0;}});});
@@ -452,10 +467,10 @@ function renderTab(){
     if(atPane==='refr'){
       const spent=Object.keys(S.wp||{}).length;
       h+=`<div class="slotbuy ppbal"><span class="ppn">${ic('prism')}<b>${S.pp||0}</b></span></div>`;
+      {const lg=lumGain(Math.max(S.run.max,CFG.lum.min));h+=`<div class="lumc slab"><span class="oart">${ic('star','ig')}</span><div style="min-width:0"><b>${t('lum_t')} <span class="lumn">${grp(S.lum|0)}</span></b><p class="sub">${ic('swords')} ×${xm(lumMult())}</p></div><span class="lumg">${S.run.max>=CFG.lum.min?`+${lg} ${ic('star','ig')}`:`${ic('lock')} ${CFG.lum.min}`}</span></div>`;} /* v14 : Lumière */
       h+=`<h2 class="sec subsec">${t('at_auto_h')}</h2><div class="tiles">${UPG.filter(u=>u.g==='auto'||u.g==='refr').map(u=>tileHtml(u,free)).join('')}</div>`;
       h+=`<h2 class="sec subsec">${t('at_forms')}</h2>`;
       h+=`<div class="list" style="gap:6px;margin-bottom:8px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><b>${w.t} <span>· ${w.fx}</span></b>${k?`<p class="wlv on">${t('lvl',{n:k})} · ${t('bn_dmg',{n:8*k})}</p>`:''}</div><button class="b ${S.pp>=c?'b-gold':''} sm wbtn" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}">${ic('prism')}<span>${c}</span></button></div>`;}).join('')}</div>`;
-      if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
       if(spent)h+=`<div class="wreset"><button class="b sm" id="wpReset" ${S.gems<CFG.wpReset?'disabled':''}>${t('pp_reset')} ${ic('gem')}${CFG.wpReset}</button></div>`;
     }else{
       seenGroup(atGroup);h+=`<div class="bal">${ic('spark','ie')}<b id="balSp">${fmt(S.run.sparks)}</b></div><div class="list">${S.build.map(buildRow).join('')}${Array.from({length:free},()=>`<div class="slot empty">${ic('plus')}${t('at_free')}</div>`).join('')}</div>`;
@@ -478,7 +493,7 @@ function renderTab(){
   }else if(tab==='quests'){
     const v=questView();
     const qrow=q=>{const ready=q.p>=q.n&&!q.done;return `<div class="quest slab item ${ready?'hl':''} ${q.done?'done':''}" ${ready?`data-claim="${q.kind}:${q.i}" role="button" tabindex="0"`:''}><span class="qic">${ic(q.done?'check':ready?'star':'target')}</span><div class="qbody" style="min-width:0"><b>${q.t}</b><div class="qbar"><i style="width:${100*q.p/q.n}%"></i><span>${fmt(q.p)} / ${fmt(q.n)}</span></div>${rewardHtml(q.r)}</div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:q.done?`<span class="note">${t('quests_got')}</span>`:'<span></span>'}</div>`;};
-    h+=head(t('quests_title'))+evCard()+passCard(); // v11 : les quêtes font avancer le pass
+    h+=head(t('quests_title'))+evCard()+roadCard()+passCard(); // v11 : les quêtes font avancer le pass ; v14 : route des records
     const done=ONB.length-v.onbLeft;
     if(v.onb.length)h+=`<h2 class="sec">${t('quests_onb')}${v.onb.some(q=>!q.done&&q.p>=q.n)?RD:''}<small>${done} / ${ONB.length}</small></h2><div class="chap"><i style="width:${100*done/ONB.length}%"></i></div><div class="list">${v.onb.map(qrow).join('')}</div>`;
     const mid=new Date();mid.setHours(24,0,0,0);
@@ -571,6 +586,7 @@ function loginHtml(){
   const st=loginState();
   return `<div class="login">${LOGIN.map((r,i)=>{const d=i+1,cls=d<st.day?'past':d===st.day?'today':'';return `<div class="ltile ${cls}"><small>${d}</small>${r.joker?`<span>${ic('eye','ig')}${t('login_joker')}</span>`:rewardHtml(r).replace('class="rew"','class="rew" style="justify-content:center"')}</div>`;}).join('')}</div>${st.claimedToday?`<p class="note">${t('login_done',{n:st.day%7+1})}</p>`:`<button class="b b-gold" style="width:100%;margin-top:10px" id="loginGo">${t('login_go',{n:st.day})}</button>`}`;
 }
+function mailLogin(){const st=loginState();if(!st.claimedToday)mailPush('login','star',t('login_title',{n:st.day}),loginModal);}
 function loginModal(){
   const st=loginState();if(st.claimedToday)return;
   modal(`<h2>${t('login_title',{n:st.day})}</h2><p>${t('login_sub')}</p>${loginHtml()}`);
@@ -583,7 +599,7 @@ $('meBtn').addEventListener('click',()=>goTab('profile'));
 $('pillG').addEventListener('click',()=>{shopPane='gems';goTab('shop');});
 function doBuild(id){const inst=upTime(upById(id))<=0;const r=act('build',{id},()=>startBuild(id));if(r==='ok'){if(RUNG.includes(upById(id).g)){sfx.buy();if(R)renderTB();}else if(inst){sfx.chord();toast(t('at_done',{t:upById(id).t}));if(R)renderTB();}else{sfx.buy();toast(t('at_started',{t:upById(id).t}));if(LN()&&S.settings.notif==null)setTimeout(notifPrompt,900);}}else if(r==='slots'){if(S.slots-1<CFG.build.slotGems.length&&ctxOnce('slots'))ctxSlots();else toast(t('at_busy'));}save();refresh();renderTab();return r;}
 $('panel').addEventListener('click',e=>{
-  const el=e.target.closest('button,[data-claim],[data-gquest]');if(!el)return;audio();Music.start();
+  const el=e.target.closest('button,[data-claim],[data-gquest],[data-road]');if(!el)return;audio();Music.start();
   if(el.dataset.tab)goTab(el.dataset.tab);
   else if(el.dataset.wp){const i=+el.dataset.wp;if(act('wp',{i},()=>buyWP(i))){sfx.buy();save();renderTab();}}
   else if(el.id==='wpReset'){if(act('wpreset',{},()=>resetWP())){sfx.chord();toast(t('pp_back'));save();refresh();renderTab();}}
@@ -601,6 +617,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.dataset.bptb){if(buyTB(el.dataset.bptb)){sfx.buy();renderTB();save();renderTab();}else toast(t('bp_poor'));}
   else if(el.dataset.unlock){const [id,c]=el.dataset.unlock.split(':');if(act('joker',{id,cur:c},()=>unlockJoker(id,c))){sfx.win();toast(t('j_unlocked',{n:jokerById(id).t}));renderJok();}save();refresh();renderTab();}
   else if(el.dataset.equip){const id=el.dataset.equip;if(!act('equip',{id},()=>toggleEquip(id)))toast(t('j_full'));else renderJok();save();renderTab();}
+  else if(el.dataset.road){if(gainFx(el,()=>act('road',{},()=>claimRoad()))){track('road',{k:S.road});sfx.chord();save();refresh();renderTab();}}
   else if(el.dataset.claim){const [k,i]=el.dataset.claim.split(':');track('quest',{k,i:+i});if(gainFx(el,()=>act('claim',{kind:k,i:+i},()=>claim(k,+i)))){sfx.chord();toast(t('quests_reward'));save();refresh();renderTab();}}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
   else if(el.dataset.pane){clanPane=el.dataset.pane;gdErrMsg='';renderTab();}
@@ -623,7 +640,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='privBtn')privacyModal();
   else if(el.id==='notifTest'){el.disabled=true;notifTest().then(o=>{el.disabled=false;const msg=o.ok?t('nt_test_ok'):o.perm==='denied'?t('nt_test_denied'):t('nt_test_err',{e:o.err||o.perm});modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_test')}</h2><p>${msg}</p><p class="sub">${t('nt_test_diag',{p:o.perm,x:o.exact})}${notifErr?' · '+esc(notifErr):''}</p><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);});}
   else if(el.id==='langBtn')modal(`<h2>${t('pr_lang')}</h2><div class="langs">${LANG_LIST().map(l=>`<button class="b${l===LANG?' b-gold':''}" data-setlang="${l}">${I18N[l]._name}</button>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
-  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['link','hp_pp2'],['target','hp_pp3']]);
+  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['star','hp_lum'],['link','hp_pp2'],['target','hp_pp3']]);
   else if(el.id==='atHelp')helpModal('anvil',t('at_res'),[['clock','hp_at1'],['plus','hp_at2'],['star','hp_at3']]);
   else if(el.id==='passHelp')helpModal('crown',t('ps_title'),[['star','hp_ps1'],['crown','hp_ps2'],['gem','hp_ps3'],['clock','hp_ps4']]);
   else if(el.id==='lgHelp')helpModal('trophy',t('lg_help_t'),[['flame','hp_lg1'],['trophy','hp_lg2'],['gem','hp_lg3'],['eye','hp_lg4']]);
@@ -656,6 +673,7 @@ $('panel').addEventListener('change',e=>{
 $('modal').addEventListener('click',e=>{
   const el=e.target.closest('button');if(!el)return;audio();
   if(el.hasAttribute('data-close'))closeModal();
+  else if(el.dataset.mail!=null){const m=MAIL.splice(+el.dataset.mail,1)[0];renderMail();closeModal();if(m)setTimeout(m.open,60);}
   else if(el.dataset.offer){const o=OFFERS.find(x=>x.id===el.dataset.offer);track('offer_view',{id:o.id});modal(`<div class="mart">${ic('bag','ie')}</div><h2>${o.t}</h2><p>${o.d}</p><div class="big" style="color:var(--beam)">${priceOf(o)}</div><p>${t('sh_sim')}</p><div class="acts"><button class="b b-gold" data-confirm="${o.id}">${t('sh_confirm')}</button><button class="b" data-close>${t('cancel')}</button></div>`);} // v12.9 : packs du week-end depuis la fenêtre de l'accueil
   else if(el.dataset.buytb){if(buyTB(el.dataset.buytb)){renderTB();save();closeModal();}}
   else if(el.dataset.build){doBuild(el.dataset.build);closeModal();}
@@ -675,7 +693,7 @@ $('modal').addEventListener('click',e=>{
   else if(el.hasAttribute('data-doreset')){const keep={name:S.name,nameChanges:S.nameChanges};act('reset',{},()=>{S=fresh();Object.assign(S,keep);return true;});closeModal();save();tab='home';startRun();renderTab();refresh();}
   else if(el.id==='nameGo'){const v=$('nameIn').value;if(v.trim()===S.name){closeModal();return;}let x=null;const r=act('rename',{name:v},()=>{x=rename(v);return x.ok?x:false;});if(r&&r.ok){closeModal();toast(t('name_saved'));save();refresh();}else $('nameErr').textContent=(x&&x.msg)||t('srv_refused');}
   else if(el.id==='loginGo'){const r=act('login',{},()=>claimLogin());closeModal();if(r){toast(t('login_got'));sfx.win();}save();refresh();renderTab();}
-  else if(el.id==='doPrest'){closeModal();lsSet('prisme-adc',String(+(lsGet('prisme-adc')||0)+1));const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');starterModal();} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
+  else if(el.id==='doPrest'){closeModal();lsSet('prisme-adc',String(+(lsGet('prisme-adc')||0)+1));const g=act('prestige',{},()=>doPrestige()||false)||0;renderStage();renderTB();renderActs();save();refresh();toast(t('pre_done',{m:dec(refMult(),1),n:fmt(g)}));maybeInterstitial(()=>{if(!S.starter&&!lsGet('prisme-offer')&&S.prestiges>=1){lsSet('prisme-offer','1');mailPush('starter','box',OFFERS[0].t,starterModal);} /* v11.5 : une seule fois par appareil (S.offerAt n'était pas gardé par le serveur → proposé à chaque Réfraction) */else if(S.prestiges===1)toast(t('pre_tip'));});}
   else if(el.id==='titanGo'){closeModal();launchTitan();}
   else if(el.id==='giftGo'){const gf=gift;gift=null;$('gift').hidden=true;giftNext=0;closeModal();showAd(()=>{act('ad',{kind:'gift'},()=>{giftTake(gf);return true;});toast(giftLabel(gf));sfx.win();save();refresh();if(R)renderTB();},t('ad_sim'));}
   else if(el.id==='titanAd'){closeModal();rewarded(()=>{act('ad',{kind:'titan'},()=>titanAdTicket());toast(t('titan_got'));titanModal();});}
@@ -708,7 +726,10 @@ function homeMoments(){
     $('nameIn').select();}
 }
 /* ================= v10 : boutique (cadeau du jour, pass de saison), achats encadrés, offres contextuelles ================= */
-const rwHtml=r=>r.skin?`<span class="sdot" style="--sh:${seasonHue(passState().k)}"></span>${esc(skinInfo(r.skin==='S'?'s'+passState().k:r.skin==='SX'?'s'+passState().k+'x':r.skin).label)}${r.g?` ${ic('gem','ig')}${r.g}`:''}`:r.chest?`${ic('box','ig')}${t('ps_chest')}`:r.g?`${ic('gem','ig')}${r.g}`:r.m?`${ic('spark','ie')}${dur(r.m*60)}`:'';
+const rwHtml=r=>{const o=[]; /* v14 : récompenses combinées (Lumière, jetons de recherche) */
+  if(r.skin)o.push(`<span class="sdot" style="--sh:${seasonHue(passState().k)}"></span>${esc(skinInfo(r.skin==='S'?'s'+passState().k:r.skin==='SX'?'s'+passState().k+'x':r.skin).label)}`);
+  if(r.chest)o.push(`${ic('box','ig')}${t('ps_chest')}`);else if(r.m)o.push(`${ic('spark','ie')}${dur(r.m*60)}`);
+  if(r.g)o.push(`${ic('gem','ig')}${r.g}`);if(r.lum)o.push(`${ic('star','ig')}+${r.lum}`);if(r.rt)o.push(`${ic('clock','ie')}×${r.rt}`);return o.join(' ');};
 function passCard(){const p=passState(),n=passTier(),X=CFG.pass.xp,ready=passClaimable();
   return `<button class="pass slab pcard" data-tab="pass"><span class="oart">${ic('crown','ig')}</span><div style="min-width:0;text-align:left"><b>${t('ps_title')}${ready?'<span class="badge"></span>':''}</b><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(CFG.pass.tiers*X))}%"></i></div><p class="sub">${n} / ${CFG.pass.tiers} · ${ic('clock')} ${t('ps_left_s',{d:seasonLeft()})}</p></div><span class="b b-gold sm">›</span></button>`;}
 function shopTop(){return shopGiftHtml()+passCard();}
@@ -727,8 +748,8 @@ function evPackHtml(){const e=weekendEvent();if(!e)return '';return `<div class=
   return `<button class="gtile slab${bs?' best':''}${own?' own':''}" data-offer="${o.id}" ${own?'disabled':''}>${bs?`<span class="ribbon">${t('sh_best')}</span>`:''}<span class="oart">${ic(EVICON[e],'ie')}</span><b>${ic('gem','ig')}${grp(r.g)}</b><span class="evb">${bonus||'&nbsp;'}</span><span class="b b-gold sm">${own?t('sh_own'):priceOf(o)}</span></button>`;}).join('')}</div>`;}
 const evPackLeft=()=>!!weekendEvent()&&[0,1,2].some(i=>!evBought(i));
 function evPackModal(){const e=weekendEvent();if(!e)return;modal(`<div class="mart" style="color:var(--beam)">${ic(EVICON[e])}</div><h2>${t('ev_'+e)}</h2><p class="sub">${ic('clock')} ${t('ev_ends',{t:dur((evEnd()-Date.now())/1000)})}</p>${evPackHtml()}<div class="acts"><button class="b" data-close>${t('later')}</button></div>`);}
-function evChip(){const c=$('evChip');if(!c)return;const on=tab==='home'&&S.bestStage>=5&&evPackLeft();c.hidden=!on;if(!on)return;const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
-  if($('veil').hidden&&!giftAsk&&S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());evPackModal();}} /* une seule fois par événement */
+function evChip(){qgridFit();const c=$('evChip');if(!c)return;const on=S.bestStage>=5&&evPackLeft();if(c.hidden===on){c.hidden=!on;qgridFit();}if(!on){mailDrop('evpk');return;}const e=weekendEvent(),h=`${ic(EVICON[e])}<small>${dur((evEnd()-Date.now())/1000)}</small>`;if(c.dataset.h!==h){c.innerHTML=h;c.dataset.h=h;}
+  if(S.st.tuto>=3&&lsGet('prisme-evpk')!==evKey()){lsSet('prisme-evpk',evKey());mailPush('evpk',EVICON[e],t('ev_'+e),evPackModal);}} /* v14 : une seule fois par événement, dans la boîte aux lettres */
 /* v12 : offre de la semaine, renouvelée chaque lundi */
 function weekOfferHtml(){const o=weekOffer(),got=!!S.week.wo,now=Date.now();const [y,m,d,dw]=dparts(now);const mon=Date.UTC(y,m,d+((8-dw)%7||7))-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000;
   const parts=[o.m?`${ic('spark','ie')}${t('sh_pack',{t:dur(o.m*60)})}`:'',o.b?`${ic('bolt','ie')}${t('sh_gemboost',{n:o.b})}`:''].filter(Boolean).join(' + ');
@@ -892,23 +913,23 @@ const MILESTONES=[2,3,5,6,10,15,20,25,30,35,40,50,60,75,100];
 let sessStart=Date.now(),lastPlace='';
 document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[id],[data-adb]');if(el)lastPlace=el.dataset.adb?'adbuild':el.id;},true);
 {const f=hooks.evolve;hooks.evolve=(...a)=>{f&&f(...a);if(MILESTONES.includes(S.bestStage))track('stage',{n:S.bestStage,min:Math.round((Date.now()-sessStart)/60000)});};}
-{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});if(!v){bossFails++;if(bossFails>=3&&ctxOnce('boss')){bossFails=0;setTimeout(ctxBoss,2800);}}};}
+{const f=hooks.bossFled;hooks.bossFled=v=>{f&&f(v);track('boss_fail',{stage:S.run.stage});if(!v){bossFails++;if(bossFails>=3&&ctxOnce('boss')){bossFails=0;mailPush('boss','bolt',t('cx_boss'),ctxBoss);}}};}
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+window.__G={lumGain,lumMult,roadReady,roadMult,claimRoad,ne,get MAIL(){return MAIL;},mailPush,mailOpen,qgridFit,get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}
 requestAnimationFrame(frame);
 /* réveil (ouverture ou retour au premier plan) : le serveur fait foi, calcule le hors-ligne et les résultats de ligue */
 let booted=false;
-async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.ok){if(!booted&&S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},400);booted=true;return;}
+async function wake(){const d=await actAsync('hello').catch(()=>null);if(!d||!d.ok){if(!booted&&S.st.kills>0)mailLogin();booted=true;return;}
   renderJok();renderTab();refresh();if(R)renderTB();renderActs();
   const o=d.result&&d.result.offline;if(o&&(o.sparks>0||o.stages>0)){if(R&&o.stages)R.E=enemyFor(S.run.stage);if($('veil').hidden)offlineModal(o);}
-  if(d.league&&d.league.rank)leagueModal(d.league);
+  if(d.league&&d.league.rank){const r=d.league;mailPush('league','trophy',t('lg_res_title'),()=>leagueModal(r));}
   netGuild(true).then(()=>{refresh();if(tab==='clan')renderTab();});
-  if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)setTimeout(()=>{if($('veil').hidden)loginModal();},600);}
+  if(!booted){booted=true;track('open',{lang:LANG,stage:S.run.stage,best:S.bestStage});if(S.st.kills>0)mailLogin();}
 }
 function netBoot(){wake();}
 function leagueModal(r){const show=()=>modal(`<div class="mart" style="color:var(--beam)">${ic('trophy')}</div><h2>${t('lg_res_title')}</h2><p>${t('lg_res_p',{r:r.rank,n:r.size})}</p><div class="loot">${ic('gem','ig')}+${r.gems} · ${ic('spark','ie')}+${fmt(r.sparks||0)}</div><p class="sub">${t('lg_res_sub',{t:dur(CFG.league.minutes(r.rank)*60)})}</p><div class="acts"><button class="b b-gold" id="lgClaim" data-gems="${r.gems}">${t('claim')}</button></div>`);if($('veil').hidden)show();else{const prev=modalOnClose;modalOnClose=()=>{if(prev)prev();setTimeout(show,200);};}}

@@ -1,6 +1,6 @@
 const {chromium}=require('playwright');
 let ok=0,ko=0;const T=(n,c)=>{if(c)ok++;else{ko++;console.log('KO',n);}};
-(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844},locale:'fr-FR'});
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844},locale:'fr-FR'});await p.route(/^https:\/\/[a-z0-9-]+\.supabase\.co\//,r=>r.abort()); /* v14 : jamais le vrai serveur pendant les tests (jeu hors ligne) */
 const errs=[];let errStack=[];p.on('pageerror',e=>{errs.push(e.message);errStack.push(e.stack.split('\n').slice(0,4).join(' | '));});
 await p.goto('file:///home/claude/fusion/wrapped.html');await p.waitForTimeout(500);
 const ev=(f,...a)=>p.evaluate(f,...a);
@@ -253,7 +253,7 @@ r=await ev(()=>{const G=window.__G,o={};G.S.gems=100;const g=G.S.gems;document.q
 T('v12 : acheter 1 palier = 15 gemmes',r.buy1);T('v11 : sans pass payant, seul le gratuit se débloque',r.freeOnly);T('v11 : tout récupérer (gratuit seulement sans pass)',r.all);T('v11 : achat de palier impossible sans gemmes',r.poor);T('v11 : page suivante, palier 20 mis en avant',r.next);
 await ev(()=>{window.__G.passXP(0);window.__G.renderTab();});await p.locator('#panel [data-passbuy]').click();await p.locator('#modal [data-confirm="pass"]').click();await p.waitForTimeout(100);await ev(()=>{const G=window.__G;window.__pp=-1;});
 r=await ev(()=>{const G=window.__G;G.setTab('pass');const g=G.S.gems;document.querySelector('[data-ppage="0"]')?.click();const b=document.querySelector('[data-pass="1"][data-track="p"]');b.click();const o={one:G.passState().prem&&G.S.gems===g+8&&G.S.spend.eur===4.99};
-  const g2=G.S.gems;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+7*8;return o;}); /* v12 : palier 5 = coffre (production + boost), sans gemmes */T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
+  const g2=G.S.gems,r2=G.S.rt|0;document.getElementById('passAll').click();o.all=G.passState().cp.length===9&&G.S.gems===g2+5*8&&(G.S.rt|0)===r2+2;return o;}); /* v14 : paliers 3 et 7 = jetons de recherche */ /* v12 : palier 5 = coffre (production + boost), sans gemmes */T('v11 : pass acheté, palier premium 1 = 8 gemmes, dépense notée',r.one);T('v11 : paliers achetés avant le pass : leurs récompenses premium deviennent récupérables',r.all);
 await ev(()=>(window.__G.shopPane='gems',window.__G.setTab('shop')));await p.locator('[data-offer="g100"]').click();await p.locator('#modal [data-confirm="g100"]').click();await p.waitForTimeout(100);
 r=await ev(()=>{const G=window.__G;return G.S.firstX2===true&&document.querySelectorAll('#panel .x2').length===0;});T('v10 : premier pack doublé puis ×2 retiré',r);
 await ev(()=>{const G=window.__G;G.S.spend.eur=200;G.shopPane='gems';G.setTab('shop');});const gA=await ev(()=>window.__G.S.gems);
@@ -291,7 +291,9 @@ await p.locator('#setNotif').uncheck();T('v10 : notifications coupées dans Prof
 r=await ev(async()=>{window.__notif.sched=[];await window.__G.notifSchedule();return window.__notif.sched.length===0;});T('v10 : coupées → rien de programmé',r);
 await ev(()=>{delete window.Capacitor;window.__G.S.build=[];window.__G.setTab('home');});
 // offre contextuelle : boss raté 3 fois
-await ev(()=>{localStorage.removeItem('prisme-ctx-boss');const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);
+await ev(()=>{localStorage.removeItem('prisme-ctx-boss');const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(600);
+T('v14 : boss raté 3 fois → rien ne s\'ouvre sur le plateau, le conseil attend dans la boîte aux lettres',await ev(()=>document.getElementById('veil').hidden&&!document.getElementById('mailBtn').hidden));
+await ev(()=>document.getElementById('mailBtn').click());await p.waitForTimeout(150);
 T('v10 : boss raté 3 fois → conseil (Atelier, boost), sans compte à rebours',await ev(()=>/Ce boss résiste/.test(document.getElementById('modal').innerText)&&!/\d+:\d\d/.test(document.getElementById('modal').innerText)));
 await p.locator('#modal [data-go="atelier"]').click();T('v10 : conseil → Atelier',await ev(()=>window.__G.tab==='atelier'));
 await ev(()=>{const G=window.__G;for(let i=0;i<3;i++)G.hooks.bossFled(false);});await p.waitForTimeout(3100);T('v10 : une seule fois par jour',await ev(()=>document.getElementById('veil').hidden));

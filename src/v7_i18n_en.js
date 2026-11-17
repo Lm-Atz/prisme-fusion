@@ -138,3 +138,6 @@ Object.assign(I18N.en,{"u_st_bank": "Treasure", "u_st_bank_d": "Treasure +{n}%"}
 
 Object.assign(I18N.en,{"evp_t": "{e} pack", "evp_aria": "Weekend offer", "rt_use": "Finish with a token"}); // v12.9 : packs du week-end
 Object.assign(I18N.en,{"shp_offers": "Offers", "shp_gems": "Gems", "shp_bonus": "Boosts", "shp_skins": "Colors"}); // v13 : onglets de la boutique
+Object.assign(I18N.en,{"mail_aria": "Mailbox", "mail_title": "Mail"}); // v14 : boîte aux lettres
+Object.assign(I18N.en,{"lum_t": "Light", "hp_lum": "Each Refraction grants Light (1 per hour of run, 24 max): damage increased forever.", "road_t": "Record road"}); // v14 : Lumière, route des records
+Object.assign(I18N.en,{"of_pass_d": "Season premium track: {n} gems, {l} Light (permanent damage), {r} research tokens, chests and two exclusive colours. And all season: pass points ×2, +1 research slot, +{h} h of offline earnings. Tiers already reached can be claimed right away. {d} day{d|s} left."}); // v14 : pass refondu

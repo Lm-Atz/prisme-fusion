@@ -382,3 +382,26 @@ body{margin:0}
 .evpk.gtiles{margin-top:10px}
 #modal .evpk.gtiles{gap:8px 6px}#modal .gtile>b{font-size:17px}
 .gtile>b .ig{color:var(--gem)}
+
+/* v14 : rien au-dessus du plateau : cadeau, événement et boîte aux lettres rejoignent les actions rapides, dans l'arène ; la grille passe sur une 2e colonne si la hauteur manque */
+.qgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--qr,3),44px);grid-auto-columns:44px;direction:rtl;gap:2px 4px;pointer-events:auto;justify-content:end}
+.qgrid>*{direction:ltr}
+.qgrid .quick{display:contents}
+.qgrid .gift,.qgrid .evchip{position:relative;left:auto;right:auto;top:auto;width:40px;height:40px;min-width:0;margin:2px;padding:0;border-radius:50%;display:grid;place-items:center;z-index:auto}
+.qgrid .evchip .i,.qgrid .gift .i{width:22px;height:22px}
+.qgrid .evchip small{display:none}
+.qb.mail{color:var(--light)}.qb.mail span{box-shadow:inset 0 0 0 2px var(--beam)}
+.qb .mailn{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--danger,#ff5d73);color:#fff;font:800 11px/18px var(--body);text-align:center;box-shadow:0 0 0 2px var(--night);width:auto}
+.mlist{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.mlist button{display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left}
+.mlist button .i{width:22px;height:22px;flex:none}
+.arena .hint{position:absolute;left:0;right:54px;bottom:14px;z-index:4;pointer-events:none;margin:0} /* v14 : l'aide s'affiche dans l'arène, jamais sur le plateau */
+@media (max-height:700px){.arena .hint{margin-right:0;padding:7px 10px;font-size:13px}}
+/* v14 : Lumière et route des records */
+.lumc,.road{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;margin:8px 0 10px;border-radius:18px}
+.lumc b,.road b{font:17px var(--display);display:flex;align-items:center;gap:6px}
+.lumc .lumn{color:var(--beam)}
+.lumc .lumg{font:800 15px var(--body);color:var(--beam);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.road.hl{box-shadow:inset 0 0 0 2px var(--beam);cursor:pointer}
+.road .qbar{margin:6px 0 4px}
+.road .note{white-space:nowrap}

@@ -1,5 +1,5 @@
 const {chromium}=require('playwright');
-(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});await p.route(/^https:\/\/[a-z0-9-]+\.supabase\.co\//,r=>r.abort()); /* v14 : jamais le vrai serveur pendant les tests (jeu hors ligne) */
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file:///home/claude/fusion/wrapped.html');await p.waitForTimeout(500);
 await p.evaluate(()=>{const G=window.__G;const S=G.S;for(const k of ['cadence','rang','eveil','brule','aura'])delete S.up[k];S.st.tuto=3;S.st.kills=40;S.run.stage=5;S.bestStage=8;S.run.sparks=10;G.save();});

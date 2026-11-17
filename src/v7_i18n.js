@@ -164,3 +164,6 @@ Object.assign(I18N.fr,{"u_st_bank": "Trésor", "u_st_bank_d": "Trésor +{n} %"})
 
 Object.assign(I18N.fr,{"evp_t": "Pack {e}", "evp_aria": "Offre du week-end", "rt_use": "Terminer avec un jeton"}); // v12.9 : packs du week-end
 Object.assign(I18N.fr,{"shp_offers": "Offres", "shp_gems": "Gemmes", "shp_bonus": "Bonus", "shp_skins": "Couleurs"}); // v13 : onglets de la boutique
+Object.assign(I18N.fr,{"mail_aria": "Boîte aux lettres", "mail_title": "Courrier"}); // v14 : boîte aux lettres
+Object.assign(I18N.fr,{"lum_t": "Lumière", "hp_lum": "Chaque Réfraction donne de la Lumière (1 par heure de course, 24 max) : dégâts augmentés pour toujours.", "road_t": "Route des records"}); // v14 : Lumière, route des records
+Object.assign(I18N.fr,{"of_pass_d": "Piste premium de la saison : {n} gemmes, {l} Lumière (dégâts définitifs), {r} jetons de recherche, des coffres et deux couleurs exclusives. Et toute la saison : points de pass ×2, +1 emplacement de recherche, +{h} h de gains hors ligne. Les paliers déjà atteints se récupèrent tout de suite. Encore {d} jour{d|s}."}); // v14 : pass refondu

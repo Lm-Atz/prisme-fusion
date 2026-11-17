@@ -1,8 +1,8 @@
 // Simulation 60 jours : joueur virtuel sur le moteur v7 (horloge virtuelle)
 const fs=require('fs');
-const sp='/tmp/claude-0/-home-claude/81df6a99-c7ba-558a-9b66-58a3676a4af2/scratchpad/';
+const sp='/tmp/claude-0/-home-claude/88f4d138-66ef-5763-882a-0d473f4a1294/scratchpad/';
 const code=fs.readFileSync('v7_i18n.js','utf8')+'\n'+fs.readFileSync('parts/r_util.js','utf8')+'\n'+fs.readFileSync('v7_engine.js','utf8')+`
-return {restoreAll,memTotal,isPP,get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
+return {claimRoad,roadReady,lumGain,lumMult,roadMult,ne,restoreAll,memTotal,isPP,get S(){return S},set S(v){S=v},get R(){return R},CFG,UPG,ALLUP,JOKERS,ONB,DAILY:()=>DAILY,newRun,runTick,runMove,buyTB,tbCost,tbLvl,prestigeGain,doPrestige,challengeBoss,startTitan,wpCost,buyWP,titanReady,offlineGains,applyOffline,startBuild,tickBuild,upCost,upTime,upLocked,inBuild,upById,lvlOf,unlockJoker,jokerAvail,useJoker,jokerNeed,claim,questView,roll,give,loginState,claimLogin,fresh,save,load,hooks,spawnInterval,autoRate,powerMult,enemyFor,adBuild,buySlot,jokerById};`;
 let NOW=Date.UTC(2026,9,5,8,0,0);
 const localStorage={o:{},getItem(k){return this.o[k]||null},setItem(k,v){this.o[k]=v}};
 const G=new Function('Date','localStorage','cell','document','window','navigator',code)(new Proxy(Date,{construct(t,a){return a.length?new t(...a):new t(NOW)},get(t,k){return k==='now'?()=>NOW:t[k]}}),localStorage,60,{documentElement:{}},undefined,{languages:['fr']});
@@ -48,18 +48,20 @@ function session(sec){
     if(args.dbg&&day()==+args.dbg&&Math.floor(t)%20==0&&t%1<dt){const R=G.R,s=S();console.log(`   t${t.toFixed(0)} étape ${s.run.stage} mode ${R.mode} fled ${s.run.fled} hp ${(R.E.hp/R.E.max*100).toFixed(0)}% shield ${R.E.shieldL} gem ${Math.max(0,...R.cells.filter(c=>c&&c.l).map(c=>c.l))} spawnL ${G.spawnInterval().toFixed(2)}s lvl ${1+G.tbLvl('birth')} auto ${G.autoRate().toFixed(2)} cells ${R.cells.filter(Boolean).length} sparks ${fmtN(s.run.sparks)} pm ${fmtN(G.powerMult())}`);}
   }
   if(args.v&&day()<=+args.v){const R=G.R,s=S();console.log(`  J${day()} session ${sec}s → étape ${s.run.stage} max ${s.run.max} tb ${JSON.stringify(s.run.tb)} gemme max ${Math.max(0,...R.cells.filter(c=>c&&c.l).map(c=>c.l))} sparks ${fmtN(s.run.sparks)} étinc. ${fmtN(s.run.sparks)} pm ${G.powerMult().toFixed(1)}`);}
-  research();claimAll();G.buySlot();
+  research();claimAll();G.buySlot();while(G.roadReady()>0)G.claimRoad();
   for(let i=0;i<PROF.buyAds;i++){const b=S().build[0];if(b)G.adBuild(b.id,NOW);}
   S().lastSeen=NOW;
 }
-for(let d=1;d<=60;d++){
+const DAYS=+(args.days||60);
+for(let d=1;d<=DAYS;d++){
   const base=Date.UTC(2026,9,4+d);
   for(const [h,sec] of PROF.sessions){NOW=base+h*3600e3;session(sec);}
   G.tickBuild(NOW);
   if([3,7,14,30,45,60].includes(d)){const s=S();console.error('MD J'+d+' '+JSON.stringify({best:s.bestStage,kills:s.st.kills,bosses:s.st.bosses,merges:s.st.merges,manual:s.st.manual,pres:s.prestiges,titans:s.st.titans|0,bought:s.st.bought,days:s.st.days,jok:s.st.jokerUses}));}
-  if(d<=10||d%5===0){const s=S();const tb=s.run.tb;log.push(`J${String(d).padStart(2)} best ${String(s.bestStage).padStart(3)} prestiges ${String(s.prestiges).padStart(3)} étinc. ${fmtN(s.run.sparks).padStart(8)} recherches ${String(s.st.bought).padStart(3)} jokers ${Object.keys(s.jk).length} onb ${s.onb.length}/50 auto ${s.up.au_merge} st(cad ${s.up.st_cad} pow ${s.up.st_power} auto ${s.up.st_auto} birth ${s.up.st_birth}) auBuy ${s.up.au_buy} exped ${s.up.au_exped} manuel ${manualCount}`);manualCount=0;}
+  if(d<=10||(DAYS<=90?d%5===0:d%30===0)){const s=S();const tb=s.run.tb;log.push(`J${String(d).padStart(2)} best ${String(s.bestStage).padStart(3)} prestiges ${String(s.prestiges).padStart(3)} étinc. ${fmtN(s.run.sparks).padStart(8)} recherches ${String(s.st.bought).padStart(3)} jokers ${Object.keys(s.jk).length} onb ${s.onb.length}/50 auto ${s.up.au_merge} st(cad ${s.up.st_cad} pow ${s.up.st_power} auto ${s.up.st_auto} birth ${s.up.st_birth}) auBuy ${s.up.au_buy} exped ${s.up.au_exped} manuel ${manualCount}`);manualCount=0;}
 }
 function fmtN(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(Math.floor(n));}
 console.log(PROFILE);console.log(log.join('\n'));
-const s=S();console.log('titan',titanRuns,'record',fmtN(s.st.titanBest),'kills',s.st.kills,'bosses',s.st.bosses,'days',s.st.days);
+if(args.dump)fs.writeFileSync(args.dump,JSON.stringify({S:S(),rate:S().run.rate,krate:S().run.krate,now:NOW}));
+const s=S();console.log('lumière',s.lum|0,'×'+G.lumMult().toExponential(2),'route',s.road|0,'×'+G.roadMult().toFixed(1));console.log('titan',titanRuns,'record',fmtN(s.st.titanBest),'kills',s.st.kills,'bosses',s.st.bosses,'days',s.st.days);
 console.log('recherches max :',Object.entries(s.up).filter(([k,v])=>v>0).map(([k,v])=>k+':'+v).join(' '));
