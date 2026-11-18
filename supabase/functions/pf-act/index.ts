@@ -121,7 +121,7 @@ Deno.serve(async (req: Request) => {
     .eq("id", id).eq("ver", row.data.ver).select("ver");
   if (upd.error) return json({ ok: false, err: "save" }, 500);
   if (!upd.data || !upd.data.length) return json({ ok: false, err: "busy" }, 409);
-  if (r.anomalies.length) await sb.from("anomalies").insert({ player_id: id, action: String(body.action || "sync"), kinds: r.anomalies, info: { stage: r.state.run.stage, best: r.state.bestStage } });
+  if (r.anomalies.length) await sb.from("anomalies").insert({ player_id: id, action: typeof body.action === "string" ? body.action.slice(0, 20) : "sync", kinds: r.anomalies, info: { stage: r.state.run.stage, best: r.state.bestStage } });
 
   return json({ ok: true, now, state: r.state, result: r.result, anomalies: r.anomalies, league, effects, hello: body.action === "hello" ? { name: hello.data?.name, flags: hello.data?.flags } : undefined });
 });
