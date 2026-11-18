@@ -43,6 +43,12 @@ T('…puis toujours accepté',(await q(`select pf_auth($1,$2) a`,[id2,sec2]))[0]
 // 3. limites de débit
 let last;for(let i=0;i<5;i++)last=(await q(`select pf_load($1,$2,'fr','QA','2.2.2.2',240,3) j`,[id,sec]))[0].j;T('limite par joueur → rate',last.err==='rate');
 for(let i=0;i<4;i++)last=(await q(`select pf_load($1,$2,'fr','QA','3.3.3.3',2,1000) j`,[id,sec]))[0].j;T('limite par IP → rate',last.err==='rate');
+// 3 bis. v14.2 : au plus 3 nouveaux comptes par minute et par IP
+await db.exec(`create function pf_track(uuid,text,text,jsonb) returns void language sql as $$ select $$; create function pf_track_batch(uuid,text,jsonb) returns int language sql as $$ select 0 $$;`);
+await db.exec(fs.readFileSync(path.join(here,'..','supabase','sql','pf_harden.sql'),'utf8'));
+{const res=[];for(let i=0;i<5;i++){const nid=`33333333-3333-4333-8333-33333333333${i}`;res.push((await q(`select pf_load($1,$2,'fr','N','7.7.7.7',240,40) j`,[nid,sec]))[0].j);}
+ T('nouveaux comptes : 3 par minute et par IP, puis refus',res.slice(0,3).every(j=>j.hello)&&res.slice(3).every(j=>j.err==='rate'),res.map(j=>j.err||'ok'));
+ T('un compte existant n\'est pas freiné par cette limite',!!(await q(`select pf_load($1,$2,'fr','QA','7.7.7.7',240,40) j`,[id,sec]))[0].j.hello);}
 // 4. statistiques
 r=await q(`select pf_events_add($1,$2::jsonb) n`,[id,JSON.stringify([{n:'open',p:{a:1},t:5},{n:7},{n:'tab',p:{t:'shop'}}])]);T('pf_events_add : 2 événements valides sur 3',r[0].n===2&&(await q(`select count(*)::int c from events`))[0].c===2);
 // 5. pf_recover → nouveau secret en SHA-256 (fonction réécrite)
@@ -56,7 +62,7 @@ r=(await q(`select pf_purge() j`))[0].j;
 T('purge : 1 événement de plus de 90 jours supprimé, récents gardés',r.events===1&&(await q(`select count(*)::int c from events where name='récent'`))[0].c===1);
 T('purge : anomalies de plus de 180 jours',r.anomalies===1&&(await q(`select count(*)::int c from anomalies`))[0].c===1);
 T('purge : vieux compteurs de débit et journal HTTP',r.rate_hits>=1&&r.http===1);
-T('purge : les parties des joueurs ne sont jamais touchées',(await q(`select count(*)::int c from players`))[0].c===2);
+T('purge : les parties des joueurs ne sont jamais touchées',(await q(`select count(*)::int c from players`))[0].c===5);
 // 7. coût : SHA-256 vs bcrypt (cost 8)
 let t0=performance.now();for(let i=0;i<50;i++)await q(`select pf_auth($1,$2)`,[id,sec]);const fast=(performance.now()-t0)/50;
 await q(`update players set secret_hash=extensions.crypt($2,extensions.gen_salt('bf',8)) where id=$1`,[id2,sec2]);t0=performance.now();await q(`select extensions.crypt($1,secret_hash)=secret_hash from players where id=$2`,[sec2,id2]);const slow=performance.now()-t0;

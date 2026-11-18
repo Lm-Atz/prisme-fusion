@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Prisme Fusion</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' https://atmrbzkcneotleuoapdp.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"><title>Prisme Fusion</title>
 
 <style>
 /* avoid-ai-design-ignore-file: C1, M4 */
@@ -2188,7 +2188,7 @@ function questView(){
   return {onb,onbLeft:ONB.length-S.onb.length,d:mk(DAILY,S.day.claimed,'d'),w:mk(WEEKLY,S.week.claimed,'w')};
 }
 function claim(kind,i){
-  roll();const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
+  roll();if(kind!=='o'&&kind!=='d'&&kind!=='w')return false; /* v14.2 : un type inconnu faisait planter le serveur */const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
   const q=arr[i];if(!q||cl.includes(i)||q.v()<q.n)return false;
   if(kind==='o'){const vis=ONB.map((_,j)=>j).filter(j=>!S.onb.includes(j)).slice(0,3);if(!vis.includes(i))return false;}
   cl.push(i);give(q.r);chestFill(q.r.g|0);passXP(CFG.pass.q[kind]||0);return true;
@@ -2601,7 +2601,7 @@ function drawSpecial(c,x,y,r,k,t,sc=1){
   c.restore();
 }
 
-const VERSION='14.1 · éclat';
+const VERSION='14.2 · blindé';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};

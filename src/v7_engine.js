@@ -532,7 +532,7 @@ function questView(){
   return {onb,onbLeft:ONB.length-S.onb.length,d:mk(DAILY,S.day.claimed,'d'),w:mk(WEEKLY,S.week.claimed,'w')};
 }
 function claim(kind,i){
-  roll();const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
+  roll();if(kind!=='o'&&kind!=='d'&&kind!=='w')return false; /* v14.2 : un type inconnu faisait planter le serveur */const arr={o:ONB,d:DAILY,w:WEEKLY}[kind],cl={o:S.onb,d:S.day.claimed,w:S.week.claimed}[kind];
   const q=arr[i];if(!q||cl.includes(i)||q.v()<q.n)return false;
   if(kind==='o'){const vis=ONB.map((_,j)=>j).filter(j=>!S.onb.includes(j)).slice(0,3);if(!vis.includes(i))return false;}
   cl.push(i);give(q.r);chestFill(q.r.g|0);passXP(CFG.pass.q[kind]||0);return true;

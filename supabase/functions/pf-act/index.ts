@@ -5,7 +5,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // le serveur charge toujours exactement la version que les téléphones utilisent. Mis en cache 10 min par instance.
 const RULES_URL = "https://lm-atz.github.io/prisme-fusion/pf_server.js";
 // deno-lint-ignore no-explicit-any
-let rules: { core: any; engine: string; at: number } | null = null;
+let rules: { core: any; engine: string; at: number; hash: string } | null = null;
 // deno-lint-ignore no-explicit-any
 async function loadRules(): Promise<{ core: any; engine: string }> {
   if (rules && Date.now() - rules.at < 600_000) return rules;
@@ -13,9 +13,15 @@ async function loadRules(): Promise<{ core: any; engine: string }> {
   if (!r.ok) { if (rules) return rules; throw new Error("rules"); }
   const src = await r.text();
   if (!src.includes("pfApply") || !src.includes("ENGINE_SRC")) { if (rules) return rules; throw new Error("rules"); }
+  // v14.2 : les règles s'exécutent ici avec les droits du serveur. Seule une version dont l'empreinte SHA-256 a été autorisée
+  // en base (table pf_rules, écrite au déploiement) est acceptée : un compte GitHub compromis ne suffit plus à prendre la main.
+  const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(src)))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (rules && rules.hash === hash) { rules.at = Date.now(); return rules; }
+  const allowed = await sb.from("pf_rules").select("hash").eq("hash", hash).maybeSingle();
+  if (allowed.error || !allowed.data) { console.error("pf-act: règles non autorisées", hash); if (rules) { rules.at = Date.now() - 540_000; return rules; } throw new Error("rules"); }
   const mod = new Function("module", "exports", src + "\nreturn module.exports;")({ exports: {} }, {});
   if (typeof mod.pfApply !== "function" || typeof mod.ENGINE_SRC !== "string") { if (rules) return rules; throw new Error("rules"); }
-  rules = { core: mod, engine: mod.ENGINE_SRC, at: Date.now() };
+  rules = { core: mod, engine: mod.ENGINE_SRC, at: Date.now(), hash };
   return rules;
 }
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -34,7 +40,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ ok: false, err: "method" }, 405);
   // deno-lint-ignore no-explicit-any
   let body: any;
+  if (Number(req.headers.get("content-length") || 0) > 130000) return json({ ok: false, err: "too_big" }, 413); // v14.2 : refusé avant lecture
   try { body = await req.json(); } catch { return json({ ok: false, err: "json" }, 400); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) return json({ ok: false, err: "json" }, 400); // v14.2 : null / tableau faisaient planter la fonction
   const id = String(body.id || ""), secret = String(body.secret || "");
   if (!UUID.test(id) || secret.length < 16 || secret.length > 128) return json({ ok: false, err: "auth" }, 401);
   if (JSON.stringify(body).length > 120000) return json({ ok: false, err: "too_big" }, 413);

@@ -81,14 +81,20 @@ const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_a
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
+  if(!body||typeof body!=='object')body={};
   if(typeof body.lang==='string')try{G.setLang(body.lang.slice(0,2));}catch(e){}
   let S=stateIn&&stateIn.v===3?G.migrate(Object.assign(G.fresh(),stateIn)):G.fresh();
   if(!(stateIn&&stateIn.v===3))res.created=true;
   // sous-objets manquants (anciennes versions)
   const f=G.fresh();for(const k of ['up','st','settings','run','day','week','login','wp'])S[k]=Object.assign({},f[k],S[k]||{});S.run.tb=Object.assign({},f.run.tb,S.run.tb||{});
   G.S=S;
-  if(Number.isInteger(body.tz)&&Math.abs(body.tz)<=840){S.tz=body.tz;}G.TZOFF=Number.isInteger(S.tz)?S.tz:0;
-  const action=String(body.action||'sync'),p=body.payload||{};
+  /* v14.2 : le fuseau horaire fixe le début de la journée (récompenses du jour, plafonds de pubs). Changer de fuseau à chaque requête
+     permettait de toucher plusieurs fois les récompenses du jour : un changement au plus tous les 7 jours (heure d'été et voyages passent). */
+  if(Number.isInteger(body.tz)&&Math.abs(body.tz)<=840&&body.tz%15===0&&body.tz!==S.tz&&(!Number.isInteger(S.tz)||nowMs-(S.tzAt||0)>=7*864e5)){S.tz=body.tz;S.tzAt=nowMs;}
+  G.TZOFF=Number.isInteger(S.tz)?S.tz:0;
+  /* v14.2 : entrées nettoyées : action texte, payload réduit à des valeurs simples (un objet piégé faisait planter String()) */
+  const action=typeof body.action==='string'?body.action:'sync',p={};
+  if(body.payload&&typeof body.payload==='object'&&!Array.isArray(body.payload))for(const k of Object.keys(body.payload)){const v=body.payload[k];if(typeof v==='string')p[k]=v.slice(0,200);else if(typeof v==='number'||typeof v==='boolean')p[k]=v;}
   if(!PF_ACTIONS.has(action))return {state:S,result:{ok:false,err:'action'},anomalies};
   G.roll();
   const last=S.lastSeen||nowMs,dt=Math.max(0,(nowMs-last)/1000);

@@ -7,7 +7,7 @@ const js=execFileSync(ESB,['--loader=ts','--format=cjs','--log-level=error'],{in
 const RULES=fs.readFileSync(path.join(__dirname,'..','pf_server.js'),'utf8');
 // --- base simulée : mêmes règles que supabase/sql/pf_scale.sql
 const sha=s=>'s2:'+crypto.createHash('sha256').update(s).digest('hex');
-const DB={players:{},events:[],anom:[],rate:{},calls:[],noLoad:false};
+const DB={players:{},events:[],anom:[],rate:{},calls:[],noLoad:false,rulesOK:[crypto.createHash('sha256').update(RULES).digest('hex')]};
 const fakeBcrypt=s=>'$2a$08$'+crypto.createHash('md5').update(s).digest('hex'); // ancien format (bcrypt) simulé
 function check(id,sec,h){if(!h)return false;if(h.startsWith('s2:'))return h===sha(sec);if(h===fakeBcrypt(sec)){DB.players[id].secret_hash=sha(sec);return true;}return false;}
 function rate(k,max){const m=Math.floor(Date.now()/60000);const key=k+'|'+m;DB.rate[key]=(DB.rate[key]||0)+1;return DB.rate[key]<=max;}
@@ -19,7 +19,7 @@ const RPC={
   pf_events_add(a){let n=0;for(const e of a.p_events.slice(0,60))if(typeof e.n==='string'){DB.events.push({id:a.p_id,n:e.n});n++;}return {data:n};},
   pf_league_result(){return {data:{none:true}};},
 };
-function from(t){const q={t,f:{},op:null,v:null};const api={select(){if(!q.op)q.op='select';return api;},eq(k,v){q.f[k]=v;return api;},update(v){q.op='update';q.v=v;return api;},insert(v){if(t==='anomalies')DB.anom.push(v);return Promise.resolve({data:null,error:null});},
+function from(t){const q={t,f:{},op:null,v:null};const api={maybeSingle(){if(t==='pf_rules')return Promise.resolve(DB.rulesOK.includes(q.f.hash)?{data:{hash:q.f.hash},error:null}:{data:null,error:null});return Promise.resolve({data:null,error:null});},select(){if(!q.op)q.op='select';return api;},eq(k,v){q.f[k]=v;return api;},update(v){q.op='update';q.v=v;return api;},insert(v){if(t==='anomalies')DB.anom.push(v);return Promise.resolve({data:null,error:null});},
   single(){const r=DB.players[q.f.id];return Promise.resolve(r?{data:r,error:null}:{data:null,error:{message:'none'}});},
   then(res,rej){let out;if(q.op==='update'){const r=DB.players[q.f.id];if(r&&r.ver===q.f.ver){Object.assign(r,q.v);out={data:[{ver:r.ver}],error:null};}else out={data:[],error:null};}else out={data:[],error:null};return Promise.resolve(out).then(res,rej);}};return api;}
 globalThis.__SB={createClient:()=>({rpc:async(n,a)=>{DB.calls.push(n);const f=RPC[n];return f?f(a):{error:{message:'missing '+n}};},from:(t)=>{DB.calls.push('from:'+t);return from(t);}})};
@@ -49,5 +49,13 @@ const call=async(body,ip='1.2.3.4')=>{const r=await handler(new Request('http://
   r=await call({id:id3,secret:'0'.repeat(48),action:'sync'});T('repli : mauvais secret refusé',r.status===401);DB.noLoad=false;
   // joueur banni
   DB.players[id].banned=true;DB.rate={};r=await call({id,secret:sec,action:'sync'});T('joueur banni : 403',r.status===403);
+  // v14.2 : règles dont l'empreinte n'est pas autorisée en base → refus (503) tant qu'aucune version sûre n'est en cache
+  {const src2=js.replace('rules = { core: mod','rules = { core: mod');const keep=DB.rulesOK;DB.rulesOK=[];const fresh={};new Function('require','module','exports',js)(require,{exports:{}},{});const h2=handler;
+   const rr=await h2(new Request('http://x/',{method:'POST',headers:{'x-forwarded-for':'8.8.8.8','content-type':'application/json'},body:JSON.stringify({id,secret:sec,action:'sync'})}));
+   T('règles non autorisées en base : refus 503 (code distant jamais exécuté)',rr.status===503,rr.status);DB.rulesOK=keep;}
+  // v14.2 : requêtes malformées → refus propre, jamais d'erreur 500
+  const raw=async(b,h={})=>{const r=await handler(new Request('http://x/',{method:'POST',headers:Object.assign({'x-forwarded-for':'5.5.5.5','content-type':'application/json'},h),body:b}));return r.status;};
+  const codes=[await raw('null'),await raw('[]'),await raw('"x"'),await raw('{bad'),await raw(JSON.stringify({id:{},secret:[]})),await raw(JSON.stringify({id:id,secret:sec,action:{toString:1},payload:[1,2]})),await raw('{}',{'content-length':'999999'})];
+  T('requêtes malformées : 400/401/413, jamais 500',codes.every(c=>c===400||c===401||c===413||c===403),codes);
   console.log(`t7edge : ${ok} OK, ${ko} KO`);
 })();

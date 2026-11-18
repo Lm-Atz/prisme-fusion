@@ -25,7 +25,8 @@ ui=rd('v7_ui.js').replace('//__FOE__',foe).replace('//__ME__',me)
 js='<script>\n(()=>{\n"use strict";\n'+rd('v7_i18n.js')+'\n'+rd('v7_i18n_en.js')+rd('v7_i18n_es.js')+rd('v7_i18n_de.js')+rd('v7_i18n_pt.js')+rd('v7_i18n_it.js')+'\n'+rd(sp+'r_util.js')+'\n'+rd('v7_engine.js')+'\n'+rd('v7_net.js')+'\n'+rd(sp+'r_audio.js')+'\n'+rd(sp+'r_gems.js')+'\n'+ui+'</script>\n'
 out=css+sprite+'\n\n'+body+'\n'+js
 open('prisme.html','w',encoding='utf8').write(out)
-open('wrapped.html','w',encoding='utf8').write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'+out.replace('</style>','</style></head><body>',1)+'</body></html>')
+CSP='<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: blob:; font-src \'self\' data:; media-src \'self\' data: blob:; connect-src \'self\' https://atmrbzkcneotleuoapdp.supabase.co; object-src \'none\'; base-uri \'none\'; form-action \'none\'; frame-src \'none\'">' # v14.2 : politique de sécurité du contenu (le jeu ne parle qu\'à son serveur)
+open('wrapped.html','w',encoding='utf8').write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'+CSP+''+out.replace('</style>','</style></head><body>',1)+'</body></html>')
 print(len(out.split('\n')))
 
 # ---- fonction serveur (Supabase Edge) : même moteur, même noyau ----
@@ -40,3 +41,7 @@ import os as _os
 # la fonction à déployer vit dans le dépôt : supabase/functions/pf-act/index.ts (le dossier src/ est à côté de supabase/)
 _root=_os.path.dirname(_os.path.dirname(_os.path.realpath('edge_pf_act.ts')))
 _dst=_os.path.join(_root,'supabase','functions','pf-act');_os.makedirs(_dst,exist_ok=True);open(_os.path.join(_dst,'index.ts'),'w',encoding='utf8').write(_edge)
+
+# v14.2 : empreinte des règles serveur, à autoriser en base (table pf_rules) à chaque mise en ligne
+import hashlib
+_h=hashlib.sha256(open('pf_server.js','rb').read()).hexdigest();open('pf_server.sha256','w').write(_h+'\n');print('pf_server.js sha256',_h)
