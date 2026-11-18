@@ -1,4 +1,4 @@
-const VERSION='14.0 · infini';
+const VERSION='14.1 · éclat';
 /* ================= icônes et correspondances ================= */
 const UPICON={st_cad:'hourglass',st_auto:'link',st_power:'swords',st_birth:'gem',st_spark:'spark',st_bank:'coin',au_merge:'link',au_buy:'bag',au_joker:'eye',au_boss:'crown',au_prestige:'prism',au_exped:'flag',au_titan:'flame',power:'swords',crit:'star',combo:'bolt',bossdmg:'crown',pierce:'breaker',lucky:'spark',chain:'link',gold:'coin',board:'grid',sursis:'clock',spark:'spark',loot:'bag',prod:'forge',cap:'box',off:'clock',killspark:'trophy',catal:'spark',cadence:'hourglass',rang:'star',eveil:'prism',brule:'flame',aura:'diamond'};
 const JICON={chameleon:'eye',magnet:'magnet',surge:'bolt',frost:'snow',prism:'prism',meteor:'meteor',breaker:'breaker'};
@@ -138,7 +138,7 @@ function shotLanded(s){
 hooks.attack=(kind,hit)=>{hit.forEach(i=>fx.beams.push({i,t:0}));kick('medium');sfx.low();bfx.nums.push({txt:t('he',{a:THEMES[R.E.th].atkT}),t:0,x:BW/2,y:BH*0.92,col:'hsl(352 100% 76%)'});};
 hooks.windup=()=>{sfx.tick();};
 hooks.phase=p=>{bfx.phaseT=1;if(p==='shield'){banner(t('shield'),t('shield_p',{n:R.E.shieldL}),'boss',2600);sfx.chord();kick('large');}};
-hooks.kill=(E,sp,sh)=>{if(sh>=1){bfx.nums.push({txt:'+'+fmt(Math.round(sh))+' ◆',t:0,x:BW/2,y:BH*0.78,col:'hsl(196 100% 78%)',big:E.type==='boss'});}enemyBurst(E.type==='mob'?18:40,null,E.type==='mob'?200:320);if(E.type!=='mob'){fx.flash=1;fx.flashCol='255,200,87';kick(E.type==='boss'?'huge':'large');sfx.win();}else{kick('small');sfx.pop();}bfx.popT=0;bfx.nums=[];
+hooks.kill=(E,sp,sh)=>{if(sh>=1){bfx.nums.push({txt:'+'+fmt(Math.round(sh))+' ✦',t:0,x:BW/2,y:BH*0.78,col:'hsl(48 100% 72%)',big:E.type==='boss'}); /* v14.1 : butin = étincelles (le ◆ des éclats supprimés en v8.4 trompait) */}enemyBurst(E.type==='mob'?18:40,null,E.type==='mob'?200:320);if(E.type!=='mob'){fx.flash=1;fx.flashCol='255,200,87';kick(E.type==='boss'?'huge':'large');sfx.win();}else{kick('small');sfx.pop();}bfx.popT=0;bfx.nums=[];
   bfx.nums.push({txt:'+'+fmt(sp),t:0,x:BW/2,y:BH*0.5,col:'hsl(44 100% 66%)',big:true});
   if(S.run.stage%10===1&&S.run.stage>1&&!S.run.fled)banner(worldInfo(worldOf(S.run.stage)).name,t('new_world'),'gold',2200);};
 hooks.bossStart=E=>{banner(E.name,t('boss_banner',{n:CFG.enemy.bossTime}),'boss',2600);sfx.chord();kick('medium');Music.target=0.9;};
@@ -185,7 +185,7 @@ function showAd(done,label){
   const it=setInterval(()=>{n--;const el=$('adn');if(el)el.textContent=n;if(n<=0){clearInterval(it);closeModal();done();}},1000);
 }
 /* v11.6 : délai entre deux pubs du même type, identique au serveur (sinon il refusait et la récompense était retirée) */
-const AD_GAP={shop:40,boost:40,build:15},adLast={};
+const AD_GAP={shop:40,boost:40,build:15,boss:15},adLast={};
 function adWait(k){const g=AD_GAP[k];if(!g)return 0;return Math.max(0,Math.ceil((adLast[k]||0)+g*1000-Date.now())/1000);}
 function adGate(k){const w=adWait(k);if(w>0){toast(t('ad_wait',{s:Math.ceil(w)}));return false;}adLast[k]=Date.now();return true;}
 function rewarded(done){track('ad',{at:lastPlace});showAd(()=>{roll();S.day.ads++;done();save();refresh();});}
@@ -237,7 +237,7 @@ const loginReady=()=>!loginState().claimedToday;
 const questsReward=()=>claimable()||loginReady()||passClaimable()||roadReady()>0;
 const xm=x=>x<1000?dec(x,x<10?2:1):fmt(x); // multiplicateur lisible
 /* v14 : route des records : toutes les 25 étapes de record, une récompense définitive à récupérer */
-function roadCard(){const k=(S.road|0)+1,target=k*CFG.road.every,ready=roadReady()>0,prev=(k-1)*CFG.road.every,p=Math.max(0,Math.min(1,(S.bestStage-prev)/(target-prev)));
+function roadCard(){if(S.bestStage<10&&roadReady()<=0)return ''; /* v14.1 : pas de bruit pour un débutant */const k=(S.road|0)+1,target=k*CFG.road.every,ready=roadReady()>0,prev=(k-1)*CFG.road.every,p=Math.max(0,Math.min(1,(S.bestStage-prev)/(target-prev)));
   return `<div class="road slab${ready?' hl':''}" ${ready?'data-road="1" role="button" tabindex="0"':''}><span class="oart">${ic('flag','ig')}</span><div style="min-width:0"><b>${t('road_t')}${ready?RD:''}</b><div class="qbar"><i style="width:${ready?100:100*p}%"></i><span>${ic('flag')} ${target}</span></div><span class="rew">${ic('gem','ig')}${CFG.road.g(k)} ${ic('swords')}×${dec(CFG.road.m,2)}</span></div>${ready?`<span class="b b-gold sm">${t('quests_claim')}</span>`:`<span class="note">${ic('swords')}×${xm(roadMult())}</span>`}</div>`;}
 const shopReward=()=>!S.day.sgift||passClaimable();
 function refresh(){
@@ -260,6 +260,8 @@ function renderStage(){
   $('stgN').textContent=E.type==='titan'?E.name:t('stage',{n:E.stage});
   $('stgW').textContent=E.type==='titan'?t('type_titan'):E.type==='boss'?E.name:w.name;
   $('hpWrap').classList.toggle('titan',E.type==='titan');
+  {const g=$('stgGoal'),k=(E.stage-1)%10,show=E.type==='mob'||E.type==='mini';g.hidden=!show; /* v14.1 : objectif visible : la jauge se remplit vers le monde suivant, à sa couleur */
+   if(show){const nw=worldInfo(worldOf(E.stage)+1),h=`<i class="gbar" style="--nh:${nw.col}"><b style="width:${k*10}%"></b></i><span>${10-k}</span>`;if(g.dataset.h!==h){g.dataset.h=h;g.innerHTML=h;g.setAttribute('aria-label',t('goal_w',{n:10-k,w:nw.name}));}}}
 }
 /* v12.3 : révélation progressive : 2 boosters au départ, les autres en avançant, « Plus » à l'étape 4 */
 const TB_AT={cad:1,power:1,spark:3,auto:5,birth:8};
@@ -281,7 +283,7 @@ function renderActs(){
   const g=prestigeGain(),canP=S.run.max>=CFG.prestige.minStage;
   if(R.mode==='boss'&&R.E.type==='boss')h+=`<button class="qb" id="retreat" aria-label="${t('retreat_aria',{n:S.run.stage-1})}"><span>${ic('flag')}</span></button>`;
   if(S.run.fled)h+=`<button class="qb hot" id="chal" aria-label="${t('chal_aria',{n:S.run.stage})}"><span>${ic('crown')}</span></button>`;
-  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}</button>`;
+  if(S.bestStage>=CFG.prestige.minStage||canP)h+=`<button class="qb ${canP?'on':''}" id="prest" ${canP?'':'disabled'} aria-label="${canP?t('pre_aria',{m:dec(1+CFG.prestige.mult*(S.prestiges+1),1)}):t('pre_locked',{n:CFG.prestige.minStage})}"><span>${ic('prism')}</span>${canP?'<i></i>':''}${canP&&lumFull()?`<em class="lumdot">${ic('light')}</em>`:''}</button>`;
   if(S.bestStage>=CFG.titan.stage&&isTitanDay()){const rd=titanReady();h+=`<button class="qb ${rd?'on':''}" id="titan" ${R.mode!=='farm'?'disabled':''} aria-label="${t('titan_aria',{n:titanTickets()})}"><span>${ic('flame')}</span>${rd?'<i></i>':''}</button>`;}
   if(h!==a.dataset.h){a.dataset.h=h;a.innerHTML=h;}
   a.hidden=!h;qgridFit();
@@ -305,7 +307,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(b.id==='titan')titanModal();
 });
 function prestigeModal(){const g=prestigeGain(),pp=ppGain(S.run.max)+(S.prestiges?0:CFG.prestige.first),m0=refMult(),m1=1+CFG.prestige.mult*(S.prestiges+1); /* v12.4 : chiffres et icônes, plus de paragraphes */
-  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span>${lumGain(S.run.max)?`<span>${ic('star','ig')}<b>+${lumGain(S.run.max)}</b></span>`:''}</div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
+  modal(`<div class="mart" style="color:var(--shard)">${ic('prism')}</div><h2>${t('pre_title')}</h2><div class="prg"><span>${ic('spark','ie')}×${dec(m0,1)} → <b>×${dec(m1,1)}</b></span><span>${ic('prism')}<b>+${pp}</b></span><span>${ic('coin','ig')}<b>+${fmt(g)}</b></span>${lumGain(S.run.max)?`<span>${ic('light','ig')}<b>+${lumGain(S.run.max)}</b></span>`:''}</div><div class="prek"><div class="keep"><b>${ic('shield')}${t('pre_keep')}</b><p>${ic('anvil')}${ic('link')}${ic('star')}${ic('gem','ig')}${ic('crown','ig')}</p></div><div class="cyc"><b>${ic('flag')}${t('pre_lose')}</b><p>${ic('spark','ie')}${ic('bolt','ie')}${ic('swords')}${ic('grid')}</p></div></div><div class="acts"><button class="b b-spark" id="doPrest">${t('pre_go')}</button><button class="b" data-close>${t('pre_not')}</button></div>`);}
 function titanModal(){const ts=titanState(),n=titanTickets();modal(`<div class="mart" style="color:var(--s1)">${ic('flame')}</div><h2>${THEMES[weekTheme()].titan}</h2><p>${t('titan_p',{n:CFG.titan.time})}</p><div class="big" style="color:var(--beam)">${t('titan_tickets',{n})}</div><div class="acts"><button class="b b-gold" id="titanGo" ${n>0?'':'disabled'}>${t('fight')}</button><div class="row"><button class="b" id="titanAd" ${ts.ad>=1?'disabled':''}>${ic('tv')}${t('titan_ad')}</button><button class="b b-gem" id="titanGem" ${ts.gem>=1||S.gems<CFG.titan.ticketGems?'disabled':''}>${ic('gem')}${t('titan_gem',{n:CFG.titan.ticketGems})}</button></div><button class="b" data-close>${t('later')}</button></div>`);}
 function launchTitan(){if(act('titan_start',{},()=>startTitan())){renderStage();renderActs();banner(R.E.name,t('titan_go',{n:CFG.titan.time}),'gold',2400);Music.target=1;save();}}
 /* ----- cadeau publicitaire ----- */
@@ -362,7 +364,7 @@ function buyBtn(u,free,big){const c=upCost(u),pp=isPP(u),mem=inMem(u),off=!upAff
   return `<button class="b b-spark ${big?'':'sm'} ${mem?'mem':''}" data-build="${u.id}" ${off?'disabled':''}><span style="display:inline-flex;align-items:center;gap:4px">${ic('spark')}${big?t('at_buy',{c:fmt(c)}):fmt(c)}</span>${big?'':`<small>${mem?ic('bolt')+t('at_mem'):ic('clock')+durS(upTime(u))}</small>`}</button>`;}
 const durS=s=>{if(s<86400)return dur(s);const U=(I18N[LANG]._dur||I18N.fr._dur);return dec(s/86400,1)+'\u00a0'+U[3];}; // v12.2 : durée courte dans les boutons (« 1,5 j »)
 function buildRow(b){const u=upById(b.id),p=100*Math.min(1,1-(b.until-Date.now())/1000/b.dur);
-  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts">${(S.rt|0)>0?`<button class="b b-gold sm" data-rush="${b.id}" aria-label="${t('rt_use')}">${ic('clock')}<span>×${S.rt}</span></button>`:`<button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button>`}<button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
+  return `<div class="slot slab item run"><span class="ring" data-ring="${b.id}" style="--p:${p}%">${ic(upIcon(u),'ie')}</span><div style="min-width:0"><b>${u.t}</b><span class="tm">${ic('clock')}<span data-until="${b.until}">${dur((b.until-Date.now())/1000)}</span></span><div class="note" style="margin:2px 0 0">${t('at_to',{n:lvlOf(u)+1})}</div></div><div class="slot-acts">${(S.rt|0)>0?`<button class="b b-gold sm" data-rush="${b.id}" aria-label="${t('rt_use')}">${ic('token')}<span>×${S.rt}</span></button>`:`<button class="b b-gem sm" data-rush="${b.id}" data-rushg="${b.id}" aria-label="${t('at_rush')}">${ic('gem')}<span>${rushGems(b)}</span></button>`}<button class="b sm" data-adb="${b.id}" ${adLeft('build')?'':'disabled'}>${ic('tv')}${t('at_ad')}</button></div></div>`;}
 function tileHtml(u,free){
   const k=lvlOf(u),c=upCost(u),max=k>=u.max,lock=upLocked(u),b=inBuild(u.id);
   let foot;
@@ -467,7 +469,7 @@ function renderTab(){
     if(atPane==='refr'){
       const spent=Object.keys(S.wp||{}).length;
       h+=`<div class="slotbuy ppbal"><span class="ppn">${ic('prism')}<b>${S.pp||0}</b></span></div>`;
-      {const lg=lumGain(Math.max(S.run.max,CFG.lum.min));h+=`<div class="lumc slab"><span class="oart">${ic('star','ig')}</span><div style="min-width:0"><b>${t('lum_t')} <span class="lumn">${grp(S.lum|0)}</span></b><p class="sub">${ic('swords')} ×${xm(lumMult())}</p></div><span class="lumg">${S.run.max>=CFG.lum.min?`+${lg} ${ic('star','ig')}`:`${ic('lock')} ${CFG.lum.min}`}</span></div>`;} /* v14 : Lumière */
+      {const lg=lumGain(Math.max(S.run.max,CFG.lum.min));h+=`<div class="lumc slab"><span class="oart">${ic('light','ig')}</span><div style="min-width:0"><b>${t('lum_t')} <span class="lumn">${grp(S.lum|0)}</span></b><p class="sub">${ic('swords')} ×${xm(lumMult())}</p></div><span class="lumg">${S.run.max>=CFG.lum.min?`+${lg} ${ic('light','ig')}`:`${ic('lock')} ${CFG.lum.min}`}</span></div>`;} /* v14 : Lumière */
       h+=`<h2 class="sec subsec">${t('at_auto_h')}</h2><div class="tiles">${UPG.filter(u=>u.g==='auto'||u.g==='refr').map(u=>tileHtml(u,free)).join('')}</div>`;
       h+=`<h2 class="sec subsec">${t('at_forms')}</h2>`;
       h+=`<div class="list" style="gap:6px;margin-bottom:8px">${WEAPONS.map((w,i)=>{const k=wpLvl(i),c=wpCost(i);return `<div class="wpn"><canvas width="88" height="88" data-wpn="${i+1}"></canvas><div><b>${w.t} <span>· ${w.fx}</span></b>${k?`<p class="wlv on">${t('lvl',{n:k})} · ${t('bn_dmg',{n:8*k})}</p>`:''}</div><button class="b ${S.pp>=c?'b-gold':''} sm wbtn" data-wp="${i}" ${S.pp>=c?'':'disabled'} aria-label="${t('pp_up',{t:w.t,n:c})}">${ic('prism')}<span>${c}</span></button></div>`;}).join('')}</div>`;
@@ -640,7 +642,7 @@ $('panel').addEventListener('click',e=>{
   else if(el.id==='privBtn')privacyModal();
   else if(el.id==='notifTest'){el.disabled=true;notifTest().then(o=>{el.disabled=false;const msg=o.ok?t('nt_test_ok'):o.perm==='denied'?t('nt_test_denied'):t('nt_test_err',{e:o.err||o.perm});modal(`<div class="mart">${ic('clock','ie')}</div><h2>${t('nt_test')}</h2><p>${msg}</p><p class="sub">${t('nt_test_diag',{p:o.perm,x:o.exact})}${notifErr?' · '+esc(notifErr):''}</p><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);});}
   else if(el.id==='langBtn')modal(`<h2>${t('pr_lang')}</h2><div class="langs">${LANG_LIST().map(l=>`<button class="b${l===LANG?' b-gold':''}" data-setlang="${l}">${I18N[l]._name}</button>`).join('')}</div><div class="acts"><button class="b" data-close>${t('close')}</button></div>`);
-  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['star','hp_lum'],['link','hp_pp2'],['target','hp_pp3']]);
+  else if(el.id==='wpHelp')helpModal('prism',t('at_refr'),[['prism','hp_pp1'],['light','hp_lum'],['link','hp_pp2'],['target','hp_pp3']]);
   else if(el.id==='atHelp')helpModal('anvil',t('at_res'),[['clock','hp_at1'],['plus','hp_at2'],['star','hp_at3']]);
   else if(el.id==='passHelp')helpModal('crown',t('ps_title'),[['star','hp_ps1'],['crown','hp_ps2'],['gem','hp_ps3'],['clock','hp_ps4']]);
   else if(el.id==='lgHelp')helpModal('trophy',t('lg_help_t'),[['flame','hp_lg1'],['trophy','hp_lg2'],['gem','hp_lg3'],['eye','hp_lg4']]);
@@ -729,7 +731,7 @@ function homeMoments(){
 const rwHtml=r=>{const o=[]; /* v14 : récompenses combinées (Lumière, jetons de recherche) */
   if(r.skin)o.push(`<span class="sdot" style="--sh:${seasonHue(passState().k)}"></span>${esc(skinInfo(r.skin==='S'?'s'+passState().k:r.skin==='SX'?'s'+passState().k+'x':r.skin).label)}`);
   if(r.chest)o.push(`${ic('box','ig')}${t('ps_chest')}`);else if(r.m)o.push(`${ic('spark','ie')}${dur(r.m*60)}`);
-  if(r.g)o.push(`${ic('gem','ig')}${r.g}`);if(r.lum)o.push(`${ic('star','ig')}+${r.lum}`);if(r.rt)o.push(`${ic('clock','ie')}×${r.rt}`);return o.join(' ');};
+  if(r.g)o.push(`${ic('gem','ig')}${r.g}`);if(r.lum)o.push(`${ic('light','ig')}+${r.lum}`);if(r.rt)o.push(`${ic('token','ig')}×${r.rt}`);return o.join(' ');};
 function passCard(){const p=passState(),n=passTier(),X=CFG.pass.xp,ready=passClaimable();
   return `<button class="pass slab pcard" data-tab="pass"><span class="oart">${ic('crown','ig')}</span><div style="min-width:0;text-align:left"><b>${t('ps_title')}${ready?'<span class="badge"></span>':''}</b><div class="pbar"><i style="width:${Math.min(100,100*p.xp/(CFG.pass.tiers*X))}%"></i></div><p class="sub">${n} / ${CFG.pass.tiers} · ${ic('clock')} ${t('ps_left_s',{d:seasonLeft()})}</p></div><span class="b b-gold sm">›</span></button>`;}
 function shopTop(){return shopGiftHtml()+passCard();}
@@ -740,11 +742,11 @@ function evCard(){const now=Date.now(),e=weekendEvent(now),dw=dparts(now)[3];con
   return '';}
 const EVICON={spark:'spark',joker:'star',build:'clock',gift:'box'};
 /* v12.9 : packs du week-end : contenu en icônes, 3 paliers, 1 achat chacun par événement */
-function evRw(i){const r=evPackR(i);return `<span class="rew">${ic('gem','ig')}${grp(r.g)}${r.b?` ${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:''}${r.rt?` ${ic('clock','ie')}×${r.rt}`:''}${r.m?` ${ic('spark','ie')}${dur(r.m*60)}`:''}</span>`;}
+function evRw(i){const r=evPackR(i);return `<span class="rew">${ic('gem','ig')}${grp(r.g)}${r.b?` ${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:''}${r.rt?` ${ic('token','ig')}×${r.rt}`:''}${r.m?` ${ic('spark','ie')}${dur(r.m*60)}`:''}</span>`;}
 function evEnd(now=Date.now()){const [y,m,d,dw]=dparts(now);return Date.UTC(y,m,d+1)-(TZOFF==null?-new Date(now).getTimezoneOffset():TZOFF)*60000+(dw===6?864e5:0);}
 /* v13 : 3 tuiles côte à côte (comme les packs de gemmes) : gemmes en gros, bonus du thème dessous */
 function evPackHtml(){const e=weekendEvent();if(!e)return '';return `<div class="gtiles evpk">${[0,1,2].map(i=>{const o=OFFERS.find(x=>x.id==='ev'+(i+1)),own=evBought(i),r=evPackR(i),bs=i===2&&!own;
-  const bonus=r.b?`${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:r.rt?`${ic('clock','ie')}×${r.rt}`:r.m?`${ic('spark','ie')}${dur(r.m*60)}`:'';
+  const bonus=r.b?`${ic('bolt','ie')}${t('boost_h',{n:r.b})}`:r.rt?`${ic('token','ig')}×${r.rt}`:r.m?`${ic('spark','ie')}${dur(r.m*60)}`:'';
   return `<button class="gtile slab${bs?' best':''}${own?' own':''}" data-offer="${o.id}" ${own?'disabled':''}>${bs?`<span class="ribbon">${t('sh_best')}</span>`:''}<span class="oart">${ic(EVICON[e],'ie')}</span><b>${ic('gem','ig')}${grp(r.g)}</b><span class="evb">${bonus||'&nbsp;'}</span><span class="b b-gold sm">${own?t('sh_own'):priceOf(o)}</span></button>`;}).join('')}</div>`;}
 const evPackLeft=()=>!!weekendEvent()&&[0,1,2].some(i=>!evBought(i));
 function evPackModal(){const e=weekendEvent();if(!e)return;modal(`<div class="mart" style="color:var(--beam)">${ic(EVICON[e])}</div><h2>${t('ev_'+e)}</h2><p class="sub">${ic('clock')} ${t('ev_ends',{t:dur((evEnd()-Date.now())/1000)})}</p>${evPackHtml()}<div class="acts"><button class="b" data-close>${t('later')}</button></div>`);}
@@ -805,6 +807,7 @@ function notifPlan(now=Date.now()){
   grp.slice(0,NOTIF.rids.length).forEach(g=>out.push(g.ts.length>1?{k:'n_res2',at:g.at,r:true,v:{n:g.ts.length,t:g.ts.join(', ')}}:{k:'n_res',at:g.at,r:true,v:{t:g.ts[0]}}));
   /* rappels : au plus 2 par 24 h glissantes, 3 h d'écart */
   c.push({k:'n_full',at:now+(2+S.up.off)*H});
+  if(S.run.max>=CFG.lum.min&&S.runAt){const at=S.runAt+CFG.lum.cap*H;if(at>now+15*60e3)c.push({k:'n_lum',at});} // v14.1
   for(let d=0;d<=1;d++){const x=new Date(now);x.setDate(x.getDate()+d);x.setHours(18,0,0,0);const at=x.getTime();if(at<=now+15*60e3)continue;
     if(isTitanDay(at)&&S.bestStage>=10)c.push({k:'n_titan',at});
     if(x.getDay()===0&&S.bestStage>=10)c.push({k:'n_league',at});}
@@ -917,7 +920,25 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 {const f=hooks.titanEnd;hooks.titanEnd=d=>{track('titan',{score:Math.floor(d)});f&&f(d);};}
 try{if(!localStorage.getItem('prisme-installed')){localStorage.setItem('prisme-installed','1');track('install',{lang:LANG});}}catch(e){}
 track('session',{stage:S.run.stage,best:S.bestStage});
-window.__G={lumGain,lumMult,roadReady,roadMult,claimRoad,ne,get MAIL(){return MAIL;},mailPush,mailOpen,qgridFit,get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
+/* ================= v14.1 : grands moments (dans l'arène, jamais sur le plateau) ================= */
+const ROM=['','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+function celebrate(){if(!R)return;const n=S.bestStage;
+  if(n>1&&(n-1)%10===0){const w=worldInfo(worldOf(n));banner(w.name,t('world_new'),'world',2800);sfx.win();kick('large');track('world',{n:worldOf(n)});}
+  else if(n%CFG.road.every===0){banner(t('road_t'),t('road_hit',{n}),'gold',2600);sfx.chord();vib(30);}
+  else{const el=$('stgN');el.classList.remove('rec');void el.offsetWidth;el.classList.add('rec');if(n>=5)sfx.tick();}}
+{const f0=hooks.evolve;hooks.evolve=(...a)=>{f0&&f0(...a);celebrate();};}
+function gemNew(l){const w=weaponOf(l),r=rankOf(l);banner(t('wp_'+w.id)+(r?' '+(ROM[r]||r+1):''),t('gem_new'),'gem',2400);sfx.win();kick('medium');}
+{const f0=hooks.merge;hooks.merge=(i,l,...a)=>{f0&&f0(i,l,...a);let g=+lsGet('prisme-gmax');
+  if(!g){g=Math.max(l,...(R?R.cells.filter(c=>c&&c.l).map(c=>c.l):[1]));lsSet('prisme-gmax',g);return;} /* 1re fois : on part du plateau actuel, sans rafale de célébrations */
+  if(l>g){lsSet('prisme-gmax',l);if(l<=8||(l-1)%8===0)gemNew(l);}};}
+/* boss presque battu : +10 s */
+function bextShow(on){const b=$('bext');if(!on){b.hidden=true;return;}const C=CFG.bossExt,ad=adLeft('boss')>0;
+  b.innerHTML=`<b>+${C.sec} s</b>${ad?`<button class="b b-gold sm" data-bext="ad" aria-label="${t('bext_aria')}">${ic('tv')}</button>`:''}<button class="b b-gem sm" data-bext="gem" aria-label="${t('bext_aria')}">${ic('gem')}${C.gems}</button><i class="bring" style="--d:${C.wait}ms"></i>`;b.hidden=false;sfx.low&&sfx.low();kick('medium');track('boss_near',{n:S.run.stage});}
+{const f0=hooks.bossNear;hooks.bossNear=on=>{f0&&f0(on);bextShow(on);};const f1=hooks.bossFled;hooks.bossFled=(...a)=>{bextShow(false);f1&&f1(...a);};const f2=hooks.kill;hooks.kill=(...a)=>{bextShow(false);f2&&f2(...a);};}
+$('bext').addEventListener('click',e=>{const el=e.target.closest('[data-bext]');if(!el||!R||!R.extWait)return;const k=el.dataset.bext;audio();
+  if(k==='gem'){if(S.gems<CFG.bossExt.gems){R.extWait=0.001;noGems();return;}if(act('boss_ext',{kind:'gem'},()=>bossExt('gem'))){bextShow(false);track('boss_ext',{k});sfx.buy();save();refresh();}}
+  else{if(!adGate('boss'))return;R.extWait=Infinity;bextShow(false);rewarded(()=>{if(act('boss_ext',{kind:'ad'},()=>bossExt('ad')))track('boss_ext',{k});else if(R)R.extWait=0.001;});}});
+window.__G={bossExt,lumFull,celebrate,gemNew,bextShow,lumGain,lumMult,roadReady,roadMult,claimRoad,ne,get MAIL(){return MAIL;},mailPush,mailOpen,qgridFit,get shopPane(){return shopPane;},set shopPane(v){shopPane=v;},MEDALS,claimMedal,medalReady,medalsReady,medalLvl,bonusMul,powerMult,spawnInterval,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,buyWeekOffer,weekOffer,passTierCost,shopGiftG,evCard,PASS,WFAM,get WEEKLY(){return WEEKLY;},jokerNeed,upTime,sparkMult,offlineGains,seasonKey,adWait,get adLast(){return adLast;},navReset(){NAVS=[];},notifTest,get notifErr(){return notifErr;},seenReset(){SEEN=[];seenSave();},grpNew,seenGroup,get SEEN(){return seenGet();},gainFx,rewardFx,navUnlock,get gemShown(){return gemShown;},get PEND(){return PEND;},passBuy,passClaimAll,passView,get passPage(){return passPage;},sfx,soundBg,get AC(){return AC;},Music,notifPlan,notifSchedule,notifCancel,notifPrompt,notifShift,passState,passClaim,passTier,passXP,PASS,shopGift,spendNow,canPay,payGate,seasonLeft,seasonKey,ctxOnce,privacyModal,SKINS,get bossFails(){return bossFails;},chestG,chestFill,get EVQ(){return EVQ;},flushEv,OFFERS,eurOf,adLeft,adUse,GEM_REF,restoreAll,memTotal,memList,inMem,isPP,memLvl,migrate,isTitanDay,nextTitanDay,titanState,titanTickets,titanAdTicket,titanGemTicket,TITAN_DAYS,WEAPONS,weaponOf,rankOf,effectPow,fireRate,ppGain,wpLvl,wpCost,buyWP,resetWP,LOGIN,loginState,claimLogin,loginModal,homeMoments,countUp,flyShards,ALLUP,UPG,JOKERS,GROUPS,startBuild,tickBuild,rushBuild,rushGems,adBuild,buySlot,unlockJoker,toggleEquip,buyJSlot,useJoker,jokerNeed,upById,lvlOf,upTime,upCost,enemyFor,dmgOf,THEMES,WORLDS,worldOf,worldInfo,weekTheme,get S(){return S;},set S(v){S=v;},get DAILY(){return DAILY;},DPOOL,get R(){return R;},CFG,ONB,WEEKLY,fresh,save,load,newRun,startRun,runTick,runMove,snapTarget,buyTB,tbCost,tbLvl,spawnInterval,autoRate,powerMult,sparkMult,prestigeGain,doPrestige,challengeBoss,retreat,startTitan,endTitan,titanReady,offlineGains,applyOffline,offlineModal,claim,questView,standings,myRank,rename,reportMe,purchase,buyGemItem,buySkin,checkName,tierOf,fmt,refresh,renderTab,renderTB,renderActs,hooks,Music,fx,bfx,
   setTab(t){tab=t;renderTab();},get tab(){return tab;},get tutoStep(){return tutoStep;},set tutoStep(v){tutoStep=v;},tutoNext,get cell(){return cell;},setOnline,get netOK(){return netOK;},get LANG(){return LANG;},setLang,t,I18N,giftRoll,giftTake,giftOK,get gift(){return gift;},forceGift(){giftNext=1;giftT=1e9;giftTick(0);},rateMin,adSparks,packSparks,buyPack,refMult,sparkMult,snapBoard,growBoard,tickBuild,startBuild,NET,DEV,act,actAsync,simSnap,applyServer,wake,netTime,netBoard,track,get netReady(){return netReady;},get boardCache(){return boardCache;},set boardCache(v){boardCache=v;},get clockOff(){return clockOff;},netBoot,idHue,probeNet,leagueModal,xferCode,xferParse,authWith,authProviders,authLogout,authEmail,get OAUTH(){return OAUTH;},netAccount,netLink,netRecover,get AUTH(){return AUTH;},get acct(){return acct;},set acct(v){acct=v;},guildQuests,guildQuestDone,guildReward,netGuild,get guildCache(){return guildCache;},set guildCache(v){guildCache=v;},get clanPane(){return clanPane;},set clanPane(v){clanPane=v;},set guildList(v){guildList=v;}};
 setLang(pickLang());load();roll();applyStatic();
 {startRun();renderTab();refresh();S.lastSeen=Date.now();}

@@ -23,9 +23,10 @@ const CFG={
   shopGift:{g:5}, // v10 : cadeau gratuit quotidien de la boutique
   // v10.6 : alerte de dépenses retirée (décision de Lucas) ; S.spend reste un simple total du mois, non affiché // v9.8 : coffre de gemmes, 1 gemme pour 2 gemmes gratuites gagnées
   rate:{window:120}, // référence : étincelles gagnées sur 2 min, hors boost ×2 publicitaire
-  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
+  ads:{giftMin:10,shopMin:30,floor:{gift:60,shop:200},cap:{shop:5,boost:3,build:6,boss:5}}, // v9.7 : plafonds journaliers des pubs (sans eux, une pub toutes les 40 s rendait les achats en gemmes inutiles) // pubs = minutes de production, avec un minimum en étincelles
   league:{gems:r=>r===1?60:r===2?40:r===3?30:r<=5?20:r<=15?10:r<=25?5:2,minutes:r=>r===1?120:r<=3?60:r<=5?45:r<=15?30:r<=25?15:10,tiers:[[1,1],[2,2],[3,3],[4,5],[6,15],[16,25],[26,30]]}, // récompenses de fin de semaine (gemmes validées par le serveur, étincelles = minutes de production)
   guild:{size:30,create:100,tiers:[200,600,1500,3000,6000],rewards:[{g:5,min:20},{g:10,min:45},{g:20,min:90},{g:35,min:180},{g:60,min:360,b:4}],pts:[10,20,30]}, // guilde : jauge hebdo = somme des points de quêtes de guilde des membres ; récompenses par palier, pour chaque membre
+  bossExt:{sec:10,gems:10,hp:0.25,wait:4000}, // v14.1 : boss presque battu (≤ 25 % de PV quand le temps s'écoule) : +10 s contre une pub ou 10 gemmes, une fois par combat ; le combat se fige 4 s pendant le choix
   late:{from:100,k1:0.3,until:3000,k2:0.08}, // v14 : fin de partie infinie : après l'étape 100, chaque étape compte pour 0,3 étape « exponentielle » (PV ×1,15 au lieu de ×1,6) ; après 3000, 0,08 → plus de mur des nombres avant ~9 000 étapes
   lum:{min:60,cap:24,m:1.005}, // v14 : Lumière : à chaque Réfraction (record de la course ≥ 60), 1 point par heure écoulée depuis la précédente (24 max) ; chaque point = dégâts ×1,005, pour toujours. Liée au temps, pas au nombre de Réfractions : pas d'emballement
   road:{every:25,g:k=>Math.min(150,30+5*k),m:1.05}, // v14 : route des records : toutes les 25 étapes de record, gemmes + dégâts ×1,05 définitifs
@@ -214,7 +215,7 @@ const boardN=()=>4+S.up.board;
 
 /* ================= moteur de partie ================= */
 let R=null;
-const hooks={harvest(){},tb(){},milestone(){},joker(){},merge(){},kill(){},bossStart(){},bossFled(){},spawn(){},unlock(){},bomb(){},full(){},hit(){},attack(){},phase(){},windup(){},prestige(){},titanEnd(){},offline(){},evolve(){}};
+const hooks={harvest(){},tb(){},milestone(){},joker(){},merge(){},kill(){},bossStart(){},bossFled(){},spawn(){},unlock(){},bomb(){},full(){},hit(){},attack(){},phase(){},windup(){},prestige(){},titanEnd(){},offline(){},evolve(){},bossNear(){}};
 const dmgOf=l=>Math.pow(CFG.dmg.base,l-1);
 const themeIdx=n=>(worldOf(n)-1)%THEMES.length;
 const weekTheme=()=>{const [y,m,d]=weekKey().split('-').map(Number);return Math.floor(Date.UTC(y,m-1,d)/(7*86400e3))%THEMES.length;}; // v12 : sans analyse de date texte (fragile hors Chrome)
@@ -264,12 +265,13 @@ function pushWin(arr,t,v,w=CFG.offline.rateWindow){arr.push([t,v]);while(arr.len
 function measureRates(){const w=CFG.offline.rateWindow;S.run.srate=R.sparkWin.reduce((a,x)=>a+x[1],0)/w;S.run.brate=R.baseWin.reduce((a,x)=>a+x[1],0)/CFG.rate.window;S.run.rate=R.dmgWin.reduce((a,x)=>a+x[1],0)/w;S.run.krate=R.killWin.length/w;}
 function runTick(dt){
   if(!R||R.paused||R.hold)return;
+  if(R.extWait>0){R.extWait-=dt;if(R.extWait>0)return;R.extWait=0;hooks.bossNear(false);bossFlee();return;} /* v14.1 : choix « +10 s » en cours (secondes de jeu restantes ; Infinity pendant la pub) */
   R.t+=dt;
   if(R.comboT>0){R.comboT-=dt;if(R.comboT<=0)R.combo=0;}
   for(let i=0;i<R.cells.length;i++){const c=R.cells[i];if(!c)continue;if(c.fog&&c.fog<=R.t)delete c.fog;if(c.k==='lock'&&c.until<=R.t){R.cells[i]=null;hooks.unlock(i);}}
   const E=R.E;
   if(R.mode==='boss'){R.bossT-=dt;if(R.t>=R.frostUntil){const b=E.atkT;E.atkT-=dt;if(b>CFG.enemy.windup&&E.atkT<=CFG.enemy.windup)hooks.windup();if(E.atkT<=0){E.atkT=E.atkEvery;bossAttack();}}
-    if(R.bossT<=0){bossFlee();}}
+    if(R.bossT<=0){const C=CFG.bossExt;if(!R.extUsed&&E.max>0&&E.hp/E.max<=C.hp&&E.hp>0){R.extUsed=true;R.bossT=0;R.extWait=C.wait/1000;hooks.bossNear(true);}else bossFlee();}}
   else if(R.mode==='titan'){R.titanT-=dt;if(R.titanT<=0)endTitan();}
   else if(S.run.fled&&S.up.au_boss){R.retryT=(R.retryT||0)+dt;if(R.retryT>=Math.max(10,60-10*S.up.au_boss)){R.retryT=0;challengeBoss();}}
   R.spawnT+=dt;const iv=spawnInterval();
@@ -350,13 +352,13 @@ function onKill(){
   if(S.run.fled){R.E=enemyFor(n);R.E.hp=R.E.max;return;} // ferme sur l'étape précédente
   S.run.stage=n+1;S.run.max=Math.max(S.run.max,S.run.stage);if(S.run.stage>S.maxStage)S.maxStage=S.run.stage;if(S.run.stage>S.bestStage){S.bestStage=S.run.stage;hooks.evolve();}
   R.E=enemyFor(S.run.stage);
-  if(S.run.stage%10===0){R.mode='boss';R.bossT=CFG.enemy.bossTime;R.E.atkT=CFG.enemy.atkEvery;hooks.bossStart(R.E);}
+  if(S.run.stage%10===0){R.mode='boss';R.bossT=CFG.enemy.bossTime;R.extUsed=false;R.extWait=0;R.E.atkT=CFG.enemy.atkEvery;hooks.bossStart(R.E);}
   if(S.up.au_prestige)maybeAutoPrestige();
 }
 function clearLocks(){for(let i=0;i<R.cells.length;i++)if(R.cells[i]&&R.cells[i].k==='lock'){R.cells[i]=null;hooks.unlock(i);}}
 function bossFlee(voluntary){clearLocks();R.mode='farm';S.run.fled=true;S.run.fledAt=R.t;R.retryT=0;R.E=enemyFor(S.run.stage-1);hooks.bossFled(voluntary);}
 function retreat(){if(!R||R.mode!=='boss')return false;bossFlee(true);return true;} // repli volontaire : on retourne farmer l'étape précédente
-function challengeBoss(){if(!R||R.mode!=='farm'||!S.run.fled)return false;S.run.fled=false;R.mode='boss';R.bossT=CFG.enemy.bossTime;R.E=enemyFor(S.run.stage);R.E.atkT=CFG.enemy.atkEvery;hooks.bossStart(R.E);return true;}
+function challengeBoss(){if(!R||R.mode!=='farm'||!S.run.fled)return false;S.run.fled=false;R.mode='boss';R.bossT=CFG.enemy.bossTime;R.extUsed=false;R.extWait=0;R.E=enemyFor(S.run.stage);R.E.atkT=CFG.enemy.atkEvery;hooks.bossStart(R.E);return true;}
 /* ---------- Titan ---------- */
 const TITAN_DAYS={get 0(){return dayName(0)},get 1(){return dayName(1)},get 2(){return dayName(2)},get 3(){return dayName(3)},get 4(){return dayName(4)},get 5(){return dayName(5)},get 6(){return dayName(6)}};
 const dayName=i=>(I18N[LANG]._days||I18N.fr._days)[i];
@@ -370,6 +372,10 @@ function titanGemTicket(){const t=titanState();if(t.gem>=1||S.gems<CFG.titan.tic
 function startTitan(){if(!R||R.mode!=='farm'||!titanReady())return false;R.saved=R.E;R.E=titanEnemy();R.mode='titan';R.titanT=CFG.titan.time;R.titanDmg=0;titanState().used++;S.st.titans++;S.day.titans++;S.week.titans++;return true;}
 function endTitan(){const d=Math.floor(R.titanDmg);S.week.best+=d;if(d>S.st.titanBest)S.st.titanBest=d;R.E=R.saved||enemyFor(S.run.stage);R.mode='farm';hooks.titanEnd(d);}
 /* ---------- prestige ---------- */
+/* v14.1 : boss presque battu : +10 s (le serveur ne compte que le paiement : gemmes ou pub plafonnée) */
+function bossExt(kind){const C=CFG.bossExt;if(kind==='gem'){if(S.gems<C.gems)return false;S.gems-=C.gems;}else{if(adLeft('boss')<=0)return false;adUse('boss');}
+  if(R&&R.extWait){R.extWait=0;R.bossT=C.sec;}return true;}
+const lumFull=(now=Date.now())=>S.run.max>=CFG.lum.min&&now-(S.runAt||now)>=CFG.lum.cap*3600e3; // v14.1 : Lumière au plafond → pastille + notification
 /* v14 : Lumière (Réfraction qui compte) et route des records */
 const lumGain=(n,now=Date.now())=>n<CFG.lum.min?0:Math.max(1,Math.min(CFG.lum.cap,Math.floor((now-(S.runAt||now))/3600e3)));
 const lumMult=()=>Math.pow(CFG.lum.m,S.lum|0);

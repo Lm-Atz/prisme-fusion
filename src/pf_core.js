@@ -6,7 +6,7 @@
 const PF_TAIL=`
 return {get S(){return S},set S(v){S=v},get R(){return R},set TZOFF(v){TZOFF=v},CFG,UPG,ALLUP,JOKERS,SKINS,OFFERS,ONB,get DAILY(){return DAILY},WEEKLY,LOGIN,
 fresh,migrate,roll,give,adLeft,adUse,chestFill,chestG,restoreAll,memTotal,memLvl,inMem,giftRoll,giftTake,adSparks,packSparks,buyPack,rateMin,loginState,claimLogin,upById,lvlOf,upCost,upTime,upLocked,inBuild,tickBuild,startBuild,rushBuild,rushGems,adBuild,buySlot,buyJSlot,
-jokerById,jokerAvail,buyWeekOffer,weekOffer,jokerNeed,offlineGains,passXP,bonusMul,MEDALS,powerMult,spawnInterval,claimMedal,medalReady,medalsReady,medalLvl,medalBonusOf,weekTheme,seasonLeft,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,passTierCost,shopGiftG,pickWeekly,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,lumGain,lumMult,roadN,roadReady,roadMult,claimRoad,ne,worldInfo,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
+jokerById,jokerAvail,buyWeekOffer,weekOffer,jokerNeed,offlineGains,passXP,bonusMul,MEDALS,powerMult,spawnInterval,claimMedal,medalReady,medalsReady,medalLvl,medalBonusOf,weekTheme,seasonLeft,weekendEvent,nextEvent,premOn,slotsN,seasonName,seasonHue,skinInfo,passTierCost,shopGiftG,pickWeekly,unlockJoker,toggleEquip,tbLvl,buyWP,wpCost,wpLvl,resetWP,ppGain,bossExt,lumFull,newRun,runTick,enemyFor,challengeBoss,hooks,lumGain,lumMult,roadN,roadReady,roadMult,claimRoad,ne,worldInfo,refMult,sparkMult,lootMult,prestigeGain,doPrestige,isTitanDay,titanState,titanTickets,titanReady,titanAdTicket,titanGemTicket,
 offlineGains,applyOffline,questView,claim,guildQuests,guildQuestDone,guildClaimable,guildReward,rename,checkName,randomName,purchase,buyGemItem,buySkin,passState,passClaim,passTier,passBuy,passClaimAll,shopGift,spendNow,canPay,PASS,seasonKey,dayKey,weekKey,boosted,setLang,get LANG(){return LANG}};`;
 
 function pfMakeEngine(src,nowMs){
@@ -77,7 +77,7 @@ function pfMergeSim(G,sim,dt,anomalies){
 }
 
 /* ---- une requête = état d'entrée + action → état de sortie + résultat ---- */
-const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','week_offer','medal','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','road','guild_pay','guild_reward']);
+const PF_ACTIONS=new Set(['hello','sync','reset','pass_claim','pass_buy','pass_all','shop_gift','week_offer','medal','build','rush','adbuild','slot','jslot','wp','wpreset','joker','equip','pack','gift_offer','ad','claim','login','prestige','titan_gem','titan_start','titan_end','purchase','gemitem','skin','rename','league','offline_x2','report','restore','gquest','road','boss_ext','guild_pay','guild_reward']);
 function pfApply(src,stateIn,body,nowMs,trusted){
   const G=pfMakeEngine(src,nowMs);
   const anomalies=[],res={ok:true};
@@ -141,6 +141,7 @@ function pfApply(src,stateIn,body,nowMs,trusted){
     case 'reset':if(need(body.demo===true,'store')){const keep={name:S.name,nameChanges:S.nameChanges,tz:S.tz,flagged:S.flagged};S=G.fresh();Object.assign(S,keep);G.S=S;res.reset=true;}break; // v11.6 : réinitialisation de démo, aussi côté serveur
     case 'pass_buy':res.ok=G.passBuy(pfInt(p.k,1,100,0));if(!res.ok)res.err='gems';break;
     case 'pass_all':{const c=G.passClaimAll();res.ok=c>0;res.n=c;if(!res.ok)res.err='pass';break;}
+    case 'boss_ext':{const k=p.kind==='ad'?'ad':'gem';if(k==='ad'&&!need(pfAdOK(S,'boss',nowMs,15),'cooldown'))break;res.ok=G.bossExt(k);if(!res.ok)res.err=k==='gem'?'gems':'cap';else if(k==='ad')S.day.ads=(S.day.ads|0)+1;break;} // v14.1
     case 'road':{const r=G.claimRoad();res.ok=!!r;if(r)res.road=r;else res.err='road';break;} // v14 : route des records
     case 'medal':res.ok=G.claimMedal(String(p.id));if(!res.ok)res.err='medal';break; // v12.1 : médailles
     case 'week_offer':res.ok=G.buyWeekOffer();if(!res.ok)res.err='gems';break; // v12 : offre de la semaine

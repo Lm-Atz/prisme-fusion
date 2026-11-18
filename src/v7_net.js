@@ -70,6 +70,7 @@ async function actNow(action,payload,snap,sent,retry=1,ent=null){
 }
 /* l'état serveur remplace le nôtre ; on conserve seulement ce qui a bougé pendant l'aller-retour */
 function applyServer(d,sent){
+  setTimeout(()=>{if(S.st&&S.st.tuto>=3&&typeof tutoStep!=='undefined'&&tutoStep>0&&tutoStep<4){tutoStep=0;const h=document.getElementById('hint');if(h)h.hidden=true;}},0); /* v14.1 : joueur confirmé sur un nouvel appareil */
   const st=d.state,prev=S,an=d.anomalies||[];
   if(d.result&&d.result.stale){S=mergeSave(st);if(typeof newRun==='function'&&typeof R!=='undefined'&&R)try{newRun();}catch(e){}return;} /* v12.8 : partie du serveur reprise telle quelle (autre appareil plus à jour) */
   const gained=prev.run.sparks-sent; // v11.6 : peut être négatif (boosters achetés pendant l'aller-retour) ; borné à 0 avant → étincelles dépensées rendues, boosters gratuits
